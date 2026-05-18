@@ -1,5 +1,8 @@
 from flask import render_template, request
 class AuthController:
+    def home(self):
+        return render_template("home.html")
+
     def login(self):
         if request.method=="POST":
             print(request.form)
