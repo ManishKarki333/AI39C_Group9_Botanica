@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Botanica | Library{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Herb Library</h1>
+    <p>Search educational articles about herbs.</p>
+</section>
+
+<section class="library-search-section">
+    <input type="text" id="librarySearch" placeholder="Search library articles">
+</section>
+
+<section>
+    <div id="libraryGrid" class="card-grid"></div>
+    <p id="libraryNoResults" class="no-results hidden">No library articles found.</p>
+</section>
+{% endblock %}
