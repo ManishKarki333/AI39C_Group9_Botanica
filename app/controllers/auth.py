@@ -16,3 +16,9 @@ class AuthController:
     
     def contact(self):
         return render_template("contact.html")
+    
+    def herb_library(self):
+        return render_template("herb_library.html")
+
+    def herb_details(self):
+        return render_template("herb_details.html")

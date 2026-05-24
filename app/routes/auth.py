@@ -21,4 +21,10 @@ class AuthRoutes:
         self.bp.route("/contact",methods=["GET", "POST"])(
             self.controller.contact
         )
+        self.bp.route("/herb_library",methods=["GET", "POST"])(
+            self.controller.herb_library
+        )
+        self.bp.route("/herb_details",methods=["GET", "POST"])(
+            self.controller.herb_details
+        )
         return self.bp
