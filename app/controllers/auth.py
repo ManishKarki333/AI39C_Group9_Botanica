@@ -1,5 +1,6 @@
 from flask import render_template, request
 class AuthController:
+
     def home(self):
         return render_template("home.html")
 
@@ -22,3 +23,6 @@ class AuthController:
 
     def herb_details(self):
         return render_template("herb_details.html")
+    
+    def merchant_dashboard(self):
+        return render_template("merchant_dashboard.html")

@@ -27,4 +27,7 @@ class AuthRoutes:
         self.bp.route("/herb_details",methods=["GET", "POST"])(
             self.controller.herb_details
         )
+        self.bp.route("/merchant_dashboard",methods=["GET", "POST"])(
+            self.controller.merchant_dashboard
+        )
         return self.bp
