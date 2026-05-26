@@ -6,7 +6,7 @@ class AuthRoutes:
         self.controller = AuthController()
 
     def register(self):
-        self.bp.route("/home",methods=["GET", "POST"])(
+        self.bp.route("/",methods=["GET", "POST"])(
             self.controller.home
         )
         self.bp.route("/login",methods=["GET", "POST"])(
