@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Botanica - Merchant Dashboard{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/merchant.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    
+    <!-- Title Section -->
+    <div class="dashboard-header-block">
+        <div>
+            <h1>Merchant Dashboard</h1>
+            <p class="subtitle">Manage your products and inventory</p>
+        </div>
+        <a href="#" class="btn-logout-alt">Logout</a>
+    </div>
+
+    <!-- Vacation Mode Component Box -->
+    <div class="vacation-card-row">
+        <div class="vacation-left">
+            <span class="power-icon">⏻</span>
+            <div>
+                <span class="widget-title">Vacation Mode</span>
+                <p class="widget-desc">Temporarily hide all your products</p>
+            </div>
+        </div>
+        <div class="vacation-right">
+            <label class="figma-switch">
+                <input type="checkbox" id="vacationToggle">
+                <span class="figma-slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Products Core Container -->
+    <div class="products-section-container">
+        <div class="section-controls-header">
+            <h2>My Products</h2>
+            <!-- Modal trigger anchor style for adding a product -->
+            <a href="#addProductModal" class="btn-add-product-figma"><span>+</span> Add Product</a>
+        </div>
+
+        <div class="products-list-stack">
+            
+            <!-- Card 1: Ashwagandha -->
+            <div class="figma-product-card">
+                <div class="p-card-left">
+                    <div class="p-img-box">
+                        <div class="img-placeholder-bg" style="background-color: #e2ece9;"></div>
+                    </div>
+                    <div class="p-details">
+                        <h3>Ashwagandha</h3>
+                        <span class="p-scientific">Withania somnifera</span>
+                    </div>
+                </div>
+                <div class="p-card-metrics">
+                    <div class="metric-group">
+                        <span class="m-label">Price</span>
+                        <span class="m-value">NPR 850</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Stock</span>
+                        <span class="m-value font-highlight">156</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Category</span>
+                        <span class="badge-category">Energy</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Rating</span>
+                        <span class="m-value rating-val"> 4.8</span>
+                    </div>
+                </div>
+                <div class="p-card-actions">
+                    <button class="btn-icon-edit" title="Edit Product"></button>
+                    <button class="btn-icon-delete" title="Delete Product"></button>
+                </div>
+            </div>
+
+            <!-- Card 2: Tulsi -->
+            <div class="figma-product-card">
+                <div class="p-card-left">
+                    <div class="p-img-box">
+                        <div class="img-placeholder-bg" style="background-color: #eaf2e8;"></div>
+                    </div>
+                    <div class="p-details">
+                        <h3>Tulsi</h3>
+                        <span class="p-scientific">Ocimum sanctum</span>
+                    </div>
+                </div>
+                <div class="p-card-metrics">
+                    <div class="metric-group">
+                        <span class="m-label">Price</span>
+                        <span class="m-value">NPR 450</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Stock</span>
+                        <span class="m-value font-highlight">289</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Category</span>
+                        <span class="badge-category">Immunity</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Rating</span>
+                        <span class="m-value rating-val"> 4.9</span>
+                    </div>
+                </div>
+                <div class="p-card-actions">
+                    <button class="btn-icon-edit" title="Edit Product"></button>
+                    <button class="btn-icon-delete" title="Delete Product"></button>
+                </div>
+            </div>
+
+            <!-- Card 3: Turmeric Root -->
+            <div class="figma-product-card">
+                <div class="p-card-left">
+                    <div class="p-img-box">
+                        <div class="img-placeholder-bg" style="background-color: #fdf5e2;"></div>
+                    </div>
+                    <div class="p-details">
+                        <h3>Turmeric Root</h3>
+                        <span class="p-scientific">Curcuma longa</span>
+                    </div>
+                </div>
+                <div class="p-card-metrics">
+                    <div class="metric-group">
+                        <span class="m-label">Price</span>
+                        <span class="m-value">NPR 320</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Stock</span>
+                        <span class="m-value font-highlight">423</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Category</span>
+                        <span class="badge-category">Immunity</span>
+                    </div>
+                    <div class="metric-group">
+                        <span class="m-label">Rating</span>
+                        <span class="m-value rating-val"> 4.7</span>
+                    </div>
+                </div>
+                <div class="p-card-actions">
+                    <button class="btn-icon-edit" title="Edit Product"></button>
+                    <button class="btn-icon-delete" title="Delete Product"></button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Simple clean modal anchor to support Sprint 1 product entries safely without ruining the dashboard layout -->
+<div id="addProductModal" class="dashboard-modal-overlay">
+    <div class="modal-body-card">
+        <div class="modal-header">
+            <h3>Add New Product Spec Sheet</h3>
+            <a href="#" class="close-modal-btn">&times;</a>
+        </div>
+        <form class="modal-form-inputs" onsubmit="return false;">
+            <div class="m-input-group">
+                <label>Product Display Name</label>
+                <input type="text" placeholder="e.g., Brahmi Leaf Powder" required>
+            </div>
+            <div class="m-input-grid">
+                <div>
+                    <label>Weight (e.g., 100g)</label>
+                    <input type="text" placeholder="100g" required>
+                </div>
+                <div>
+                    <label>Price (NPR)</label>
+                    <input type="number" placeholder="NPR" required>
+                </div>
+            </div>
+            <div class="m-input-group">
+                <label>Initial Stock Count</label>
+                <input type="number" value="10" min="0" required>
+            </div>
+            <button type="submit" class="btn-modal-submit">Publish to Live Storefront</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

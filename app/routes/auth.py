@@ -6,7 +6,7 @@ class AuthRoutes:
         self.controller = AuthController()
 
     def register(self):
-        self.bp.route("/home",methods=["GET", "POST"])(
+        self.bp.route("/",methods=["GET", "POST"])(
             self.controller.home
         )
         self.bp.route("/login",methods=["GET", "POST"])(
@@ -20,5 +20,14 @@ class AuthRoutes:
         )
         self.bp.route("/contact",methods=["GET", "POST"])(
             self.controller.contact
+        )
+        self.bp.route("/herb_library",methods=["GET", "POST"])(
+            self.controller.herb_library
+        )
+        self.bp.route("/herb_details",methods=["GET", "POST"])(
+            self.controller.herb_details
+        )
+        self.bp.route("/merchant_dashboard",methods=["GET", "POST"])(
+            self.controller.merchant_dashboard
         )
         return self.bp
