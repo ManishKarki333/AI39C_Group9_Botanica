@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Botanica{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='/css/style.css')}}">
+    {% block css %}{% endblock %}
+</head>
+<body>
+    {% include 'partials/nav.html' %}
+    <div>
+        {% block content %}
+            <p>This is the default page</p>
+        {%endblock%}
+    </div>
+    {% block js %}{% endblock %}
+</body>
+</html>
