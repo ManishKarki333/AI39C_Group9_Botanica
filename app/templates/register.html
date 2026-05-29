@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account - Botanica{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <h2>Join Botanica</h2>
+            <p>Create an account to browse marketplace or sell products</p>
+        </div>
+
+        <div class="role-switch-box">
+            <input type="radio" name="role_toggle" id="customer_role" value="customer" checked onclick="updateActiveRoleValue('customer')">
+            <label for="customer_role" class="role-switch-label">
+                <i class="ri-user-line"></i>
+                <span>Customer</span>
+            </label>
+
+            <input type="radio" name="role_toggle" id="merchant_role" value="merchant" onclick="updateActiveRoleValue('merchant')">
+            <label for="merchant_role" class="role-switch-label">
+                <i class="ri-store-2-line"></i>
+                <span>Merchant</span>
+            </label>
+            <div class="role-slider-glider"></div>
+        </div>
+
+        <form action="{{ url_for('auth.register') }}" method="POST">
+            <input type="hidden" name="role" id="backend_role_carrier" value="customer">
+
+            <div class="auth-input-group">
+                <label for="name" class="auth-field-label">Full Name</label>
+                <div class="auth-interactive-field">
+                    <input type="text" id="name" name="name" class="auth-input-element" placeholder="Alex Morgan" required autocomplete="name">
+                    <i class="ri-user-line auth-field-icon"></i>
+                </div>
+            </div>
+
+            <div class="auth-input-group">
+                <label for="email" class="auth-field-label">Email Address</label>
+                <div class="auth-interactive-field">
+                    <input type="email" id="email" name="email" class="auth-input-element" placeholder="name@example.com" required autocomplete="email">
+                    <i class="ri-mail-line auth-field-icon"></i>
+                </div>
+            </div>
+
+            <div class="auth-input-group">
+                <label for="password" class="auth-field-label">Password</label>
+                <div class="auth-interactive-field">
+                    <input type="password" id="password" name="password" class="auth-input-element" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+                    <i class="ri-lock-line auth-field-icon"></i>
+                </div>
+            </div>
+
+            <label class="auth-checkbox-container">
+                <input type="checkbox" name="terms_agreement" required>
+                <span class="auth-checkbox-box"></span>
+                <span class="auth-checkbox-text">I accept the terms of use and privacy parameters</span>
+            </label>
+
+            <button type="submit" class="auth-action-btn">
+                <span>Register Account</span>
+                <i class="ri-arrow-right-line"></i>
+            </button>
+        </form>
+
+        <div class="auth-card-footer">
+            <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="auth-redirect-anchor">Sign in instead</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    /**
+     * Programmatic sync utility updating form field targets dynamically
+     * @param {string} targetedRole
+     */
+    function updateActiveRoleValue(targetedRole) {
+        const hiddenInputField = document.getElementById('backend_role_carrier');
+        if (hiddenInputField) {
+            hiddenInputField.value = targetedRole;
+        }
+    }
+</script>
+{% endblock %}
