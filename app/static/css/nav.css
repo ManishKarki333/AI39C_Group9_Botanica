@@ -1,0 +1,280 @@
+.botanica-navbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #ffffff; /* Fallback base color */
+    background-color: var(--bg-primary, #ffffff);
+    border-bottom: 1px solid var(--border-muted, #eaeaea);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    
+    /* 1. DEFINE YOUR UNIFORM FONT STACK HERE */
+    font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 2. FORCE FORM ELEMENTS AND BUTTONS TO RESPECT NAVBAR TYPOGRAPHY */
+.botanica-navbar input,
+.botanica-navbar button,
+.botanica-navbar select,
+.botanica-navbar textarea {
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+}
+
+/* Flexbox Layout Container Constraints */
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo Design Typography Styling */
+.nav-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.logo-text {
+    /* 3. ENSURE LOGO FOLLOWS SYSTEM STRUCTURE OR PRESERVES ITS UNIQUE SPLIT */
+    font-family: inherit; 
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #1a3a2a; /* Forest Green Accent Color */
+    color: var(--text-brand, #1a3a2a);
+}
+
+/* Center Horizontal Nav Link Lists */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-link {
+    text-decoration: none;
+    font-family: inherit; /* Explicitly guarantees link alignment */
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #4a5568;
+    color: var(--text-muted, #4a5568);
+    position: relative;
+    padding: 0.5rem 0;
+    transition: color 0.25s ease;
+}
+
+/* Menu Hover & Active Visual States */
+.nav-link:hover,
+.nav-link.active {
+    color: #2f855a;
+    color: var(--text-accent, #2f855a);
+}
+
+/* Underline Animation Effect on Text Hover */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-accent, #2f855a);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Right Side Icon Layout Elements Configuration */
+.nav-utilities {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* Structural Base Settings for Buttons and Links */
+.util-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: relative;
+    color: #4a5568;
+    color: var(--text-muted, #4a5568);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Font Sizing for Remix Icons Inside the Elements */
+.util-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+/* Interactive Hover States Configuration */
+.util-btn:hover {
+    color: #2f855a;
+    color: var(--text-accent, #2f855a);
+    background-color: #f0f7f4;
+    background-color: var(--bg-surface-hover, #f0f7f4);
+    transform: translateY(-1px);
+}
+
+/* Dynamic Outline-to-Solid Icon Swap State Transition Simulator */
+.util-btn:hover .ri-search-line::before { content: "\f0d1"; }       /* ri-search-fill */
+.util-btn:hover .ri-shopping-cart-line::before { content: "\f11a"; }  /* ri-shopping-cart-fill */
+.util-btn:hover .ri-user-line::before { content: "\f254"; }           /* ri-user-fill */
+.util-btn:hover .ri-moon-line::before { content: "\f192"; }           /* ri-moon-fill */
+
+/* Notification Badges on Cart Elements */
+.cart-anchor {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: #c53030;
+    background-color: var(--status-critical, #c53030);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--bg-primary, #ffffff);
+}
+
+/* Container layout alignment */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Clear textual button properties */
+.btn-login, .btn-logout {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.btn-login {
+    color: #4A5568;
+}
+
+.btn-login:hover {
+    color: #1A202C;
+}
+
+/* Red alert tone for logging out */
+.btn-logout {
+    color: #E53E3E;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.btn-logout:hover {
+    background-color: #FFF5F5;
+}
+
+/* Circular placeholder profile icon matching your design */
+.user-avatar-circle {
+    width: 35px;
+    height: 35px;
+    background-color: #2D3748;
+    border-radius: 50%;
+}
+
+/* Container adjustments to keep elements aligned cleanly */
+.nav-utilities {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Plain styling for the textual "Sign In" anchor */
+.auth-nav-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4A5568;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.auth-nav-link:hover {
+    color: #1A202C;
+}
+
+/* Base properties for the prominent action buttons */
+.auth-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+/* High-priority brand button styled for registration actions */
+.register-btn {
+    background-color: #2F855A; /* Forest Green Theme */
+    color: #FFFFFF;
+}
+
+.register-btn:hover {
+    background-color: #22543D;
+}
+
+/* Subdued alert action layout targeting profile logout routines */
+.logout-btn {
+    background-color: transparent;
+    color: #E53E3E; /* Soft Alert Red */
+    border: 1px solid #FED7D7;
+}
+
+.logout-btn:hover {
+    background-color: #FFF5F5;
+    border-color: #E53E3E;
+}
+
+.btn-icon {
+    font-size: 15px;
+}
+
+/* Responsive Adaptive Sizing Block Rules */
+@media (max-width: 768px) {
+    .nav-menu {
+        display: none; /* Add mobile responsive configuration here if needed */
+    }
+}

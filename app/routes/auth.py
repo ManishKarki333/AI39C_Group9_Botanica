@@ -30,4 +30,7 @@ class AuthRoutes:
         self.bp.route("/merchant_dashboard",methods=["GET", "POST"])(
             self.controller.merchant_dashboard
         )
+        self.bp.route("/logout",methods=["GET", "POST"])(
+            self.controller.logout
+        )
         return self.bp

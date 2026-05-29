@@ -1,13 +1,10 @@
-/* ==========================================================================
-   Botanica Core Theme & Variables
-   ========================================================================== */
 :root {
-    --primary-color: #2e6f40;      /* Deep Forest Green */
-    --primary-dark: #1e4620;       /* Darker Botanical Accent */
-    --secondary-color: #f4f9f5;    /* Soft Mint Tint background */
-    --text-main: #2d3732;          /* Charcoal text with subtle green hue */
-    --text-muted: #627269;         /* Subdued text shade */
-    --warning-bg: #fff9eb;          /* Warning container soft orange/yellow */
+    --primary-color: #2e6f40;
+    --primary-dark: #1e4620;
+    --secondary-color: #f4f9f5;
+    --text-main: #2d3732;
+    --text-muted: #627269;
+    --warning-bg: #fff9eb;
     --warning-border: #f5b041;
     --border-color: #d0d7d1;
     --white: #ffffff;
@@ -160,15 +157,14 @@ body {
 }
 
 .excerpt {
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-bottom: 20px;
-    height: 66px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* No space before the 3 */
+  -webkit-box-orient: vertical;
 }
 
 /* Unified Buttons Engine */
