@@ -1,5 +1,7 @@
 from flask import Blueprint
 from app.controllers.auth import AuthController
+from app.auth import login_required, admin_required, merchant_required 
+
 class AuthRoutes:
     def __init__(self):
         self.bp = Blueprint("auth",__name__)
@@ -28,7 +30,7 @@ class AuthRoutes:
             self.controller.herb_details
         )
         self.bp.route("/merchant_dashboard",methods=["GET", "POST"])(
-            self.controller.merchant_dashboard
+            merchant_required(self.controller.merchant_dashboard)
         )
         self.bp.route("/logout",methods=["GET", "POST"])(
             self.controller.logout
