@@ -18,7 +18,6 @@ def admin_required(f):
             return redirect(url_for("auth.login"))
             
         if session.get("role") != "admin":
-            # UX FIX: Redirect to home instead of forcing a logout
             flash("Unauthorized access. Admin privileges required.", "danger")
             return redirect(url_for("auth.home")) 
             
