@@ -1,5 +1,102 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Botanica - Home{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-    <h1>To be designed
-    </h1>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-container">
+        <div class="hero-content">
+            <span class="hero-badge">Discover Ayurvedic Wisdom</span>
+            <h1>Your Trusted Marketplace for Authentic Herbs</h1>
+            <p>Connect with verified regional merchants, explore our interactive botanical library, and source natural remedies tailored to your well-being.</p>
+            <div class="hero-actions">
+                <a href="{{ url_for('auth.herb_library') }}" class="btn btn-primary-home">
+                    <i class="ri-book-open-line"></i> Explore Herb Library
+                </a>
+                <a href="{{ url_for('auth.merchant_dashboard') }}" class="btn btn-secondary-home">
+                    <i class="ri-store-2-line"></i> Merchant Portal
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Search & Filter Widget (Sprint 2 UI Foundation Hook) -->
+<section class="search-widget-section">
+    <div class="widget-container">
+        <div class="search-bar-wrapper">
+            <i class="ri-search-line search-bar-icon"></i>
+            <input type="text" id="home-search-input" placeholder="Search herbs by common or scientific name (e.g., Tulsi, Curcuma longa)...">
+            <button type="button" id="home-search-submit" class="btn-search-widget">Search</button>
+        </div>
+        <div class="quick-tags-wrapper">
+            <span class="tag-label">Popular Categories:</span>
+            <button type="button" class="quick-filter-tag" data-benefit="Immunity">Immunity Boost</button>
+            <button type="button" class="quick-filter-tag" data-benefit="Stress">Stress Relief</button>
+            <button type="button" class="quick-filter-tag" data-benefit="Inflammation">Anti-inflammatory</button>
+            <button type="button" class="quick-filter-tag" data-benefit="Digestion">Digestion Support</button>
+        </div>
+    </div>
+</section>
+
+<!-- Dual Access Portal Cards -->
+<section class="portals-section">
+    <div class="portals-grid">
+        <!-- Portal Card 1: The Library -->
+        <div class="portal-card">
+            <div class="portal-icon-box">
+                <i class="ri-microscope-line"></i>
+            </div>
+            <h2>Scientific Herb Library</h2>
+            <p>Access cataloged profiles detailing common names, precise biological terminology, usage benchmarks, and medicinal parameters verified by our engineering teams.</p>
+            <a href="{{ url_for('auth.herb_library') }}" class="portal-link">
+                Browse Library Entries <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+
+        <!-- Portal Card 2: The Merchant Dashboard -->
+        <div class="portal-card">
+            <div class="portal-icon-box">
+                <i class="ri-dashboard-3-line"></i>
+            </div>
+            <h2>Vendor Operations</h2>
+            <p>Are you a verified herbal supplier? Access your digital control terminal to upload inventory, configure multi-variant weight pricing models, and activate vacation configurations.</p>
+            <a href="{{ url_for('auth.merchant_dashboard') }}" class="portal-link">
+                Launch Merchant Panel <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Informational Highlight Banner -->
+<section class="highlight-banner">
+    <div class="banner-container">
+        <div class="banner-badge">Project Scope Metrics</div>
+        <h2>Engineered for Transparency & Scalability</h2>
+        <div class="metrics-grid">
+            <div class="metric-item">
+                <h3>NPR</h3>
+                <p>Localized Currency Architecture</p>
+            </div>
+            <div class="metric-item">
+                <h3>5 Sprints</h3>
+                <p>Iterative Lifecycle Plan</p>
+            </div>
+            <div class="metric-item">
+                <h3>100% DRY</h3>
+                <p>Template Inheritance Modules</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
 {% endblock %}
