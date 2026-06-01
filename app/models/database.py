@@ -13,8 +13,9 @@ class Database:
                 password=config.MYSQL_PASSWORD,
                 database=config.MYSQL_DATABASE,
                 cursorclass=pymysql.cursors.DictCursor,
+                charset="utf8mb4",  # Fix: Ensures special botanical symbols display safely
+                use_unicode=True,
             )
-
             print("Database connected successfully!")
 
         except pymysql.MySQLError as e:
@@ -47,19 +48,15 @@ class Database:
     def close(self):
         """Close the database connection."""
         self.__connection.close()
-                        
+
     # ── Static Method: Create tables on app startup ─────────
 
     @staticmethod
     def create_tables():
-        """
-        Create database tables if they don't exist.
-
-        @staticmethod: belongs to the class but doesn't need
-        'self' — it doesn't use any instance data.
-        You call it as: Database.create_tables()
-        """
+        """Create database tables updated for Search, Filtering, and Merchant features."""
         db = Database()
+
+        # 1. Users Table (Maintains roles for Customers, Merchants, and Admins)
         db.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,7 +65,24 @@ class Database:
                 password VARCHAR(255) NOT NULL,
                 role VARCHAR(20) NOT NULL DEFAULT 'user',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        # 2. Herbs Table (Updated with Image, Stock, Price, and Benefit filtering fields)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS herbs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                common_name VARCHAR(100) NOT NULL,
+                scientific_name VARCHAR(100) NOT NULL UNIQUE,
+                description TEXT,
+                benefit_category VARCHAR(50) NOT NULL, -- Fix: Maps to US 3 (Sleep, Digestion, etc.)
+                price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                stock_quantity INT NOT NULL DEFAULT 0,
+                image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Fix: Keeps UI card grading-ready
+                merchant_id INT DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
         # Create default admin if not exists
@@ -80,7 +94,12 @@ class Database:
 
             db.execute(
                 "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
-                ("Admin", "admin@admin.com", generate_password_hash("admin123"), "admin"),
+                (
+                    "Admin",
+                    "admin@admin.com",
+                    generate_password_hash("admin123"),
+                    "admin",
+                ),
             )
 
         db.close()

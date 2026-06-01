@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Botanica - Shop Herbs{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="shop-container">
+    <header class="shop-header">
+        <div class="header-content">
+            <h1>Discover Natural Remedies</h1>
+            <p>Explore our premium index of sustainably sourced herbs, botanicals, and therapeutic organic roots.</p>
+        </div>
+        <div class="search-wrapper">
+            <i class="ri-search-line search-icon"></i>
+            <input type="text" id="global-search" placeholder="Search by common name or scientific name (e.g., Mint, Zingiber)..." autocomplete="off">
+        </div>
+    </header>
+
+    <div class="shop-layout">
+        <aside class="filter-sidebar">
+            <div class="sidebar-sticky">
+                <div class="sidebar-header">
+                    <h3><i class="ri-filter-3-line"></i> Filter Benefits</h3>
+                    <button id="clear-all-filters" class="clear-btn hidden">Clear All</button>
+                </div>
+                
+                <ul class="benefit-list">
+                    <li>
+                        <button class="benefit-card-toggle" data-category="Sleep">
+                            <span class="category-icon"><i class="ri-moon-clear-line"></i></span>
+                            <span class="category-label">Sleep & Relaxation</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="benefit-card-toggle" data-category="Digestion">
+                            <span class="category-icon"><i class="ri-restaurant-line"></i></span>
+                            <span class="category-label">Digestive Health</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="benefit-card-toggle" data-category="Immunity">
+                            <span class="category-icon"><i class="ri-shield-flash-line"></i></span>
+                            <span class="category-label">Immune Support</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="benefit-card-toggle" data-category="Energy">
+                            <span class="category-icon"><i class="ri-thunderstorms-line"></i></span>
+                            <span class="category-label">Energy & Focus</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="benefit-card-toggle" data-category="Respiratory">
+                            <span class="category-icon"><i class="ri-windy-line"></i></span>
+                            <span class="category-label">Respiratory Health</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <section class="products-view">
+            <div class="results-meta-bar">
+                <div class="counter-badge">
+                    Showing <span id="results-count">{{ herbs|length }}</span> verified botanical items
+                </div>
+            </div>
+
+            <div class="products-grid" id="products-catalogue-grid">
+                {% if herbs %}
+                    {% for herb in herbs %}
+                    <article class="product-card" data-benefits="{{ herb.benefit_category }}">
+                        <div class="card-image-wrapper">
+                            {% if herb.image_url %}
+                                <img src="{{ url_for('static', filename='uploads/' + herb.image_url) }}" alt="{{ herb.common_name }}" class="product-image">
+                            {% else %}
+                                <div class="fallback-placeholder">
+                                    <i class="ri-image-line"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="meta-names">
+                                <h2 class="common-name">{{ herb.common_name }}</h2>
+                                <p class="scientific-name"><em>{{ herb.scientific_name }}</em></p>
+                            </div>
+                            <p class="herb-excerpt">{{ herb.description|truncate(85) }}</p>
+                            <div class="card-footer">
+                                <div class="price-block">
+                                    <span class="currency">Rs.</span>
+                                    <span class="price-value">{{ herb.price }}</span>
+                                    <span class="unit">/{{ herb.unit_weight or '100g' }}</span>
+                                </div>
+                                <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart">
+                                    <i class="ri-shopping-bag-4-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state-card" id="grid-empty-state">
+                        <div class="empty-icon-wrapper">
+                            <i class="ri-search-eye-line"></i>
+                        </div>
+                        <h4>No Botanicals Found</h4>
+                        <p>We couldn't find any items matching your exact query. Try refining your spelling or expanding your health criteria filters.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for, session, flash, request
 from app.controllers.base_controller import BaseController
+from app.models.database import Database
 from app.models.user_model import User
 
 class AuthController(BaseController):
@@ -56,12 +57,6 @@ class AuthController(BaseController):
             flash("Invalid email or password.", "danger")
         return render_template("login.html")
 
-    def merchant_dashboard(self):
-        # Ensure role is validated before displaying
-        if not self.is_logged_in() or session.get("role") != "merchant":
-            flash("Unauthorized access.", "danger")
-            return redirect(url_for("auth.login"))
-        return render_template("merchant_dashboard.html")
 
     def register(self):
         # Route safely if user hits registration route while authenticated
@@ -108,6 +103,21 @@ class AuthController(BaseController):
 
         return render_template("register.html")
 
+
+    def merchant_dashboard(self):
+        # Ensure role is validated
+        if not self.is_logged_in() or session.get("role") != "merchant":
+            flash("Unauthorized access.", "danger")
+            return redirect(url_for("auth.login"))
+        
+        # ... security checks ...
+        db = Database()
+        # Ensure 'merchant_id' column exists and matches your table
+        query = "SELECT * FROM herbs" 
+        merchant_herbs = db.fetch_all(query)
+        db.close()
+        return render_template("merchant_dashboard.html", herbs=merchant_herbs)
+
     def logout(self):
         session.clear()
         return self.flash_and_redirect("You have been logged out.", "success", "auth.login")
@@ -118,8 +128,4 @@ class AuthController(BaseController):
     def contact(self):
         return render_template("contact.html")
     
-    def herb_library(self):
-        return render_template("herb_library.html")
-
-    def herb_details(self):
-        return render_template("herb_details.html")
+    

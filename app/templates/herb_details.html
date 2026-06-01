@@ -12,36 +12,29 @@
     <a href="{{ url_for('auth.herb_library') }}" class="back-link">← Back to Directory</a>
 
     <div class="profile-layout">
-        <!-- Visual Section -->
         <div class="profile-visual">
-            <div class="detail-img-placeholder" style="background-color: #e2ece9;"></div>
+            <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:auto; border-radius: 8px;">
         </div>
 
-        <!-- Content Profiling Section -->
         <div class="profile-info">
-            <span class="detail-scientific">Withania somnifera</span>
-            <h1>Ashwagandha</h1>
-            <p class="lead-description">Ashwagandha is one of the most vital herbs in Ayurvedic healing practices. It has been used for over 3,000 years to relieve stress, increase energy levels, and improve concentration.</p>
+            <span class="detail-scientific">{{ herb.scientific_name }}</span>
+            <h1>{{ herb.common_name }}</h1>
+            <p class="lead-description">{{ herb.description }}</p>
             
             <hr class="divider">
 
             <div class="info-block">
-                <h4>Traditional Medicinal Benefits</h4>
-                <ul>
-                    <li>Acts as a powerful adaptogen to modulate biological stress responses.</li>
-                    <li>Enhances memory, cognitive executive function, and overall brain health.</li>
-                    <li>Supports sleep quality by lowering cortisol markers naturally.</li>
-                </ul>
+                <h4>Price & Availability</h4>
+                <p><strong>NPR {{ herb.price }}</strong> | <strong>Stock:</strong> {{ herb.stock_quantity }} units available</p>
             </div>
 
-            <div class="info-block warning-box">
-                <h4>Usage Warnings & Contraindications</h4>
-                <p>Avoid use during pregnancy or lactation periods. May interact with immunosuppressants, thyroid medications, or sedatives. Always consult a certified Ayurvedic practitioner before beginning routine usage.</p>
+            <div class="info-block">
+                <h4>Benefit Category</h4>
+                <p>{{ herb.benefit_category }}</p>
             </div>
 
-            <!-- Strategic Core Link to Shop Engine -->
             <div class="action-wrapper">
-                <a href="#" class="btn btn-primary btn-large">Buy from Marketplace Store →</a>
+                <a href="#" class="btn btn-primary btn-large">Buy Now - NPR {{ herb.price }} →</a>
             </div>
         </div>
     </div>
