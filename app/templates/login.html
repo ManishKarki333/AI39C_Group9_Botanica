@@ -1,24 +1,67 @@
-<<<<<<< HEAD
-=======
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Botanica | Sign In{% endblock %}
+{% block title %}Sign In - Botanica{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
 
 {% block content %}
-<section class="auth-wrapper">
-    <form class="auth-card" method="POST" action="/login">
-        <h1>Sign In</h1>
+<div class="auth-page-container">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <h2>Welcome Back</h2>
+            <p>Please log in to manage or browse your herbs</p>
+        </div>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="auth-flash-container">
+                    {% for category, message in messages %}
+                        <div class="auth-alert auth-alert-{{ category }}">
+                            <i class="ri-error-warning-line"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
 
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <div class="auth-input-group">
+                <label for="email" class="auth-field-label">Email Address</label>
+                <div class="auth-interactive-field">
+                    <input type="email" id="email" name="email" class="auth-input-element" placeholder="name@example.com" required autocomplete="email">
+                    <i class="ri-mail-line auth-field-icon"></i>
+                </div>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Log In</button>
+            <div class="auth-input-group">
+                <div class="auth-label-row">
+                    <label for="password" class="auth-field-label">Password</label>
+                    <a href="#" class="auth-forgot-anchor">Forgot?</a>
+                </div>
+                <div class="auth-interactive-field">
+                    <input type="password" id="password" name="password" class="auth-input-element" placeholder="••••••••" required autocomplete="current-password">
+                    <i class="ri-lock-line auth-field-icon"></i>
+                </div>
+            </div>
 
-        <p class="form-note">Backend authentication will be connected next.</p>
-    </form>
-</section>
+            <label class="auth-checkbox-container">
+                <input type="checkbox" name="remember_me">
+                <span class="auth-checkbox-box"></span>
+                <span class="auth-checkbox-text">Keep me signed in for 30 days</span>
+            </label>
+
+            <button type="submit" class="auth-action-btn">
+                <span>Sign In to Account</span>
+                <i class="ri-arrow-right-line"></i>
+            </button>
+        </form>
+
+        <div class="auth-card-footer">
+            <p>New to our community? <a href="{{ url_for('auth.register') }}" class="auth-redirect-anchor">Create an account</a></p>
+        </div>
+    </div>
+</div>
 {% endblock %}
->>>>>>> origin/Manish

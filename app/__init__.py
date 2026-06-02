@@ -11,7 +11,8 @@ def create_app():
     app.config['SECRET_KEY'] = SECRET_KEY
 
     # Import and register the blueprint
-    from .routes.auth import auth_bp
-    app.register_blueprint(auth_bp)
+    from app.routes.auth import AuthRoutes
+    auth_routes = AuthRoutes()
+    app.register_blueprint(auth_routes.register())
 
     return app

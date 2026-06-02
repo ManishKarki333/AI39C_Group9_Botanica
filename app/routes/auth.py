@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Blueprint
 from app.controllers.auth import AuthController
 from app.controllers.shop_controller import ShopController
@@ -45,24 +44,3 @@ class AuthRoutes:
             merchant_required(self.shop_controller.add_product)
         )
         return self.bp
-=======
-from flask import Blueprint, render_template
-
-auth_bp = Blueprint('auth', __name__)
-
-@auth_bp.route('/')
-def index():
-    return render_template('index.html')
-
-@auth_bp.route('/library')
-def library():
-    return render_template('library.html')
-
-@auth_bp.route('/login')
-def login():
-    return render_template('login.html')
-
-@auth_bp.route('/change-password')
-def change_password():
-    return render_template('change_password.html')
->>>>>>> origin/Manish

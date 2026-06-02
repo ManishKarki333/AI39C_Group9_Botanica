@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import render_template, redirect, url_for, session, flash, request
 from app.controllers.base_controller import BaseController
 from app.models.database import Database
@@ -54,16 +53,7 @@ class AuthController(BaseController):
                     return self.flash_and_redirect(
                         "Login successful!", "success", target_route
                     )
-
             flash("Invalid email or password.", "danger")
-=======
-from flask import render_template, request
-class AuthController:
-    def login(self):
-        if request.method=="POST":
-            print(request.form)
-
->>>>>>> origin/Manish
         return render_template("login.html")
 
 
@@ -109,7 +99,6 @@ class AuthController:
             return self.flash_and_redirect(
                 "Registration successful! Please login.", "success", "auth.login"
             )
-
         return render_template("register.html")
 
 
