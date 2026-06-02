@@ -7,8 +7,8 @@ class Database:
     def __init__(self):
         """Open a database connection when object is created."""
         try:
-            host     = config.MYSQL_HOST
-            user     = config.MYSQL_USER
+            host = config.MYSQL_HOST
+            user = config.MYSQL_USER
             password = config.MYSQL_PASSWORD
             database = config.MYSQL_DATABASE
 
@@ -21,15 +21,16 @@ class Database:
                 password=password,
                 db=database,
                 cursorclass=pymysql.cursors.DictCursor,
+                charset="utf8mb4",
+                use_unicode=True,
             )
-
             print("Database connected successfully!")
 
         except pymysql.MySQLError as e:
             print("Database connection failed!")
             print("Error:", e)
+            raise
 
-    # ── Fetch One Record ─────────────────────────────────────
     def fetch_one(self, query, params=None):
         """Run a query and return ONE result (or None)."""
         cursor = self.__connection.cursor()
@@ -38,7 +39,6 @@ class Database:
         cursor.close()
         return result
 
-    # ── Fetch All Records ────────────────────────────────────
     def fetch_all(self, query, params=None):
         """Run a query and return ALL results as a list."""
         cursor = self.__connection.cursor()
@@ -47,64 +47,74 @@ class Database:
         cursor.close()
         return results
 
-    # ── Execute (INSERT / UPDATE / DELETE) ───────────────────
     def execute(self, query, params=None):
-        """Run a query that changes data (INSERT, UPDATE, DELETE)."""
+        """Run a query that changes data (INSERT, UPDATE, DELETE, CREATE)."""
         cursor = self.__connection.cursor()
         cursor.execute(query, params)
         self.__connection.commit()
         cursor.close()
 
-    # ── Close Connection ─────────────────────────────────────
     def close(self):
         """Close the database connection."""
         self.__connection.close()
 
-    # ── Static Method: Create ALL tables on app startup ──────
     @staticmethod
     def create_tables():
-        """
-        Create ALL database tables if they don't already exist.
-
-        @staticmethod: belongs to the class but doesn't need
-        'self' — it doesn't use any instance data.
-        You call it as: Database.create_tables()
-        """
+        """Create all required database tables on app startup."""
         db = Database()
 
-        # ── Table 1: Users ───────────────────────────────────
+        # Users table
         db.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id         INT AUTO_INCREMENT PRIMARY KEY,
-                name       VARCHAR(100) NOT NULL,
-                email      VARCHAR(100) NOT NULL UNIQUE,
-                password   VARCHAR(255) NOT NULL,
-                role       VARCHAR(20)  NOT NULL DEFAULT 'user',
-                created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
-            )
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                role VARCHAR(20) NOT NULL DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
-        # ── Table 2: Contact Messages ────────────────────────
+        # Contact messages table
         db.execute("""
             CREATE TABLE IF NOT EXISTS contact_messages (
-                id         INT AUTO_INCREMENT PRIMARY KEY,
+                id INT AUTO_INCREMENT PRIMARY KEY,
                 first_name VARCHAR(100) NOT NULL,
-                last_name  VARCHAR(100) NOT NULL,
-                email      VARCHAR(255) NOT NULL,
-                inquiry    VARCHAR(100),
-                subject    VARCHAR(255) NOT NULL,
-                message    TEXT         NOT NULL,
-                created_at DATETIME     DEFAULT CURRENT_TIMESTAMP
-            )
+                last_name VARCHAR(100) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                inquiry VARCHAR(100),
+                subject VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
-        # ── Seed: Default Admin Account ──────────────────────
-        # Create a default admin user if one doesn't exist yet
+        # Herbs table
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS herbs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                common_name VARCHAR(100) NOT NULL,
+                scientific_name VARCHAR(100) NOT NULL UNIQUE,
+                description TEXT,
+                benefit_category VARCHAR(50) NOT NULL,
+                price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                stock_quantity INT NOT NULL DEFAULT 0,
+                image_url VARCHAR(255) DEFAULT 'default_herb.png',
+                merchant_id INT DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        # Create default admin if not exists
         admin = db.fetch_one(
-            "SELECT * FROM users WHERE email = %s", ("admin@admin.com",)
+            "SELECT * FROM users WHERE email = %s",
+            ("admin@admin.com",)
         )
+
         if not admin:
             from werkzeug.security import generate_password_hash
+
             db.execute(
                 "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
                 ("Admin", "admin@admin.com", generate_password_hash("admin123"), "admin"),

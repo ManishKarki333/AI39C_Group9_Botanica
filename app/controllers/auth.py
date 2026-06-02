@@ -3,9 +3,9 @@
 # ============================================================
 from flask import render_template, redirect, url_for, session, flash, request
 from app.controllers.base_controller import BaseController
+from app.models.database import Database
 from app.models.user_model import User
-from app.models.contact_model import ContactMessage  # ✅ correctly placed at the top
-from datetime import datetime
+from app.models.contact_model import ContactMessage
 
 
 class AuthController(BaseController):
@@ -18,45 +18,39 @@ class AuthController(BaseController):
 
     # ── Role-based redirect helper ───────────────────────────
     def _get_redirect_route(self, role):
-        """Helper method to determine home portal based on user roles."""
+        """Determine landing route based on user role."""
         if role == "admin":
             return "auth.dashboard"
         elif role == "merchant":
             return "auth.merchant_dashboard"
         else:
-            # Default customer/buyer landing page
+            # customer / user default landing page
             return "auth.home"
 
     # ── Login ────────────────────────────────────────────────
     def login(self):
-        # If already logged in, route to their correct dashboard
         if self.is_logged_in():
-            current_role = session.get("role", "customer")
+            current_role = session.get("role", "user")
             return redirect(url_for(self._get_redirect_route(current_role)))
 
         if request.method == "POST":
-            # Extract and strip whitespace from email
-            email    = request.form.get("email", "").strip()
+            email = request.form.get("email", "").strip()
             password = request.form.get("password", "")
 
             if not email or not password:
                 flash("Email and password are required.", "danger")
                 return render_template("login.html")
 
-            # Use the User model to find the user
             user_data = self.user_model.find_by("email", email)
 
             if user_data:
-                # Build a User object from database data
                 user = User.from_db(user_data)
 
                 if user.check_password(password):
-                    # Establish session credentials
-                    session["user_id"]   = user_data["id"]
+                    session["user_id"] = user_data["id"]
                     session["user_name"] = user_data["name"]
-                    session["role"]      = user_data["role"]
+                    session["role"] = user_data["role"]
 
-                    # Dynamic routing based on role
                     target_route = self._get_redirect_route(user_data["role"])
                     return self.flash_and_redirect(
                         "Login successful!", "success", target_route
@@ -67,31 +61,39 @@ class AuthController(BaseController):
 
     # ── Merchant Dashboard ───────────────────────────────────
     def merchant_dashboard(self):
-        # Ensure role is validated before displaying
         if not self.is_logged_in() or session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.login"))
-        return render_template("merchant_dashboard.html")
+
+        db = Database()
+        merchant_id = session.get("user_id")
+        merchant_herbs = db.fetch_all(
+            "SELECT * FROM herbs WHERE merchant_id = %s",
+            (merchant_id,)
+        )
+        db.close()
+
+        return render_template("merchant_dashboard.html", herbs=merchant_herbs)
 
     # ── Register ─────────────────────────────────────────────
     def register(self):
-        # Route safely if user hits registration while authenticated
         if self.is_logged_in():
-            current_role = session.get("role", "customer")
+            current_role = session.get("role", "user")
             return redirect(url_for(self._get_redirect_route(current_role)))
 
         if request.method == "POST":
-            # Cleaned form data extraction
-            name     = request.form.get("name", "").strip()
-            email    = request.form.get("email", "").strip()
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
             password = request.form.get("password", "")
-            role     = request.form.get("role", "customer")
+            role = request.form.get("role", "user").strip().lower()
 
-            # Strict role validation — force fallback to lowest privilege
-            if role not in ["customer", "merchant"]:
-                role = "customer"
+            # Keep role naming consistent with database/app logic
+            if role == "customer":
+                role = "user"
 
-            # Field validation
+            if role not in ["user", "merchant"]:
+                role = "user"
+
             if not name or not email or not password:
                 flash("All fields are required.", "danger")
                 return render_template("register.html")
@@ -104,17 +106,17 @@ class AuthController(BaseController):
                 flash("Password must be at least 6 characters.", "danger")
                 return render_template("register.html")
 
-            # Create new User object with assigned role
             new_user = User(name=name, email=email, password=password, role=role)
 
             if new_user.email_exists():
                 flash("Email already exists.", "danger")
                 return redirect(url_for("auth.register"))
 
-            # Save to database
             new_user.save()
             return self.flash_and_redirect(
-                "Registration successful! Please login.", "success", "auth.login"
+                "Registration successful! Please login.",
+                "success",
+                "auth.login"
             )
 
         return render_template("register.html")
@@ -133,26 +135,21 @@ class AuthController(BaseController):
     # ── Contact ──────────────────────────────────────────────
     def contact(self):
         if request.method == "POST":
-
-            # ── Step 1: Extract form data ──
             first_name = request.form.get("first_name", "").strip()
-            last_name  = request.form.get("last_name",  "").strip()
-            email      = request.form.get("email",      "").strip()
-            inquiry    = request.form.get("inquiry",    "").strip()
-            subject    = request.form.get("subject",    "").strip()
-            message    = request.form.get("message",    "").strip()
+            last_name = request.form.get("last_name", "").strip()
+            email = request.form.get("email", "").strip()
+            inquiry = request.form.get("inquiry", "").strip()
+            subject = request.form.get("subject", "").strip()
+            message = request.form.get("message", "").strip()
 
-            # ── Step 2: Validate all required fields ──
             if not first_name or not last_name or not email or not subject or not message:
                 flash("Please fill in all required fields.", "danger")
                 return render_template("contact.html")
 
-            # ── Step 3: Basic email format check ──
             if "@" not in email or "." not in email:
                 flash("Please enter a valid email address.", "danger")
                 return render_template("contact.html")
 
-            # ── Step 4: Save to database ──
             contact_msg = ContactMessage(
                 first_name=first_name,
                 last_name=last_name,
@@ -163,33 +160,10 @@ class AuthController(BaseController):
             )
             contact_msg.save()
 
-            # ── Step 5: Flash success and redirect ──
             flash(
-                f"Thank you {first_name}! Your message has been sent. We'll reply within 24 hours. 🌿",
+                f"Thank you {first_name}! Your message has been sent. We'll reply within 24 hours.",
                 "success",
             )
             return redirect(url_for("auth.contact"))
 
-        # GET — just render the page
         return render_template("contact.html")
-
-    # ── Herb Library ─────────────────────────────────────────
-    def herb_library(self):
-        return render_template("herb_library.html")
-
-    # ── Herb Details ─────────────────────────────────────────
-    def herb_details(self):
-        return render_template("herb_details.html")
-
-def admin_messages(self):
-    """Admin-only view for all contact messages."""
-    if not self.is_logged_in() or session.get("role") != "admin":
-        flash("Unauthorized access.", "danger")
-        return redirect(url_for("auth.login"))
-
-    db = Database()
-    messages = db.fetch_all(
-        "SELECT * FROM contact_messages ORDER BY created_at DESC"
-    )
-    db.close()
-    return render_template("admin_messages.html", messages=messages)
