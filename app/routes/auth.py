@@ -3,17 +3,26 @@ from app.controllers.auth import AuthController
 from app.controllers.shop_controller import ShopController
 from app.auth import merchant_required
 
+try:
+    from app.controllers.cart_controller import CartController
+    cart_import_ok = True
+except Exception as e:
+    CartController = None
+    cart_import_ok = False
+    print("CART IMPORT ERROR:", e)
+
 
 class AuthRoutes:
     def __init__(self) -> None:
         self.bp = Blueprint("auth", __name__)
         self.controller = AuthController()
         self.shop_controller = ShopController()
+        self.cart_controller = CartController() if cart_import_ok else None
 
     def register(self) -> Blueprint:
         """Register all routes onto the Blueprint and return it."""
 
-        # ── Public pages ──────────────────────────────────────
+        # Public pages
         self.bp.add_url_rule(
             "/",
             endpoint="home",
@@ -51,7 +60,7 @@ class AuthRoutes:
             methods=["GET"],
         )
 
-        # ── Merchant-protected pages ──────────────────────────
+        # Merchant pages
         self.bp.add_url_rule(
             "/merchant_dashboard",
             endpoint="merchant_dashboard",
@@ -65,7 +74,7 @@ class AuthRoutes:
             methods=["POST"],
         )
 
-        # ── Shop pages ────────────────────────────────────────
+        # Shop pages
         self.bp.add_url_rule(
             "/shop",
             endpoint="shop",
@@ -84,5 +93,32 @@ class AuthRoutes:
             view_func=self.shop_controller.herb_details,
             methods=["GET"],
         )
+
+        # Cart pages
+        if self.cart_controller:
+            self.bp.add_url_rule(
+                "/cart",
+                endpoint="view_cart",
+                view_func=self.cart_controller.view_cart,
+                methods=["GET"],
+            )
+            self.bp.add_url_rule(
+                "/cart/add/<int:herb_id>",
+                endpoint="add_to_cart",
+                view_func=self.cart_controller.add_to_cart,
+                methods=["POST"],
+            )
+            self.bp.add_url_rule(
+                "/cart/update/<int:item_id>",
+                endpoint="update_cart",
+                view_func=self.cart_controller.update_cart,
+                methods=["POST"],
+            )
+            self.bp.add_url_rule(
+                "/cart/remove/<int:item_id>",
+                endpoint="remove_from_cart",
+                view_func=self.cart_controller.remove_from_cart,
+                methods=["POST"],
+            )
 
         return self.bp
