@@ -1,17 +1,27 @@
-from flask import Flask
-from app.routes.auth import AuthRoutes
+from flask import Flask, app
+from app.routes.auth_routes import AuthRoutes
+from app.routes.shop_routes import ShopRoutes
 from app.models.database import Database
 from config import SECRET_KEY
 
 
 def create_app():
     app = Flask(__name__)
-    Database.create_tables()
-    # Set secret key from config
     app.config['SECRET_KEY'] = SECRET_KEY
 
-    # Import and register the blueprints
-    auth_routes = AuthRoutes()
-    app.register_blueprint(auth_routes.register())
+    with app.app_context():
+        try:
+            Database.create_tables()
+            print("Database tables verified/created successfully.")
+        except Exception as e:
+            print(f"Database migration failed during startup: {e}")
+
+    # 1. Instantiate the routing blueprint classes
+    auth_router = AuthRoutes()
+    shop_router = ShopRoutes()
+
+    # 2. Register the returned blueprints natively into the app instance context
+    app.register_blueprint(auth_router.register())
+    app.register_blueprint(shop_router.register())
 
     return app

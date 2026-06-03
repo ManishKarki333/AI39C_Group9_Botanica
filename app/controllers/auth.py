@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, session, flash, request
+from flask import app, render_template, redirect, url_for, session, flash, request
 from app.controllers.base_controller import BaseController
 from app.models.database import Database
 from app.models.user_model import User
@@ -128,3 +128,5 @@ class AuthController(BaseController):
     
     def cart(self):
         return render_template("cart.html") 
+
+    

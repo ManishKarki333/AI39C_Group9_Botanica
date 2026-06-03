@@ -33,7 +33,6 @@ class ShopController(BaseController):
         Asynchronous API Endpoint supporting live search updates.
         Maps to Sprint 1 Acceptance Criteria for live search filtering.
         """
-        # Read parameters from frontend async Fetch requests
         query_param = request.args.get('q', '').strip()
         benefit_param = request.args.get('benefit', '').strip()
         
@@ -42,13 +41,11 @@ class ShopController(BaseController):
             sql = "SELECT id, common_name, scientific_name, description, benefit_category, price, image_url FROM herbs WHERE 1=1"
             query_args = []
             
-            # Check text inputs case-insensitively
             if query_param:
                 sql += " AND (common_name LIKE %s OR scientific_name LIKE %s)"
                 search_term = f"%{query_param}%"
                 query_args.extend([search_term, search_term])
                 
-            # Filter matches benefit_category mapping
             if benefit_param:
                 sql += " AND benefit_category LIKE %s"
                 benefit_term = f"%{benefit_param}%"
@@ -82,7 +79,7 @@ class ShopController(BaseController):
         db.close()
         if not herb:
             flash("Herb record not found.", "danger")
-            return redirect(url_for("auth.shop")) # Matches your blueprint routing namespace perfectly
+            return redirect(url_for("auth.shop")) 
         return render_template("herb_details.html", herb=herb)
 
     def add_product(self):
@@ -130,3 +127,118 @@ class ShopController(BaseController):
                 flash("Error saving product. Please check your inputs.", "danger")
                 
             return redirect(url_for("auth.merchant_dashboard"))
+
+    # ────────────────────────────────────────────────────────────────
+    # 🛒 NEW SPRINT 3: SHOPPING CART TRANSACTION MODULES
+    # ────────────────────────────────────────────────────────────────
+
+    def view_cart(self):
+        """Renders the transactional checkout cart template page."""
+        # Pull current session array or initialize an empty structural list fallback
+        cart_items = session.get('cart', [])
+        return render_template('cart.html', items=cart_items)
+
+    def add_to_cart(self):
+        """Asynchronously appends an organic item to the session array."""
+        if request.method != "POST":
+            return jsonify({"status": "error", "message": "POST method expected"}), 405
+            
+        # Extract product configuration from incoming JSON raw headers
+        data = request.get_json() or {}
+        herb_id = data.get('herb_id')
+        
+        if not herb_id:
+            return jsonify({"status": "error", "message": "Missing product identifier"}), 400
+            
+        db = Database()
+        herb = db.fetch_one("SELECT id, common_name, scientific_name, price, image_url FROM herbs WHERE id = %s", (herb_id,))
+        db.close()
+        
+        if not herb:
+            return jsonify({"status": "error", "message": "Product record untraceable"}), 442
+
+        # Initialize tracking state configuration if missing
+        if 'cart' not in session:
+            session['cart'] = []
+            
+        cart = session['cart']
+        
+        # Check if product item already occupies a slot inside the current basket tracking structure
+        existing_item = next((item for item in cart if item['id'] == int(herb_id)), None)
+        
+        if existing_item:
+            existing_item['quantity'] += 1
+        else:
+            cart.append({
+                'id': herb['id'],
+                'common_name': herb['common_name'],
+                'scientific_name': herb['scientific_name'],
+                'price': float(herb['price']),
+                'quantity': 1,
+                'image_url': herb['image_url'].split('/')[-1]  # Extract trailing image file token cleanly
+            })
+            
+        session['cart'] = cart  # Re-assign explicitly to flag mutable change tracking triggers inside Flask
+        session.modified = True
+        
+        return jsonify({
+            "status": "success",
+            "message": f"Added {herb['common_name']} to your basket.",
+            "cart_count": sum(item['quantity'] for item in session['cart'])
+        }), 200
+
+    def update_cart_quantity(self):
+        """Adjusts values for + / - increment updates seamlessly."""
+        data = request.get_json() or {}
+        herb_id = data.get('herb_id')
+        action = data.get('action') # Expecting strings: 'increment' or 'decrement'
+        
+        if not herb_id or 'cart' not in session:
+            return jsonify({"status": "error", "message": "Session target missing"}), 400
+            
+        cart = session['cart']
+        item = next((i for i in cart if i['id'] == int(herb_id)), None)
+        
+        if item:
+            if action == 'increment':
+                item['quantity'] += 1
+            elif action == 'decrement':
+                item['quantity'] -= 1
+                # If quantity reaches zero, pull item cleanly
+                if item['quantity'] <= 0:
+                    cart = [i for i in cart if i['id'] != int(herb_id)]
+            
+            session['cart'] = cart
+            session.modified = True
+            
+            # Compute total layout structures real-time
+            subtotal = sum(i['price'] * i['quantity'] for i in cart)
+            return jsonify({
+                "status": "success", 
+                "cart_count": sum(i['quantity'] for i in cart),
+                "subtotal": subtotal
+            }), 200
+            
+        return jsonify({"status": "error", "message": "Item missing from basket context"}), 442
+
+    def remove_from_cart(self):
+        """Completely purges target item index cleanly from session."""
+        data = request.get_json() or {}
+        herb_id = data.get('herb_id')
+        
+        if not herb_id or 'cart' not in session:
+            return jsonify({"status": "error", "message": "Target context missing"}), 400
+            
+        cart = session['cart']
+        # Filter matching identifier target completely
+        updated_cart = [item for item in cart if item['id'] != int(herb_id)]
+        
+        session['cart'] = updated_cart
+        session.modified = True
+        
+        subtotal = sum(i['price'] * i['quantity'] for i in updated_cart)
+        return jsonify({
+            "status": "success",
+            "cart_count": sum(i['quantity'] for i in updated_cart),
+            "subtotal": subtotal
+        }), 200
