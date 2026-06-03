@@ -43,4 +43,7 @@ class AuthRoutes:
         self.bp.route("/add_product", methods=["POST"])(
             merchant_required(self.shop_controller.add_product)
         )
+        self.bp.route("/cart", methods=["GET", "POST"])(
+            self.controller.cart
+        )
         return self.bp

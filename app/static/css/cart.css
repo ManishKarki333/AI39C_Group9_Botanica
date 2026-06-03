@@ -1,0 +1,248 @@
+/* Page Container & Layout Setup */
+.cart-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2c3e50;
+}
+
+.cart-title {
+    font-size: 24pt;
+    color: #1b4d3e; /* Botanical Forest Green */
+    margin-bottom: 30px;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.cart-layout {
+    display: block; /* WeasyPrint & standard fallback layout optimization */
+}
+
+/* Two-column structural support for standard web viewports */
+@media (min-width: 768px) {
+    .cart-layout {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+        border-spacing: 20px 0;
+    }
+    
+    .cart-items-section {
+        display: table-cell;
+        width: 65%;
+        vertical-align: top;
+    }
+    
+    .cart-summary-sidebar {
+        display: table-cell;
+        width: 35%;
+        vertical-align: top;
+    }
+}
+
+/* 🛒 Left Column: Cart Item Cards */
+.cart-items-section {
+    margin-bottom: 25px;
+}
+
+.cart-item-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Fallback flex alignment simulated via clean display blocks */
+@media (min-width: 480px) {
+    .cart-item-card {
+        display: table;
+        width: 100%;
+    }
+    .item-img, .item-details, .item-quantity-controls, .item-pricing, .item-remove-btn {
+        display: table-cell;
+        vertical-align: middle;
+    }
+}
+
+.item-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #f7fafc;
+}
+
+.item-details {
+    padding-left: 15px;
+}
+
+.item-details h3 {
+    margin: 0 0 4px 0;
+    font-size: 13pt;
+    color: #2d3748;
+}
+
+.scientific-name {
+    margin: 0;
+    font-size: 10pt;
+    font-style: italic;
+    color: #718096;
+}
+
+/* Interactive Quantity Controls */
+.item-quantity-controls {
+    text-align: center;
+    white-space: nowrap;
+    padding: 0 15px;
+}
+
+.qty-btn {
+    background-color: #edf2f7;
+    border: none;
+    color: #4a5568;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11pt;
+    transition: background-color 0.2s;
+}
+
+.qty-btn:hover {
+    background-color: #e2e8f0;
+    color: #1b4d3e;
+}
+
+.qty-display {
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 11pt;
+}
+
+/* Pricing Data Block */
+.item-pricing {
+    text-align: right;
+    padding-right: 20px;
+    font-weight: 600;
+    font-size: 12pt;
+    color: #2d3748;
+}
+
+/* Delete Operations Button */
+.item-remove-btn {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 14pt;
+    transition: color 0.2s;
+    width: 35px;
+    text-align: center;
+}
+
+.item-remove-btn:hover {
+    color: #e53e3e; /* Warning Alert Red */
+}
+
+/* 🚚 Right Column: Order Summary & Logistics Block */
+.summary-card {
+    background-color: #fafbf9; /* Soft organic off-white tint */
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+}
+
+.summary-card h2 {
+    margin: 0 0 15px 0;
+    font-size: 15pt;
+    color: #1b4d3e;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 15px 0;
+}
+
+/* Logistics Dropdown (US 5.4 Integration) */
+.delivery-management-block {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    display: block;
+    font-size: 10pt;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 6px;
+}
+
+.summary-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    font-size: 10pt;
+    color: #4a5568;
+    outline: none;
+}
+
+.summary-select:focus {
+    border-color: #1b4d3e;
+    box-shadow: 0 0 0 2px rgba(27, 77, 62, 0.1);
+}
+
+/* Financial Readout Columns */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 11pt;
+    color: #4a5568;
+}
+
+.total-row {
+    font-size: 13pt;
+    color: #1b4d3e;
+    margin-top: 5px;
+}
+
+.total-label {
+    font-weight: 700;
+}
+
+.total-price {
+    font-weight: 700;
+}
+
+/* Action Button */
+.btn-checkout {
+    display: block;
+    width: 100%;
+    background-color: #1b4d3e;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 12pt;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s;
+    margin-top: 15px;
+}
+
+.btn-checkout:hover {
+    background-color: #143a2f;
+}

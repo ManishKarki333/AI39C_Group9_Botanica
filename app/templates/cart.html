@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Botanica - Shopping Cart{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="cart-container">
+    <h1 class="cart-title">Your Herbal Basket</h1>
+
+    <div class="cart-layout">
+        <section class="cart-items-section">
+            <div class="cart-item-card" data-herb-id="1">
+                <img src="{{ url_for('static', filename='img/default_herb.png') }}" alt="Herb Image" class="item-img">
+                <div class="item-details">
+                    <h3>Peppermint</h3>
+                    <p class="scientific-name">Mentha piperita</p>
+                </div>
+                <div class="item-quantity-controls">
+                    <button class="qty-btn dec-btn"><i class="ri-subtract-line"></i></button>
+                    <span class="qty-display">1</span>
+                    <button class="qty-btn inc-btn"><i class="ri-add-line"></i></button>
+                </div>
+                <div class="item-pricing">
+                    <span class="item-price">$12.50</span>
+                </div>
+                <button class="item-remove-btn"><i class="ri-delete-bin-line"></i></button>
+            </div>
+        </section>
+
+        <aside class="cart-summary-sidebar">
+            <div class="summary-card">
+                <h2>Order Summary</h2>
+                <hr>
+                <div class="delivery-management-block">
+                    <label for="delivery-window" class="field-label">Preferred Delivery Window</label>
+                    <select id="delivery-window" class="summary-select" required>
+                        <option value="" disabled selected>Select a delivery window...</option>
+                        <option value="morning">Morning (8:00 AM - 12:00 PM)</option>
+                        <option value="afternoon">Afternoon (12:00 PM - 4:00 PM)</option>
+                        <option value="evening">Evening (4:00 PM - 8:00 PM)</option>
+                    </select>
+                </div>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal">$12.50</span>
+                </div>
+                <hr>
+                <div class="summary-row total-row">
+                    <strong>Total Amount</strong>
+                    <strong id="cart-total">$12.50</strong>
+                </div>
+                <button id="checkout-btn" class="btn-checkout">Proceed to Checkout</button>
+            </div>
+        </aside>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+{% endblock %}

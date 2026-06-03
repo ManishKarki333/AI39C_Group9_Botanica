@@ -6,7 +6,7 @@ from config import SECRET_KEY
 
 def create_app():
     app = Flask(__name__)
-    
+    Database.create_tables()
     # Set secret key from config
     app.config['SECRET_KEY'] = SECRET_KEY
 
