@@ -1,6 +1,3 @@
-/* ==========================================================================
-   Botanica Shop System Layout Variable Architecture
-   ========================================================================== */
 :root {
     --forest-primary: #1e3f20;
     --earth-accent: #2c5e3b;
@@ -13,6 +10,13 @@
     --radius-premium: 16px;
     --radius-inner: 12px;
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* CRITICAL RESET: Universal box-sizing fix 
+   Prevents dynamic text paddings from exploding your layouts 
+*/
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 /* Base Shop Wrapper Structure */
@@ -49,40 +53,64 @@
     font-size: 1.1rem;
     max-width: 600px;
     line-height: 1.5;
+    margin: 0;
 }
 
+
+.search-container *, .search-container *::before, .search-container *::after {
+    box-sizing: border-box;
+}
+
+/* Master container defining the maximum allocation */
+.search-container {
+    width: 100%;
+    max-width: 500px; 
+    margin: 0 auto;
+}
+
+/* The structural fix wrapper */
 .search-wrapper {
+    display: flex;
+    align-items: center;
     position: relative;
-    max-width: 680px;
+    background-color: #f5f7f5; /* Muted background matching Botanica tones */
+    border: 1px solid #dcdfdc;
+    border-radius: 30px; /* Smooth rounded pill profile */
+    padding: 6px 16px;
     width: 100%;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Focus highlighting ring */
+.search-wrapper:focus-within {
+    border-color: #2e5a36; /* Earthy green theme tint */
+    box-shadow: 0 0 0 3px rgba(46, 90, 54, 0.15);
+}
+
+/* Minimalist vector layout icon alignment */
 .search-icon {
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    font-size: 1.3rem;
-    pointer-events: none;
+    font-size: 1.1rem;
+    color: #768276;
+    margin-right: 10px;
+    flex-shrink: 0; /* Forces icon to keep its shape */
 }
 
+/* The Core Input Field */
 #global-search {
-    width: 100%;
-    padding: 18px 24px 18px 56px;
     border: none;
-    border-radius: var(--radius-inner);
-    background-color: #ffffff;
-    font-size: 1rem;
-    color: var(--text-dark);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: all 0.25s var(--transition-smooth);
+    background: transparent;
+    outline: none;
+    font-size: 0.95rem;
+    color: #1c241c;
+    width: 100%;
+    padding: 6px 0;
+    margin-right: 12px;
 }
 
-#global-search:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 4px 20px rgba(0, 0, 0, 0.15);
+#global-search::placeholder {
+    color: #a0aaa0;
 }
+
 
 /* Main Two-Column Screen Layout */
 .shop-layout {
@@ -117,6 +145,7 @@
 .sidebar-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -131,11 +160,16 @@
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 4px;
-    transition: background 0.2s;
+    transition: background 0.2s, opacity 0.2s;
 }
 
 .clear-btn:hover {
     background-color: var(--sage-light);
+}
+
+/* Smooth transition when fading the clear button out via JavaScript */
+.clear-btn.hidden {
+    display: none !important;
 }
 
 .benefit-list {
@@ -292,11 +326,16 @@
     line-height: 1.3;
 }
 
+/* Satisfies User Story 2 (Scientific Naming Search):
+   Guarantees botanical names automatically render styled in italics.
+*/
+.scientific-name em, 
 .scientific-name {
     font-size: 0.9rem;
     color: var(--earth-accent);
     margin: 0;
     font-weight: 500;
+    font-style: italic;
 }
 
 .herb-excerpt {
@@ -359,7 +398,9 @@
     transform: scale(1.05);
 }
 
-/* Empty Grid Interface State Template */
+/* Satisfies User Story 1 & 2 (No Results Found Interface State):
+   Styled container to handle blank asynchronous search response matrices cleanly.
+*/
 .empty-state-card {
     grid-column: 1 / -1;
     text-align: center;
@@ -388,7 +429,7 @@
     line-height: 1.5;
 }
 
-/* Utility Class State Handler */
+/* Global Hidden Helper State Utility */
 .hidden {
     display: none !important;
 }

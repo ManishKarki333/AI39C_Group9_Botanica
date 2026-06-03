@@ -13,9 +13,11 @@
             <h1>Discover Natural Remedies</h1>
             <p>Explore our premium index of sustainably sourced herbs, botanicals, and therapeutic organic roots.</p>
         </div>
-        <div class="search-wrapper">
-            <i class="ri-search-line search-icon"></i>
-            <input type="text" id="global-search" placeholder="Search by common name or scientific name (e.g., Mint, Zingiber)..." autocomplete="off">
+        <div class="search-container">
+            <div class="search-wrapper">
+                <i class="ri-search-line search-icon"></i>
+                <input type="text" id="global-search" placeholder="Search by common or scientific name..." autocomplete="off">
+            </div>
         </div>
     </header>
 
@@ -29,31 +31,31 @@
                 
                 <ul class="benefit-list">
                     <li>
-                        <button class="benefit-card-toggle" data-category="Sleep">
+                        <button class="benefit-card-toggle filter-btn" data-benefit="Sleep">
                             <span class="category-icon"><i class="ri-moon-clear-line"></i></span>
                             <span class="category-label">Sleep & Relaxation</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle" data-category="Digestion">
+                        <button class="benefit-card-toggle filter-btn" data-benefit="Digestion">
                             <span class="category-icon"><i class="ri-restaurant-line"></i></span>
                             <span class="category-label">Digestive Health</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle" data-category="Immunity">
+                        <button class="benefit-card-toggle filter-btn" data-benefit="Immunity">
                             <span class="category-icon"><i class="ri-shield-flash-line"></i></span>
                             <span class="category-label">Immune Support</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle" data-category="Energy">
+                        <button class="benefit-card-toggle filter-btn" data-benefit="Energy">
                             <span class="category-icon"><i class="ri-thunderstorms-line"></i></span>
                             <span class="category-label">Energy & Focus</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle" data-category="Respiratory">
+                        <button class="benefit-card-toggle filter-btn" data-benefit="Respiratory">
                             <span class="category-icon"><i class="ri-windy-line"></i></span>
                             <span class="category-label">Respiratory Health</span>
                         </button>
@@ -65,20 +67,24 @@
         <section class="products-view">
             <div class="results-meta-bar">
                 <div class="counter-badge">
-                    Showing <span id="results-count">{{ herbs|length }}</span> verified botanical items
+                    Showing <span id="results-counter-badge">{{ herbs|length }} items found</span>
                 </div>
             </div>
 
-            <div class="products-grid" id="products-catalogue-grid">
+            <div class="products-grid" id="product-results-grid">
                 {% if herbs %}
                     {% for herb in herbs %}
-                    <article class="product-card" data-benefits="{{ herb.benefit_category }}">
+                    <article class="product-card {% if herb.on_vacation %}on-vacation{% endif %}" data-benefits="{{ herb.benefit_category }}">
                         <div class="card-image-wrapper">
+                            {% if herb.on_vacation %}
+                                <span class="vacation-banner">On Vacation</span>
+                            {% endif %}
+
                             {% if herb.image_url %}
-                                <img src="{{ url_for('static', filename='uploads/' + herb.image_url) }}" alt="{{ herb.common_name }}" class="product-image">
+                                <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
                             {% else %}
                                 <div class="fallback-placeholder">
-                                    <i class="ri-image-line"></i>
+                                    <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
                                 </div>
                             {% endif %}
                             <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
@@ -95,24 +101,28 @@
                                     <span class="price-value">{{ herb.price }}</span>
                                     <span class="unit">/{{ herb.unit_weight or '100g' }}</span>
                                 </div>
-                                <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart">
+                                <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart" {% if herb.on_vacation %}disabled{% endif %}>
                                     <i class="ri-shopping-bag-4-line"></i>
                                 </button>
                             </div>
                         </div>
                     </article>
                     {% endfor %}
-                {% else %}
-                    <div class="empty-state-card" id="grid-empty-state">
-                        <div class="empty-icon-wrapper">
-                            <i class="ri-search-eye-line"></i>
-                        </div>
-                        <h4>No Botanicals Found</h4>
-                        <p>We couldn't find any items matching your exact query. Try refining your spelling or expanding your health criteria filters.</p>
-                    </div>
                 {% endif %}
+                
+                <div class="empty-state-card {% if herbs %}hidden{% endif %}" id="empty-state-container">
+                    <div class="empty-icon-wrapper">
+                        <i class="ri-search-eye-line"></i>
+                    </div>
+                    <h4>No Botanicals Found</h4>
+                    <p>We couldn't find any items matching your exact query. Try refining your spelling or expanding your health criteria filters.</p>
+                </div>
             </div>
         </section>
     </div>
 </main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
 {% endblock %}
