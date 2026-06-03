@@ -1,0 +1,390 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f0f2f0;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+/* ── Navbar ── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  color: #4b5563;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+  color: #2d6a4f;
+}
+
+.navbar-links a.active {
+  border-bottom: 2px solid #2d6a4f;
+  padding-bottom: 2px;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navbar-actions a {
+  text-decoration: none;
+  color: #4b5563;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.navbar-actions .btn-register {
+  background-color: #2d6a4f;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.navbar-actions .btn-register:hover {
+  background-color: #1e4d38;
+}
+
+.cart-icon {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #e53e3e;
+  color: white;
+  font-size: 0.65rem;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* ── Page Hero ── */
+.contact-hero {
+  background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+  color: white;
+  text-align: center;
+  padding: 64px 24px 48px;
+}
+
+.contact-hero h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.contact-hero p {
+  font-size: 1rem;
+  opacity: 0.88;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Main Layout ── */
+.contact-wrapper {
+  max-width: 1100px;
+  margin: 48px auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 32px;
+}
+
+/* ── Info Cards ── */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: box-shadow 0.2s;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 16px rgba(45,106,79,0.12);
+}
+
+.info-icon {
+  width: 44px;
+  height: 44px;
+  background: #e8f5ee;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-icon i {
+  color: #2d6a4f;
+  font-size: 1.1rem;
+}
+
+.info-text h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.info-text p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.info-text a {
+  color: #2d6a4f;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Business Hours Card */
+.hours-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.hours-card h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hours-card h4 i {
+  color: #2d6a4f;
+}
+
+.hours-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  color: #6b7280;
+  padding: 6px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.hours-row:last-child { border-bottom: none; }
+.hours-row span:last-child { color: #2d6a4f; font-weight: 500; }
+
+/* ── Contact Form Card ── */
+.contact-form-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.contact-form-card h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.contact-form-card p {
+  font-size: 0.88rem;
+  color: #6b7280;
+  margin-bottom: 28px;
+}
+
+/* Flash Messages */
+.flash-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+}
+
+.flash-success {
+  background: #e8f5ee;
+  color: #2d6a4f;
+  border: 1px solid #b7dfc9;
+}
+
+.flash-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Form Fields */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.input-wrapper.textarea-wrap i {
+  top: 16px;
+  transform: none;
+}
+
+.form-control {
+  width: 100%;
+  padding: 11px 14px 11px 40px;
+  background: #f3f6f4;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+  background: #ffffff;
+}
+
+select.form-control {
+  appearance: none;
+  cursor: pointer;
+}
+
+textarea.form-control {
+  padding-top: 12px;
+  resize: vertical;
+  min-height: 130px;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 13px;
+  background-color: #2d6a4f;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, transform 0.1s;
+  font-family: 'Inter', sans-serif;
+  margin-top: 8px;
+}
+
+.btn-submit:hover { background-color: #1e4d38; }
+.btn-submit:active { transform: scale(0.99); }
+
+/* ── Footer ── */
+footer {
+  background: #1a1a1a;
+  color: #9ca3af;
+  text-align: center;
+  padding: 24px;
+  font-size: 0.84rem;
+  margin-top: 64px;
+}
+
+footer span { color: #2d6a4f; font-weight: 600; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .contact-wrapper { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .navbar { padding: 16px 24px; }
+  .navbar-links { display: none; }
+  .contact-form-card { padding: 24px; }
+}

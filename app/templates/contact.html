@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Contact Us – Botanica{% endblock %}
+{% block title %}Contact Us - Botanica{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
+{% endblock %}
 
 {% block content %}
   <section class="contact-hero">
-    <h1>Get in Touch 🌿</h1>
+    <h1>Get in Touch</h1>
     <p>Have a question about herbs, orders, or anything else? We'd love to hear from you.</p>
   </section>
 
@@ -16,7 +20,7 @@
         <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
         <div class="info-text">
           <h4>Our Location</h4>
-          <p>123 Green Valley Road<br>Kuala Lumpur, Malaysia 50000</p>
+          <p>Koteswor<br>Kathmandu, Nepal</p>
         </div>
       </div>
 
@@ -34,14 +38,14 @@
         <div class="info-text">
           <h4>Call Us</h4>
           <p><a href="tel:+60312345678">+603 1234 5678</a></p>
-          <p style="margin-top:4px; font-size:0.8rem;">Mon – Fri, 9am to 6pm</p>
+          <p style="margin-top:4px; font-size:0.8rem;">Mon - Fri, 9am to 6pm</p>
         </div>
       </div>
 
       <div class="hours-card">
         <h4><i class="fas fa-clock"></i> Business Hours</h4>
-        <div class="hours-row"><span>Monday – Friday</span><span>9:00 AM – 6:00 PM</span></div>
-        <div class="hours-row"><span>Saturday</span><span>10:00 AM – 4:00 PM</span></div>
+        <div class="hours-row"><span>Monday - Friday</span><span>9:00 AM - 6:00 PM</span></div>
+        <div class="hours-row"><span>Saturday</span><span>10:00 AM - 4:00 PM</span></div>
         <div class="hours-row"><span>Sunday</span><span>Closed</span></div>
       </div>
 
