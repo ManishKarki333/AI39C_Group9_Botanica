@@ -126,7 +126,5 @@ class AuthController(BaseController):
     def contact(self):
         return render_template("contact.html")
     
-    def cart(self):
-        return render_template("cart.html") 
 
-    
+

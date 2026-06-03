@@ -1,4 +1,6 @@
-/* Page Container & Layout Setup */
+/* ==========================================================================
+   Page Container & Layout Setup
+   ========================================================================== */
 .cart-container {
     max-width: 1200px;
     margin: 40px auto;
@@ -16,35 +18,28 @@
     padding-bottom: 10px;
 }
 
+/* Modern Responsive Grid Core */
 .cart-layout {
-    display: block; /* WeasyPrint & standard fallback layout optimization */
+    display: grid;
+    grid-template-columns: 1;
+    gap: 30px;
 }
 
-/* Two-column structural support for standard web viewports */
-@media (min-width: 768px) {
+/* Two-column layout grid configuration for standard viewports */
+@media (min-width: 992px) {
     .cart-layout {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
-        border-spacing: 20px 0;
-    }
-    
-    .cart-items-section {
-        display: table-cell;
-        width: 65%;
-        vertical-align: top;
-    }
-    
-    .cart-summary-sidebar {
-        display: table-cell;
-        width: 35%;
-        vertical-align: top;
+        grid-template-columns: 65% 35%;
+        align-items: start;
     }
 }
 
-/* 🛒 Left Column: Cart Item Cards */
+/* ==========================================================================
+   Left Column: Cart Item Cards
+   ========================================================================== */
 .cart-items-section {
-    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .cart-item-card {
@@ -52,35 +47,49 @@
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 16px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    display: block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    text-align: center;
     position: relative;
-    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Fallback flex alignment simulated via clean display blocks */
-@media (min-width: 480px) {
+.cart-item-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Horizontal alignment mapping layout for tablet profiles up to desktop views */
+@media (min-width: 576px) {
     .cart-item-card {
-        display: table;
-        width: 100%;
+        flex-direction: row;
+        text-align: left;
+        justify-content: space-between;
     }
-    .item-img, .item-details, .item-quantity-controls, .item-pricing, .item-remove-btn {
-        display: table-cell;
-        vertical-align: middle;
+    
+    .item-details {
+        flex-grow: 2;
+        padding-left: 20px;
+    }
+    
+    .item-quantity-controls {
+        padding: 0 20px;
+    }
+    
+    .item-pricing {
+        min-width: 100px;
     }
 }
 
 .item-img {
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
     border-radius: 6px;
     background-color: #f7fafc;
-}
-
-.item-details {
-    padding-left: 15px;
+    border: 1px solid #edf2f7;
 }
 
 .item-details h3 {
@@ -98,9 +107,10 @@
 
 /* Interactive Quantity Controls */
 .item-quantity-controls {
-    text-align: center;
-    white-space: nowrap;
-    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 .qty-btn {
@@ -112,7 +122,10 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 11pt;
-    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .qty-btn:hover {
@@ -122,7 +135,7 @@
 
 .qty-display {
     display: inline-block;
-    width: 30px;
+    width: 35px;
     text-align: center;
     font-weight: 600;
     font-size: 11pt;
@@ -130,8 +143,6 @@
 
 /* Pricing Data Block */
 .item-pricing {
-    text-align: right;
-    padding-right: 20px;
     font-weight: 600;
     font-size: 12pt;
     color: #2d3748;
@@ -146,20 +157,27 @@
     font-size: 14pt;
     transition: color 0.2s;
     width: 35px;
-    text-align: center;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .item-remove-btn:hover {
     color: #e53e3e; /* Warning Alert Red */
+    background-color: #fff5f5;
 }
 
-/* 🚚 Right Column: Order Summary & Logistics Block */
+/* ==========================================================================
+   Right Column: Order Summary & Logistics Block
+   ========================================================================== */
 .summary-card {
     background-color: #fafbf9; /* Soft organic off-white tint */
     border: 1px solid #cbd5e0;
     border-radius: 8px;
     padding: 24px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
 }
 
 .summary-card h2 {
@@ -174,7 +192,7 @@ hr {
     margin: 15px 0;
 }
 
-/* Logistics Dropdown (US 5.4 Integration) */
+/* Logistics Dropdown Integration */
 .delivery-management-block {
     margin-bottom: 20px;
 }
@@ -189,25 +207,27 @@ hr {
 
 .summary-select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #cbd5e0;
     border-radius: 6px;
     background-color: #ffffff;
     font-size: 10pt;
     color: #4a5568;
     outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .summary-select:focus {
     border-color: #1b4d3e;
-    box-shadow: 0 0 0 2px rgba(27, 77, 62, 0.1);
+    box-shadow: 0 0 0 3px rgba(27, 77, 62, 0.15);
 }
 
 /* Financial Readout Columns */
 .summary-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
+    align-items: center;
+    margin-bottom: 14px;
     font-size: 11pt;
     color: #4a5568;
 }
@@ -218,11 +238,7 @@ hr {
     margin-top: 5px;
 }
 
-.total-label {
-    font-weight: 700;
-}
-
-.total-price {
+.total-row strong {
     font-weight: 700;
 }
 
@@ -239,10 +255,21 @@ hr {
     font-weight: 600;
     cursor: pointer;
     text-align: center;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.1s;
     margin-top: 15px;
 }
 
 .btn-checkout:hover {
     background-color: #143a2f;
+}
+
+.btn-checkout:active {
+    transform: scale(0.99);
+}
+
+.btn-checkout:disabled {
+    background-color: #cbd5e0;
+    color: #718096;
+    cursor: not-allowed;
+    transform: none;
 }

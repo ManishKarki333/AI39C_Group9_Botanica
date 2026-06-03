@@ -1,6 +1,5 @@
 from flask import Blueprint
 from app.controllers.shop_controller import ShopController
-from app.controllers.auth import AuthController
 from app.auth import merchant_required 
 
 class ShopRoutes:
@@ -8,9 +7,9 @@ class ShopRoutes:
         # Instantiates a clean, independent sub-module for e-commerce logic
         self.bp = Blueprint("shop", __name__)
         self.shop_controller = ShopController()
-        self.auth_controller = AuthController() # Used for cart templates if needed
 
     def register(self):
+        # Core Marketplace Views
         self.bp.route("/shop", methods=["GET", "POST"])(
             self.shop_controller.shop
         )
@@ -21,14 +20,26 @@ class ShopRoutes:
             self.shop_controller.herb_details
         )
         
-        # Protected inventory management mutations
+        # 🏪 Protected Merchant Inventory Actions
         self.bp.route("/add_product", methods=["POST"])(
             merchant_required(self.shop_controller.add_product)
         )
         
-        # Handing over cart mapping clean to the e-commerce engine namespace
-        self.bp.route("/cart", methods=["GET", "POST"])(
-            self.auth_controller.cart
+        # Synchronous Cart View Page
+        # FIXED: Bound to shop_controller rather than auth_controller
+        self.bp.route("/cart", methods=["GET"])(
+            self.shop_controller.view_cart
+        )
+        
+        # ⚡ Asynchronous API Endpoints (Sprint 3 Cart Transactions)
+        self.bp.route("/api/cart/add", methods=["POST"])(
+            self.shop_controller.add_to_cart
+        )
+        self.bp.route("/api/cart/update", methods=["POST"])(
+            self.shop_controller.update_cart_quantity
+        )
+        self.bp.route("/api/cart/remove", methods=["POST"])(
+            self.shop_controller.remove_from_cart
         )
         
         return self.bp

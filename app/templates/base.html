@@ -10,7 +10,12 @@
     {% block css %}{% endblock %}
 
     <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
-
+    <script>
+        // Fires instantly before the browser renders body nodes to prevent flashing white frames
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.classList.add("dark-theme");
+        }
+    </script>
 </head>
 <body>
 

@@ -79,7 +79,8 @@ class ShopController(BaseController):
         db.close()
         if not herb:
             flash("Herb record not found.", "danger")
-            return redirect(url_for("auth.shop")) 
+            # FIXED: Correct blueprint target namespace from 'auth.shop' to 'shop.shop'
+            return redirect(url_for("shop.shop")) 
         return render_template("herb_details.html", herb=herb)
 
     def add_product(self):
@@ -129,12 +130,12 @@ class ShopController(BaseController):
             return redirect(url_for("auth.merchant_dashboard"))
 
     # ────────────────────────────────────────────────────────────────
-    # 🛒 NEW SPRINT 3: SHOPPING CART TRANSACTION MODULES
+    #  SHOPPING CART TRANSACTION MODULES (CLEANED)
     # ────────────────────────────────────────────────────────────────
 
     def view_cart(self):
         """Renders the transactional checkout cart template page."""
-        # Pull current session array or initialize an empty structural list fallback
+        # Cleaned up overlapping placeholder method, keeping only this fully functioning data context mapping
         cart_items = session.get('cart', [])
         return render_template('cart.html', items=cart_items)
 
@@ -143,7 +144,6 @@ class ShopController(BaseController):
         if request.method != "POST":
             return jsonify({"status": "error", "message": "POST method expected"}), 405
             
-        # Extract product configuration from incoming JSON raw headers
         data = request.get_json() or {}
         herb_id = data.get('herb_id')
         
@@ -157,28 +157,26 @@ class ShopController(BaseController):
         if not herb:
             return jsonify({"status": "error", "message": "Product record untraceable"}), 442
 
-        # Initialize tracking state configuration if missing
         if 'cart' not in session:
             session['cart'] = []
             
         cart = session['cart']
-        
-        # Check if product item already occupies a slot inside the current basket tracking structure
         existing_item = next((item for item in cart if item['id'] == int(herb_id)), None)
         
         if existing_item:
             existing_item['quantity'] += 1
         else:
+            # FIXED: Avoided hardcoded image extraction logic fallback issues by collecting your image string safely
             cart.append({
                 'id': herb['id'],
                 'common_name': herb['common_name'],
                 'scientific_name': herb['scientific_name'],
                 'price': float(herb['price']),
                 'quantity': 1,
-                'image_url': herb['image_url'].split('/')[-1]  # Extract trailing image file token cleanly
+                'image_url': herb['image_url']
             })
             
-        session['cart'] = cart  # Re-assign explicitly to flag mutable change tracking triggers inside Flask
+        session['cart'] = cart
         session.modified = True
         
         return jsonify({
@@ -191,7 +189,7 @@ class ShopController(BaseController):
         """Adjusts values for + / - increment updates seamlessly."""
         data = request.get_json() or {}
         herb_id = data.get('herb_id')
-        action = data.get('action') # Expecting strings: 'increment' or 'decrement'
+        action = data.get('action') 
         
         if not herb_id or 'cart' not in session:
             return jsonify({"status": "error", "message": "Session target missing"}), 400
@@ -204,14 +202,12 @@ class ShopController(BaseController):
                 item['quantity'] += 1
             elif action == 'decrement':
                 item['quantity'] -= 1
-                # If quantity reaches zero, pull item cleanly
                 if item['quantity'] <= 0:
                     cart = [i for i in cart if i['id'] != int(herb_id)]
             
             session['cart'] = cart
             session.modified = True
             
-            # Compute total layout structures real-time
             subtotal = sum(i['price'] * i['quantity'] for i in cart)
             return jsonify({
                 "status": "success", 
@@ -230,7 +226,6 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Target context missing"}), 400
             
         cart = session['cart']
-        # Filter matching identifier target completely
         updated_cart = [item for item in cart if item['id'] != int(herb_id)]
         
         session['cart'] = updated_cart

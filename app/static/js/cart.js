@@ -8,101 +8,128 @@ document.addEventListener('DOMContentLoaded', function() {
     const deliveryWindowSelect = document.getElementById('delivery-window');
 
     /**
-     * Recalculates the complete financial matrix of the basket rows.
+     * Updates the financial readouts across the document layout using localized formats
      */
-    function recalculateCartTotals() {
-        let runningTotal = 0;
-        const itemCards = document.querySelectorAll('.cart-item-card');
-
-        itemCards.forEach(card => {
-            // Read internal baseline value metadata attributes
-            const quantity = parseInt(card.querySelector('.qty-display').textContent, 10);
-            const priceElement = card.querySelector('.item-price');
-            
-            // Extract raw float number from inner text string (e.g., "$12.50" -> 12.50)
-            const unitPrice = parseFloat(priceElement.textContent.replace(/[^\d.]/g, ''));
-            
-            runningTotal += (unitPrice * quantity);
-        });
-
-        // Format and render localized currency readouts
-        const formattedTotal = `$${runningTotal.toFixed(2)}`;
+    function updateUISummary(subtotalValue) {
+        // FIXED: Standardized to Nepalese Rs. formatting to match templates perfectly
+        const formattedTotal = `Rs. ${subtotalValue.toFixed(2)}`;
         if (subtotalDisplay) subtotalDisplay.textContent = formattedTotal;
         if (totalDisplay) totalDisplay.textContent = formattedTotal;
+    }
 
-        // Check if the basket is completely empty to prompt structural UI updates
+    /**
+     * Checks if the basket is completely empty to prompt structural UI updates
+     */
+    function checkEmptyCartState() {
+        const itemCards = document.querySelectorAll('.cart-item-card');
+        
         if (itemCards.length === 0 && cartItemsSection) {
+            // FIXED: Synchronized with cart.html template typography and classes
             cartItemsSection.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #718096;">
-                    <i class="ri-shopping-basket-line" style="font-size: 40pt; color: #cbd5e0; display:block; margin-bottom:10px;"></i>
-                    <p>Your herbal basket is completely empty.</p>
-                    <a href="/shop" style="color: #1b4d3e; font-weight: 600; text-decoration: underline;">Return to Shop</a>
+                <div class="empty-cart-fallback" style="text-align: center; padding: 3rem 1rem;">
+                    <i class="ri-shopping-basket-line" style="font-size: 4rem; color: #ccc;"></i>
+                    <h3>Your basket is empty</h3>
+                    <p>Explore our organic remedies directory to add botanicals here.</p>
+                    <a href="/shop" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Browse Storefront</a>
                 </div>
             `;
             if (checkoutBtn) checkoutBtn.disabled = true;
+            if (subtotalDisplay) subtotalDisplay.textContent = "Rs. 0.00";
+            if (totalDisplay) totalDisplay.textContent = "Rs. 0.00";
         }
     }
 
     /**
-     * Generic structural event listener capturing clicks within the items column container.
+     * Sends asynchronous quantity shifts directly to the Flask session engine
+     */
+    function modifyBackendCartQuantity(herbId, action, cardElement) {
+        fetch('/api/cart/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ herb_id: herbId, action: action })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateUISummary(data.subtotal);
+                checkEmptyCartState();
+            } else {
+                console.error("Session update synchronization failure:", data.message);
+            }
+        })
+        .catch(err => console.error("Network communication crash:", err));
+    }
+
+    /**
+     * Sends a direct deletion request to completely drop an item row from memory
+     */
+    function removeBackendCartItem(herbId, cardElement) {
+        fetch('/api/cart/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ herb_id: herbId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                cardElement.remove();
+                updateUISummary(data.subtotal);
+                checkEmptyCartState();
+            }
+        })
+        .catch(err => console.error("Network erasure tracking crash:", err));
+    }
+
+    /**
+     * Event listener capturing clicks within the items column container
      */
     if (cartItemsSection) {
         cartItemsSection.addEventListener('click', function(event) {
             const target = event.target;
-            
-            // Locate the enclosing card boundary mapping parameters
             const itemCard = target.closest('.cart-item-card');
             if (!itemCard) return;
 
+            const herbId = itemCard.dataset.herbId;
             const qtyDisplay = itemCard.querySelector('.qty-display');
+            let currentQty = parseInt(qtyDisplay.textContent, 10);
 
             // 1. Handle Increment Operations Click
             if (target.closest('.inc-btn')) {
-                let currentQty = parseInt(qtyDisplay.textContent, 10);
-                if (currentQty < 99) { // Prevent excessive bulk orders
+                if (currentQty < 99) {
                     qtyDisplay.textContent = currentQty + 1;
-                    recalculateCartTotals();
+                    modifyBackendCartQuantity(herbId, 'increment', itemCard);
                 }
             }
 
             // 2. Handle Decrement Operations Click
             else if (target.closest('.dec-btn')) {
-                let currentQty = parseInt(qtyDisplay.textContent, 10);
                 if (currentQty > 1) {
                     qtyDisplay.textContent = currentQty - 1;
-                    recalculateCartTotals();
+                    modifyBackendCartQuantity(herbId, 'decrement', itemCard);
                 } else {
-                    // Automatically execute removal drop if quantity hits 0
-                    itemCard.remove();
-                    recalculateCartTotals();
+                    // Automatically execute removal drop if quantity hits zero
+                    removeBackendCartItem(herbId, itemCard);
                 }
             }
 
             // 3. Handle Explicit Single Line Item Deletions
             else if (target.closest('.item-remove-btn')) {
-                itemCard.remove();
-                recalculateCartTotals();
+                removeBackendCartItem(herbId, itemCard);
             }
         });
     }
 
     /**
-     * Validates required data values before passing the data to the server.
+     * Validates delivery selections before final routing execution
      */
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', function(e) {
-            // Ensure delivery window criteria is satisfied (US 5.4 Validation)
             if (!deliveryWindowSelect.value) {
                 alert('Please select a preferred delivery window to complete your checkout.');
                 deliveryWindowSelect.focus();
                 return;
             }
-
-            // Standard payload readiness verification
             alert('Proceeding to backend order generation pipeline...');
         });
     }
-
-    // Run baseline execution routine on launch
-    recalculateCartTotals();
 });
