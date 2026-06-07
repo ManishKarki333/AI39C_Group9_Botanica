@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botanica</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+</head>
+<body>
+    <nav class="botanica-navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('auth.home') }}" class="nav-logo">
+                <span class="logo-text">Botanica</span>
+            </a>
+
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('auth.home') }}" class="nav-link">Home</a></li>
+                <li><a href="{{ url_for('shop.shop') }}" class="nav-link">Shop Herbs</a></li>
+                <li><a href="{{ url_for('auth.contact') }}" class="nav-link">Contact</a></li>
+                <li><a href="{{ url_for('shop.herb_library') }}" class="nav-link">Library</a></li>
+
+                {% if session.get('user_id') and session.get('role') == 'merchant' %}
+                    <li><a href="{{ url_for('auth.merchant_dashboard') }}" class="nav-link">Merchant Portal</a></li>
+                {% endif %}
+            </ul>
+
+            <div class="nav-utilities">
+                <a href="{{ url_for('shop.view_cart') }}" class="util-btn cart-anchor" aria-label="View Shopping Cart">
+                    <i class="ri-shopping-cart-line util-icon"></i>
+                    <span class="cart-badge">0</span>
+                </a>
+
+                {% if session.get('user_id') %}
+                    <a href="/account" class="util-btn" aria-label="User Account Settings">
+                        <i class="ri-user-line util-icon"></i>
+                    </a>
+                    
+                    <a href="{{ url_for('auth.logout') }}" class="auth-nav-btn logout-btn" aria-label="Log out of application">
+                        <i class="ri-logout-box-r-line btn-icon"></i> Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="auth-nav-link" aria-label="Log into existing profile">Sign In</a>
+                    <a href="{{ url_for('auth.register') }}" class="auth-nav-btn register-btn" aria-label="Create a new profile">Register</a>
+                {% endif %}
+
+                <button id="theme-toggle-btn" class="util-btn" aria-label="Toggle Interface Theme">
+                    <i class="ri-moon-line util-icon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

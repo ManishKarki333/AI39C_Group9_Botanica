@@ -3,15 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Botanica{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='/css/style.css')}}">
+    <title>{% block title %}Botanica Herbal Marketplace{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block css %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+    <script>
+        // Fires instantly before the browser renders body nodes to prevent flashing white frames
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.classList.add("dark-theme");
+        }
+    </script>
 </head>
 <body>
+
     {% include 'partials/nav.html' %}
-    <div>
-        {% block content %}{%endblock%}
-    </div>
+
+    <main class="main-content-wrapper">
+        {% block content %}
+        {% endblock %}
+    </main>
     {% block js %}{% endblock %}
+
 </body>
 </html>

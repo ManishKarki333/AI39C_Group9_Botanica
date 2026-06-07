@@ -1,7 +1,3 @@
-/* ==========================================================================
-   Figma Exact-Match Merchant Dashboard Stylesheet
-   ========================================================================== */
-
 :root {
     --figma-green: #3d7a5a;
     --figma-green-hover: #2f5f45;
@@ -39,20 +35,6 @@
     font-size: 16px;
     color: var(--figma-text-gray);
     margin: 0;
-}
-
-.btn-logout-alt {
-    border: 1px solid var(--figma-border);
-    padding: 8px 16px;
-    border-radius: 6px;
-    color: var(--figma-text-dark);
-    text-decoration: none;
-    font-size: 14px;
-    transition: background 0.2s;
-}
-
-.btn-logout-alt:hover {
-    background-color: #f1f5f9;
 }
 
 /* Vacation Mode Strip (Verbatim matching layout) */
@@ -365,6 +347,99 @@ input:checked + .figma-slider:before {
     font-weight: 500;
     cursor: pointer;
     margin-top: 10px;
+}
+
+/* File Input Form Extensions */
+.modal-form-inputs input[type="file"] {
+    background-color: #f8faf9;
+    border: 1px dashed #b3c7c0;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-form-inputs input[type="file"]:hover {
+    background-color: #f1f5f3;
+    border-color: #1b4d3e;
+}
+
+.input-helper-text {
+    display: block;
+    font-size: 0.75rem;
+    color: #667085;
+    margin-top: 4px;
+}
+
+/* Ensure Select and Textarea match your input styling */
+.modal-form-inputs select, 
+.modal-form-inputs textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--figma-border);
+    border-radius: 6px;
+    background-color: #fafafa;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box; /* Important for padding consistency */
+}
+
+/* Style the textarea specifically */
+.modal-form-inputs textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Visual focus state for all inputs */
+.modal-form-inputs input:focus,
+.modal-form-inputs select:focus,
+.modal-form-inputs textarea:focus {
+    outline: none;
+    border-color: var(--figma-green);
+    background-color: #ffffff;
+}
+
+/* Ensure the overlay covers everything and lets the modal scroll internally */
+.dashboard-modal-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; /* Changed from flex for initial state */
+    z-index: 1000; /* Higher z-index to stay on top */
+    overflow-y: auto; /* Enables scrolling for the overlay itself */
+    padding: 40px 20px; /* Provides space at the top and bottom */
+}
+
+.dashboard-modal-overlay:target {
+    display: flex; /* Centers modal when active */
+}
+
+/* Ensure the card has a max height and allows its own scrollbar */
+.modal-body-card {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 450px;
+    padding: 24px;
+    margin: auto; /* Centers the card horizontally and vertically */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    
+    /* These prevent the form from getting cut off */
+    max-height: 85vh; 
+    overflow-y: auto; 
+}
+
+/* Optional: Custom scrollbar for a cleaner look */
+.modal-body-card::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body-card::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
 }
 
 /* Small Layout Fix for lower screen widths */

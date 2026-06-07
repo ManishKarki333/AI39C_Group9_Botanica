@@ -15,7 +15,6 @@
             <h1>Merchant Dashboard</h1>
             <p class="subtitle">Manage your products and inventory</p>
         </div>
-        <a href="#" class="btn-logout-alt">Logout</a>
     </div>
 
     <!-- Vacation Mode Component Box -->
@@ -44,142 +43,87 @@
         </div>
 
         <div class="products-list-stack">
-            
-            <!-- Card 1: Ashwagandha -->
+            {% for herb in herbs %}
             <div class="figma-product-card">
                 <div class="p-card-left">
                     <div class="p-img-box">
-                        <div class="img-placeholder-bg" style="background-color: #e2ece9;"></div>
+                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:100%; object-fit:cover;">
                     </div>
                     <div class="p-details">
-                        <h3>Ashwagandha</h3>
-                        <span class="p-scientific">Withania somnifera</span>
+                        <h3>{{ herb.common_name }}</h3>
+                        <span class="p-scientific">{{ herb.scientific_name }}</span>
                     </div>
                 </div>
                 <div class="p-card-metrics">
                     <div class="metric-group">
                         <span class="m-label">Price</span>
-                        <span class="m-value">NPR 850</span>
+                        <span class="m-value">NPR {{ herb.price }}</span>
                     </div>
                     <div class="metric-group">
                         <span class="m-label">Stock</span>
-                        <span class="m-value font-highlight">156</span>
+                        <span class="m-value font-highlight">{{ herb.stock_quantity }}</span>
                     </div>
-                    <div class="metric-group">
-                        <span class="m-label">Category</span>
-                        <span class="badge-category">Energy</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Rating</span>
-                        <span class="m-value rating-val"> 4.8</span>
                     </div>
                 </div>
-                <div class="p-card-actions">
-                    <button class="btn-icon-edit" title="Edit Product"></button>
-                    <button class="btn-icon-delete" title="Delete Product"></button>
-                </div>
-            </div>
-
-            <!-- Card 2: Tulsi -->
-            <div class="figma-product-card">
-                <div class="p-card-left">
-                    <div class="p-img-box">
-                        <div class="img-placeholder-bg" style="background-color: #eaf2e8;"></div>
-                    </div>
-                    <div class="p-details">
-                        <h3>Tulsi</h3>
-                        <span class="p-scientific">Ocimum sanctum</span>
-                    </div>
-                </div>
-                <div class="p-card-metrics">
-                    <div class="metric-group">
-                        <span class="m-label">Price</span>
-                        <span class="m-value">NPR 450</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Stock</span>
-                        <span class="m-value font-highlight">289</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Category</span>
-                        <span class="badge-category">Immunity</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Rating</span>
-                        <span class="m-value rating-val"> 4.9</span>
-                    </div>
-                </div>
-                <div class="p-card-actions">
-                    <button class="btn-icon-edit" title="Edit Product"></button>
-                    <button class="btn-icon-delete" title="Delete Product"></button>
-                </div>
-            </div>
-
-            <!-- Card 3: Turmeric Root -->
-            <div class="figma-product-card">
-                <div class="p-card-left">
-                    <div class="p-img-box">
-                        <div class="img-placeholder-bg" style="background-color: #fdf5e2;"></div>
-                    </div>
-                    <div class="p-details">
-                        <h3>Turmeric Root</h3>
-                        <span class="p-scientific">Curcuma longa</span>
-                    </div>
-                </div>
-                <div class="p-card-metrics">
-                    <div class="metric-group">
-                        <span class="m-label">Price</span>
-                        <span class="m-value">NPR 320</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Stock</span>
-                        <span class="m-value font-highlight">423</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Category</span>
-                        <span class="badge-category">Immunity</span>
-                    </div>
-                    <div class="metric-group">
-                        <span class="m-label">Rating</span>
-                        <span class="m-value rating-val"> 4.7</span>
-                    </div>
-                </div>
-                <div class="p-card-actions">
-                    <button class="btn-icon-edit" title="Edit Product"></button>
-                    <button class="btn-icon-delete" title="Delete Product"></button>
-                </div>
-            </div>
-
+            {% else %}
+            <p>You haven't added any products yet.</p>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Simple clean modal anchor to support Sprint 1 product entries safely without ruining the dashboard layout -->
+<!-- Modal anchor block updated with dynamic Image Upload controls -->
 <div id="addProductModal" class="dashboard-modal-overlay">
     <div class="modal-body-card">
         <div class="modal-header">
             <h3>Add New Product Spec Sheet</h3>
             <a href="#" class="close-modal-btn">&times;</a>
         </div>
-        <form class="modal-form-inputs" onsubmit="return false;">
+        <!-- Enctype attribute added for secure file stream transfers -->
+        <form class="modal-form-inputs" method="POST" action="{{ url_for('shop.add_product') }}" enctype="multipart/form-data">
+    
             <div class="m-input-group">
-                <label>Product Display Name</label>
-                <input type="text" placeholder="e.g., Brahmi Leaf Powder" required>
+                <label for="productName">Product Display Name</label>
+                <input type="text" id="productName" name="common_name" placeholder="e.g., Brahmi Leaf Powder" required>
             </div>
+
+            <div class="m-input-group">
+                <label for="scientificName">Scientific Name</label>
+                <input type="text" id="scientificName" name="scientific_name" placeholder="e.g., Bacopa monnieri" required>
+            </div>
+
+            <div class="m-input-group">
+                <label for="category">Benefit Category</label>
+                <select id="category" name="benefit_category" required>
+                    <option value="">Select a Category</option>
+                    <option value="Sleep">Sleep</option>
+                    <option value="Digestion">Digestion</option>
+                    <option value="Energy">Energy</option>
+                    <option value="Immunity">Immunity</option>
+                </select>
+            </div>
+
+            <div class="m-input-group">
+                <label for="description">Product Description</label>
+                <textarea id="description" name="description" rows="3" placeholder="Describe the herb's benefits..."></textarea>
+            </div>
+
             <div class="m-input-grid">
                 <div>
-                    <label>Weight (e.g., 100g)</label>
-                    <input type="text" placeholder="100g" required>
+                    <label for="productPrice">Price (NPR)/100g</label>
+                    <input type="number" id="productPrice" name="price" step="0.01" placeholder="0.00" required>
                 </div>
                 <div>
-                    <label>Price (NPR)</label>
-                    <input type="number" placeholder="NPR" required>
+                    <label for="productStock">Initial Stock Count</label>
+                    <input type="number" id="productStock" name="stock_quantity" value="0" min="0" required>
                 </div>
             </div>
+
             <div class="m-input-group">
-                <label>Initial Stock Count</label>
-                <input type="number" value="10" min="0" required>
+                <label for="productImage">Herb Product Image</label>
+                <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
+            
             <button type="submit" class="btn-modal-submit">Publish to Live Storefront</button>
         </form>
     </div>

@@ -13,8 +13,9 @@ class Database:
                 password=config.MYSQL_PASSWORD,
                 database=config.MYSQL_DATABASE,
                 cursorclass=pymysql.cursors.DictCursor,
+                charset="utf8mb4",  # Fix: Ensures special botanical symbols display safely
+                use_unicode=True,
             )
-
             print("Database connected successfully!")
 
         except pymysql.MySQLError as e:
@@ -38,28 +39,26 @@ class Database:
         return results
 
     def execute(self, query, params=None):
-        """Run a query that changes data (INSERT, UPDATE, DELETE)."""
+        """Run a data-modifying query. Returns the last row ID if an INSERT occurs."""
         cursor = self.__connection.cursor()
         cursor.execute(query, params)
         self.__connection.commit()
+        last_id = cursor.lastrowid  # Crucial for matching order_items to order headers!
         cursor.close()
+        return last_id
 
     def close(self):
         """Close the database connection."""
         self.__connection.close()
-                        
+
     # ── Static Method: Create tables on app startup ─────────
 
     @staticmethod
     def create_tables():
-        """
-        Create database tables if they don't exist.
-
-        @staticmethod: belongs to the class but doesn't need
-        'self' — it doesn't use any instance data.
-        You call it as: Database.create_tables()
-        """
+        """Create database tables updated for Search, Filtering, Merchant, and Transactional Loops."""
         db = Database()
+
+        # 1. Users Table (Maintains roles for Customers, Merchants, and Admins)
         db.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,7 +67,66 @@ class Database:
                 password VARCHAR(255) NOT NULL,
                 role VARCHAR(20) NOT NULL DEFAULT 'user',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        # 2. Herbs Table (Updated with Image, Stock, Price, and Benefit filtering fields)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS herbs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                common_name VARCHAR(100) NOT NULL,
+                scientific_name VARCHAR(100) NOT NULL UNIQUE,
+                description TEXT,
+                benefit_category VARCHAR(50) NOT NULL, -- Maps to US 3 (Sleep, Digestion, etc.)
+                price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                stock_quantity INT NOT NULL DEFAULT 0,
+                image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Keeps UI card grading-ready
+                merchant_id INT DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        # 3. Orders Table (NEW - Tracks core transactions and logistics metrics)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                delivery_date DATE NOT NULL,
+                delivery_window VARCHAR(100) NOT NULL, -- Maps to US 5.4 (Selected Delivery Windows)
+                order_status ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending', -- Maps to US 5.3
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        # 4. Order Items Table (NEW - Breakdown for shopping carts supporting multi-vendor line items)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS order_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                order_id INT NOT NULL,
+                herb_id INT NOT NULL,
+                merchant_id INT NOT NULL, -- Identifies which supplier handles fulfillment tracking
+                quantity INT NOT NULL DEFAULT 1,
+                price_at_purchase DECIMAL(10, 2) NOT NULL, -- Safeguards historical financials if cost updates later
+                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                FOREIGN KEY (herb_id) REFERENCES herbs(id) ON DELETE RESTRICT,
+                FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        # 5. Merchant Certificates Table (NEW - Backs the validation badges for vendor trust metrics)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS merchant_certificates (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                merchant_id INT NOT NULL,
+                certificate_name VARCHAR(150) NOT NULL, -- (e.g., "Certified Organic Wildcrafter")
+                file_path VARCHAR(255) NOT NULL, -- Location where secure document file remains on the server
+                is_verified BOOLEAN NOT NULL DEFAULT FALSE, -- Allows admin toggle approval controls
+                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
         # Create default admin if not exists
@@ -80,7 +138,12 @@ class Database:
 
             db.execute(
                 "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
-                ("Admin", "admin@admin.com", generate_password_hash("admin123"), "admin"),
+                (
+                    "Admin",
+                    "admin@admin.com",
+                    generate_password_hash("admin123"),
+                    "admin",
+                ),
             )
 
         db.close()
