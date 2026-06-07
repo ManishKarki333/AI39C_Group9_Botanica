@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from flask import app, render_template, redirect, url_for, session, flash, request
-from app.controllers.base_controller import BaseController
-from app.models.database import Database
-=======
 import re
 from flask import (
     render_template,
@@ -12,7 +7,6 @@ from flask import (
     flash,
     request,
 )
->>>>>>> main
 from app.models.user_model import User
 from app.models.contact_model import ContactMessage
 
@@ -64,21 +58,11 @@ class AuthController:
                 if user is not None and user.check_password(password):
                     session["user_id"]   = user_data["id"]
                     session["user_name"] = user_data["name"]
-<<<<<<< HEAD
-                    session["role"] = user_data["role"]
-                    
-                    # Dynamic backend routing based on database role matrix
-                    target_route = self._get_redirect_route(user_data["role"])
-                    return self.flash_and_redirect(
-                        "Login successful!", "success", target_route
-                    )
-=======
                     session["role"]      = user_data["role"]
 
                     flash("Login successful!", "success")
                     return redirect(url_for(self._get_redirect_route(user_data["role"])))
 
->>>>>>> main
             flash("Invalid email or password.", "danger")
             return render_template("login.html")
 
@@ -115,16 +99,10 @@ class AuthController:
 
             new_user = User(name=name, email=email, password=password, role=role)
             new_user.save()
-<<<<<<< HEAD
-            return self.flash_and_redirect(
-                "Registration successful! Please login.", "success", "auth.login"
-            )
-=======
 
             flash("Registration successful! Please log in.", "success")
             return redirect(url_for("auth.login"))
 
->>>>>>> main
         return render_template("register.html")
 
     # ── Logout ───────────────────────────────────────────────
@@ -165,13 +143,7 @@ class AuthController:
             return redirect(url_for("auth.contact"))
 
         return render_template("contact.html")
-<<<<<<< HEAD
-    
-
-
-=======
 
     # ── Merchant Dashboard ───────────────────────────────────
     def merchant_dashboard(self):
         return render_template("merchant_dashboard.html")
->>>>>>> main
