@@ -1,24 +1,20 @@
 import re
-from flask import (
-    render_template,
-    redirect,
-    url_for,
-    session,
-    flash,
-    request,
-)
+import os
+from flask import render_template, redirect, url_for, session, flash, request
+from app.controllers.base_controller import BaseController
+from app.models.database import Database
 from app.models.user_model import User
 from app.models.contact_model import ContactMessage
 
 # ✅ Security: whitelist of self-registerable roles
-ALLOWED_ROLES  = {"user", "merchant"}
+ALLOWED_ROLES = {"user", "merchant"}
 # ✅ Basic email format validator
-EMAIL_REGEX    = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
-
-class AuthController:
+class AuthController(BaseController):
 
     def __init__(self):
+        super().__init__()
         self.user_model = User()
 
     # ── Helpers ──────────────────────────────────────────────
@@ -59,9 +55,12 @@ class AuthController:
                     session["user_id"]   = user_data["id"]
                     session["user_name"] = user_data["name"]
                     session["role"]      = user_data["role"]
-
-                    flash("Login successful!", "success")
-                    return redirect(url_for(self._get_redirect_route(user_data["role"])))
+                    
+                    # Dynamic backend routing based on database role matrix
+                    target_route = self._get_redirect_route(user_data["role"])
+                    return self.flash_and_redirect(
+                        "Login successful!", "success", target_route
+                    )
 
             flash("Invalid email or password.", "danger")
             return render_template("login.html")
@@ -99,9 +98,10 @@ class AuthController:
 
             new_user = User(name=name, email=email, password=password, role=role)
             new_user.save()
-
-            flash("Registration successful! Please log in.", "success")
-            return redirect(url_for("auth.login"))
+            
+            return self.flash_and_redirect(
+                "Registration successful! Please login.", "success", "auth.login"
+            )
 
         return render_template("register.html")
 
@@ -146,4 +146,8 @@ class AuthController:
 
     # ── Merchant Dashboard ───────────────────────────────────
     def merchant_dashboard(self):
+        # Security check to ensure only merchants see this
+        if session.get("role") != "merchant":
+            flash("Unauthorized access.", "danger")
+            return redirect(url_for("auth.home"))
         return render_template("merchant_dashboard.html")
