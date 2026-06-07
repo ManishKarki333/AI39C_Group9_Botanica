@@ -6,9 +6,9 @@ from app.models.database import Database
 from app.models.user_model import User
 from app.models.contact_model import ContactMessage
 
-# ✅ Security: whitelist of self-registerable roles
+# Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
-# ✅ Basic email format validator
+# Basic email format validator
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 class AuthController(BaseController):
@@ -78,7 +78,7 @@ class AuthController(BaseController):
             password = request.form.get("password", "")
             role     = request.form.get("role", "user")
 
-            # ✅ Sanitize role — never trust user input
+            # Sanitize role — never trust user input
             if role not in ALLOWED_ROLES:
                 role = "user"
 
@@ -86,7 +86,7 @@ class AuthController(BaseController):
                 flash("All fields are required.", "danger")
                 return render_template("register.html")
 
-            # ✅ Validate email format
+            # Validate email format
             if not EMAIL_REGEX.match(email):
                 flash("Please enter a valid email address.", "danger")
                 return render_template("register.html")
