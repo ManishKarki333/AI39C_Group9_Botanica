@@ -56,16 +56,10 @@
     margin: 0;
 }
 
-
-.search-container *, .search-container *::before, .search-container *::after {
-    box-sizing: border-box;
-}
-
-/* Master container defining the maximum allocation */
 .search-container {
     width: 100%;
     max-width: 500px; 
-    margin: 0 auto;
+    margin: 0;
 }
 
 /* The structural fix wrapper */
@@ -73,26 +67,33 @@
     display: flex;
     align-items: center;
     position: relative;
-    background-color: #f5f7f5; /* Muted background matching Botanica tones */
-    border: 1px solid #dcdfdc;
+    background-color: rgba(255, 255, 255, 0.15); /* Semi-transparent in header banner */
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 30px; /* Smooth rounded pill profile */
-    padding: 6px 16px;
+    padding: 10px 20px;
     width: 100%;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-/* Focus highlighting ring */
+/* Focus highlighting ring inside header banner context */
 .search-wrapper:focus-within {
-    border-color: #2e5a36; /* Earthy green theme tint */
-    box-shadow: 0 0 0 3px rgba(46, 90, 54, 0.15);
+    background-color: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* Minimalist vector layout icon alignment */
 .search-icon {
     font-size: 1.1rem;
-    color: #768276;
-    margin-right: 10px;
-    flex-shrink: 0; /* Forces icon to keep its shape */
+    color: rgba(255, 255, 255, 0.7);
+    margin-right: 12px;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.search-wrapper:focus-within .search-icon {
+    color: var(--earth-accent);
 }
 
 /* The Core Input Field */
@@ -100,17 +101,23 @@
     border: none;
     background: transparent;
     outline: none;
-    font-size: 0.95rem;
-    color: #1c241c;
+    font-size: 1rem;
+    color: #ffffff;
     width: 100%;
-    padding: 6px 0;
-    margin-right: 12px;
+    padding: 2px 0;
+}
+
+.search-wrapper:focus-within #global-search {
+    color: var(--text-dark);
 }
 
 #global-search::placeholder {
-    color: #a0aaa0;
+    color: rgba(255, 255, 255, 0.6);
 }
 
+.search-wrapper:focus-within #global-search::placeholder {
+    color: #a0aaa0;
+}
 
 /* Main Two-Column Screen Layout */
 .shop-layout {
@@ -167,7 +174,6 @@
     background-color: var(--sage-light);
 }
 
-/* Smooth transition when fading the clear button out via JavaScript */
 .clear-btn.hidden {
     display: none !important;
 }
@@ -215,7 +221,6 @@
     background-color: var(--sage-light);
 }
 
-/* Active Filtering State Matching Figma Spec */
 .benefit-card-toggle.active {
     background-color: var(--forest-primary);
     color: #ffffff;
@@ -264,6 +269,19 @@
     box-shadow: 0 16px 40px rgba(30, 63, 32, 0.08);
 }
 
+/* UPGRADE: Removed browser layout styles from newly added template anchors */
+.product-card-media-link,
+.product-card-info-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* UPGRADE: Highlights title text dynamically into deep forest green on hover overlays */
+.product-card-info-link:hover .common-name {
+    color: var(--forest-primary);
+}
+
 .card-image-wrapper {
     position: relative;
     width: 100%;
@@ -306,6 +324,31 @@
     color: var(--forest-primary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    z-index: 2;
+}
+
+/* UPGRADE: Dynamic Vacation Mode UI Overlays */
+.product-card.on-vacation {
+    opacity: 0.75;
+}
+
+.vacation-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(34, 44, 35, 0.4);
+    backdrop-filter: grayscale(1) blur(2px);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    z-index: 3;
 }
 
 .card-body {
@@ -324,12 +367,9 @@
     font-weight: 600;
     margin: 0 0 4px 0;
     line-height: 1.3;
+    transition: color 0.2s var(--transition-smooth);
 }
 
-/* Satisfies User Story 2 (Scientific Naming Search):
-   Guarantees botanical names automatically render styled in italics.
-*/
-.scientific-name em, 
 .scientific-name {
     font-size: 0.9rem;
     color: var(--earth-accent);
@@ -393,14 +433,24 @@
     transition: all 0.2s var(--transition-smooth);
 }
 
-.action-add-cart:hover {
+.action-add-cart:hover:not(:disabled) {
     background-color: var(--earth-accent);
     transform: scale(1.05);
 }
 
-/* Satisfies User Story 1 & 2 (No Results Found Interface State):
-   Styled container to handle blank asynchronous search response matrices cleanly.
-*/
+.action-add-cart:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* UPGRADE: Disabled Add-to-Cart styling when a store manager is on vacation */
+.action-add-cart:disabled {
+    background-color: #cbd5e0;
+    color: #718096;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* No Results Found Interface State Layout */
 .empty-state-card {
     grid-column: 1 / -1;
     text-align: center;
