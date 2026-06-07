@@ -83,21 +83,28 @@
                             {% endif %}
                             <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
                         </div>
+
                         <div class="card-body">
                             <div class="meta-names">
                                 <h2 class="common-name">{{ herb.common_name }}</h2>
                                 <p class="scientific-name"><em>{{ herb.scientific_name }}</em></p>
                             </div>
+
                             <p class="herb-excerpt">{{ herb.description|truncate(85) }}</p>
+
                             <div class="card-footer">
                                 <div class="price-block">
                                     <span class="currency">Rs.</span>
                                     <span class="price-value">{{ herb.price }}</span>
                                     <span class="unit">/{{ herb.unit_weight or '100g' }}</span>
                                 </div>
-                                <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart">
-                                    <i class="ri-shopping-bag-4-line"></i>
-                                </button>
+
+                                <form action="{{ url_for('auth.add_to_cart', herb_id=herb.id) }}" method="POST">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="action-add-cart" title="Add to Cart">
+                                        <i class="ri-shopping-bag-4-line"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </article>
