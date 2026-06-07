@@ -75,34 +75,43 @@
                 {% if herbs %}
                     {% for herb in herbs %}
                     <article class="product-card {% if herb.on_vacation %}on-vacation{% endif %}" data-benefits="{{ herb.benefit_category }}">
-                        <div class="card-image-wrapper">
-                            {% if herb.on_vacation %}
-                                <span class="vacation-banner">On Vacation</span>
-                            {% endif %}
+                        
+                        <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="product-card-media-link" aria-label="View details for {{ herb.common_name }}">
+                            <div class="card-image-wrapper">
+                                {% if herb.on_vacation %}
+                                    <span class="vacation-banner">On Vacation</span>
+                                {% endif %}
 
-                            {% if herb.image_url %}
-                                <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
-                            {% else %}
-                                <div class="fallback-placeholder">
-                                    <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
-                                </div>
-                            {% endif %}
-                            <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
-                        </div>
-                        <div class="card-body">
-                            <div class="meta-names">
-                                <h2 class="common-name">{{ herb.common_name }}</h2>
-                                <p class="scientific-name"><em>{{ herb.scientific_name }}</em></p>
+                                {% if herb.image_url %}
+                                    <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
+                                {% else %}
+                                    <div class="fallback-placeholder">
+                                        <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
+                                    </div>
+                                {% endif %}
+                                <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
                             </div>
+                        </a>
+
+                        <div class="card-body">
+                            <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="product-card-info-link">
+                                <div class="meta-names">
+                                    <h2 class="common-name">{{ herb.common_name }}</h2>
+                                    <p class="scientific-name"><em>{{ herb.scientific_name }}</em></p>
+                                </div>
+                            </a>
+
                             <p class="herb-excerpt">{{ herb.description|truncate(85) }}</p>
+                            
                             <div class="card-footer">
                                 <div class="price-block">
                                     <span class="currency">Rs.</span>
                                     <span class="price-value">{{ herb.price }}</span>
                                     <span class="unit">/{{ herb.unit_weight or '100g' }}</span>
                                 </div>
+                                
                                 <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart" {% if herb.on_vacation %}disabled{% endif %}>
-                                    <i class="ri-shopping-bag-4-line"></i>
+                                    <i class="ri-shopping-cart-2-line"></i>
                                 </button>
                             </div>
                         </div>
@@ -123,6 +132,6 @@
 </main>
 {% endblock %}
 
-{% block scripts %}
+{% block js %}
 <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 {% endblock %}

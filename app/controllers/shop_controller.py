@@ -38,7 +38,11 @@ class ShopController(BaseController):
         
         try:
             db = Database()
-            sql = "SELECT id, common_name, scientific_name, description, benefit_category, price, image_url FROM herbs WHERE 1=1"
+            sql = """
+                SELECT id, common_name, scientific_name, description, 
+                    benefit_category, price, image_url 
+                FROM herbs WHERE 1=1
+            """
             query_args = []
             
             if query_param:
@@ -50,14 +54,28 @@ class ShopController(BaseController):
                 sql += " AND benefit_category LIKE %s"
                 benefit_term = f"%{benefit_param}%"
                 query_args.append(benefit_term)
-                
-            results = db.fetch_all(sql, tuple(query_args))
+            
+            raw_results = db.fetch_all(sql, tuple(query_args))
             db.close()
+            
+            formatted_herbs = []
+            for row in raw_results:
+                formatted_herbs.append({
+                    "id": row[0],
+                    "common_name": row[1],
+                    "scientific_name": row[2],
+                    "description": row[3],
+                    "benefit_category": row[4],
+                    "price": float(row[5]) if row[5] else 0.0,
+                    "image_url": row[6] if row[6] else "",
+                    "form_factor": "Raw Herb", 
+                    "on_vacation": False 
+                })
             
             return jsonify({
                 "status": "success",
-                "count": len(results),
-                "data": results
+                "count": len(formatted_herbs),
+                "data": formatted_herbs
             }), 200
             
         except Exception as e:
@@ -79,7 +97,6 @@ class ShopController(BaseController):
         db.close()
         if not herb:
             flash("Herb record not found.", "danger")
-            # FIXED: Correct blueprint target namespace from 'auth.shop' to 'shop.shop'
             return redirect(url_for("shop.shop")) 
         return render_template("herb_details.html", herb=herb)
 
@@ -130,12 +147,11 @@ class ShopController(BaseController):
             return redirect(url_for("auth.merchant_dashboard"))
 
     # ────────────────────────────────────────────────────────────────
-    #  SHOPPING CART TRANSACTION MODULES (CLEANED)
+    #  SHOPPING CART TRANSACTION MODULES (RESILIENT TYPE-MATCHING)
     # ────────────────────────────────────────────────────────────────
 
     def view_cart(self):
         """Renders the transactional checkout cart template page."""
-        # Cleaned up overlapping placeholder method, keeping only this fully functioning data context mapping
         cart_items = session.get('cart', [])
         return render_template('cart.html', items=cart_items)
 
@@ -157,23 +173,34 @@ class ShopController(BaseController):
         if not herb:
             return jsonify({"status": "error", "message": "Product record untraceable"}), 442
 
+        # Standardize record parsing structures cleanly
+        herb_mapped = {
+            "id": herb[0],
+            "common_name": herb[1],
+            "scientific_name": herb[2],
+            "price": float(herb[3]) if herb[3] else 0.0,
+            "image_url": herb[4] if herb[4] else '/static/uploads/default_herb.png'
+        }
+
         if 'cart' not in session:
             session['cart'] = []
             
         cart = session['cart']
-        existing_item = next((item for item in cart if item['id'] == int(herb_id)), None)
+        
+        # CRITICAL RESILIENCE FIX: Compare IDs safely as plain strings.
+        # This prevents type crashes if IDs are alphanumeric, UUIDs, or numbers.
+        existing_item = next((item for item in cart if str(item['id']) == str(herb_mapped['id'])), None)
         
         if existing_item:
             existing_item['quantity'] += 1
         else:
-            # FIXED: Avoided hardcoded image extraction logic fallback issues by collecting your image string safely
             cart.append({
-                'id': herb['id'],
-                'common_name': herb['common_name'],
-                'scientific_name': herb['scientific_name'],
-                'price': float(herb['price']),
+                'id': herb_mapped['id'],
+                'common_name': herb_mapped['common_name'],
+                'scientific_name': herb_mapped['scientific_name'],
+                'price': herb_mapped['price'],
                 'quantity': 1,
-                'image_url': herb['image_url']
+                'image_url': herb_mapped['image_url']
             })
             
         session['cart'] = cart
@@ -181,7 +208,7 @@ class ShopController(BaseController):
         
         return jsonify({
             "status": "success",
-            "message": f"Added {herb['common_name']} to your basket.",
+            "message": f"Added {herb_mapped['common_name']} to your basket.",
             "cart_count": sum(item['quantity'] for item in session['cart'])
         }), 200
 
@@ -195,7 +222,8 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Session target missing"}), 400
             
         cart = session['cart']
-        item = next((i for i in cart if i['id'] == int(herb_id)), None)
+        # Standardized tracking keys to safe string types
+        item = next((i for i in cart if str(i['id']) == str(herb_id)), None)
         
         if item:
             if action == 'increment':
@@ -203,7 +231,7 @@ class ShopController(BaseController):
             elif action == 'decrement':
                 item['quantity'] -= 1
                 if item['quantity'] <= 0:
-                    cart = [i for i in cart if i['id'] != int(herb_id)]
+                    cart = [i for i in cart if str(i['id']) != str(herb_id)]
             
             session['cart'] = cart
             session.modified = True
@@ -226,7 +254,8 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Target context missing"}), 400
             
         cart = session['cart']
-        updated_cart = [item for item in cart if item['id'] != int(herb_id)]
+        # Standardized matching comparison logic safely
+        updated_cart = [item for item in cart if str(item['id']) != str(herb_id)]
         
         session['cart'] = updated_cart
         session.modified = True

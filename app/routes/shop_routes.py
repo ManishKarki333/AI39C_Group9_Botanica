@@ -20,7 +20,7 @@ class ShopRoutes:
             self.shop_controller.herb_details
         )
         
-        # 🏪 Protected Merchant Inventory Actions
+        # Protected Merchant Inventory Actions
         self.bp.route("/add_product", methods=["POST"])(
             merchant_required(self.shop_controller.add_product)
         )
@@ -31,7 +31,7 @@ class ShopRoutes:
             self.shop_controller.view_cart
         )
         
-        # ⚡ Asynchronous API Endpoints (Sprint 3 Cart Transactions)
+        # Asynchronous API Endpoints (Sprint 3 Cart Transactions)
         self.bp.route("/api/cart/add", methods=["POST"])(
             self.shop_controller.add_to_cart
         )
