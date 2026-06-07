@@ -1,51 +1,70 @@
+<<<<<<< HEAD
 from flask import app, render_template, redirect, url_for, session, flash, request
 from app.controllers.base_controller import BaseController
 from app.models.database import Database
+=======
+import re
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    session,
+    flash,
+    request,
+)
+>>>>>>> main
 from app.models.user_model import User
+from app.models.contact_model import ContactMessage
 
-class AuthController(BaseController):
+# ✅ Security: whitelist of self-registerable roles
+ALLOWED_ROLES  = {"user", "merchant"}
+# ✅ Basic email format validator
+EMAIL_REGEX    = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class AuthController:
+
     def __init__(self):
         self.user_model = User()
-        
-    def home(self): 
+
+    # ── Helpers ──────────────────────────────────────────────
+    def is_logged_in(self) -> bool:
+        return "user_id" in session
+
+    def _get_redirect_route(self, role: str) -> str:
+        if role == "admin":
+            return "admin.dashboard"
+        if role == "merchant":
+            return "auth.merchant_dashboard"
+        return "auth.home"
+
+    # ── Home ─────────────────────────────────────────────────
+    def home(self):
         return render_template("home.html")
 
-    def _get_redirect_route(self, role):
-        """Helper method to determine home portal based on user roles."""
-        if role == "admin":
-            return "auth.dashboard"
-        elif role == "merchant":
-            return "auth.merchant_dashboard"
-        else:
-            # Default customer/buyer landing page
-            return "auth.home"
-
+    # ── Login ────────────────────────────────────────────────
     def login(self):
-        # 1. If already logged in, route to their correct dashboard environment
         if self.is_logged_in():
-            current_role = session.get("role", "customer")
+            current_role = session.get("role", "user")
             return redirect(url_for(self._get_redirect_route(current_role)))
 
         if request.method == "POST":
-            # Extract and strip whitespace from email to prevent login errors
-            email = request.form.get("email", "").strip()
+            email    = request.form.get("email", "").strip()
             password = request.form.get("password", "")
 
             if not email or not password:
                 flash("Email and password are required.", "danger")
                 return render_template("login.html")
 
-            # Use the User model to find the user
             user_data = self.user_model.find_by("email", email)
 
-            if user_data:
-                # Build a User object from database data
+            if user_data is not None:
                 user = User.from_db(user_data)
-                
-                if user.check_password(password):
-                    # Establish session credentials
-                    session["user_id"] = user_data["id"]
+
+                if user is not None and user.check_password(password):
+                    session["user_id"]   = user_data["id"]
                     session["user_name"] = user_data["name"]
+<<<<<<< HEAD
                     session["role"] = user_data["role"]
                     
                     # Dynamic backend routing based on database role matrix
@@ -53,78 +72,106 @@ class AuthController(BaseController):
                     return self.flash_and_redirect(
                         "Login successful!", "success", target_route
                     )
+=======
+                    session["role"]      = user_data["role"]
+
+                    flash("Login successful!", "success")
+                    return redirect(url_for(self._get_redirect_route(user_data["role"])))
+
+>>>>>>> main
             flash("Invalid email or password.", "danger")
+            return render_template("login.html")
+
         return render_template("login.html")
 
-
+    # ── Register ─────────────────────────────────────────────
     def register(self):
-        # Route safely if user hits registration route while authenticated
         if self.is_logged_in():
-            current_role = session.get("role", "customer")
-            return redirect(url_for(self._get_redirect_route(current_role)))
+            return redirect(url_for("auth.home"))
 
         if request.method == "POST":
-            # Standardized and cleaned form data extraction
-            name = request.form.get("name", "").strip()
-            email = request.form.get("email", "").strip()
+            name     = request.form.get("name", "").strip()
+            email    = request.form.get("email", "").strip()
             password = request.form.get("password", "")
-            
-            # Dynamically capture role from the signup page with strict fallback
-            role = request.form.get("role", "customer")
-            if role not in ["customer", "merchant"]:
-                role = "customer" # Force fallback to lowest privilege
+            role     = request.form.get("role", "user")
 
-            # Validation
+            # ✅ Sanitize role — never trust user input
+            if role not in ALLOWED_ROLES:
+                role = "user"
+
             if not name or not email or not password:
                 flash("All fields are required.", "danger")
                 return render_template("register.html")
 
-            if len(name) > 100:
-                flash("Name must be under 100 characters.", "danger")
+            # ✅ Validate email format
+            if not EMAIL_REGEX.match(email):
+                flash("Please enter a valid email address.", "danger")
                 return render_template("register.html")
 
-            if len(password) < 6:
-                flash("Password must be at least 6 characters.", "danger")
-                return render_template("register.html")
+            existing = self.user_model.find_by("email", email)
+            if existing:
+                flash("Email already registered. Please log in.", "warning")
+                return redirect(url_for("auth.login"))
 
-            # Create a new User object with assigned role
             new_user = User(name=name, email=email, password=password, role=role)
-
-            if new_user.email_exists():
-                flash("Email already exists.", "danger")
-                return redirect(url_for("auth.register"))
-
-            # Save to database
             new_user.save()
+<<<<<<< HEAD
             return self.flash_and_redirect(
                 "Registration successful! Please login.", "success", "auth.login"
             )
+=======
+
+            flash("Registration successful! Please log in.", "success")
+            return redirect(url_for("auth.login"))
+
+>>>>>>> main
         return render_template("register.html")
 
-
-    def merchant_dashboard(self):
-        # Ensure role is validated
-        if not self.is_logged_in() or session.get("role") != "merchant":
-            flash("Unauthorized access.", "danger")
-            return redirect(url_for("auth.login"))
-        
-        # ... security checks ...
-        db = Database()
-        # Ensure 'merchant_id' column exists and matches your table
-        query = "SELECT * FROM herbs" 
-        merchant_herbs = db.fetch_all(query)
-        db.close()
-        return render_template("merchant_dashboard.html", herbs=merchant_herbs)
-
+    # ── Logout ───────────────────────────────────────────────
     def logout(self):
         session.clear()
-        return self.flash_and_redirect("You have been logged out.", "success", "auth.login")
-    
+        flash("You have been logged out.", "info")
+        return redirect(url_for("auth.login"))
+
+    # ── About ────────────────────────────────────────────────
     def about(self):
         return render_template("about.html")
-    
+
+    # ── Contact ──────────────────────────────────────────────
     def contact(self):
+        if request.method == "POST":
+            first_name = request.form.get("first_name", "").strip()
+            last_name  = request.form.get("last_name",  "").strip()
+            email      = request.form.get("email",      "").strip()
+            inquiry    = request.form.get("inquiry",    "").strip()
+            subject    = request.form.get("subject",    "").strip()
+            message    = request.form.get("message",    "").strip()
+
+            if not all([first_name, last_name, email, subject, message]):
+                flash("All fields are required.", "danger")
+                return render_template("contact.html")
+
+            msg = ContactMessage(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                inquiry=inquiry,
+                subject=subject,
+                message=message,
+            )
+            msg.save()
+
+            flash("Your message has been sent!", "success")
+            return redirect(url_for("auth.contact"))
+
         return render_template("contact.html")
+<<<<<<< HEAD
     
 
 
+=======
+
+    # ── Merchant Dashboard ───────────────────────────────────
+    def merchant_dashboard(self):
+        return render_template("merchant_dashboard.html")
+>>>>>>> main
