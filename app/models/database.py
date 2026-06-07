@@ -48,11 +48,7 @@ class Database:
         return results
 
     def execute(self, query, params=None):
-<<<<<<< HEAD
         """Run a data-modifying query. Returns the last row ID if an INSERT occurs."""
-=======
-        """Run a query that changes data (INSERT, UPDATE, DELETE, CREATE)."""
->>>>>>> main
         cursor = self.__connection.cursor()
         cursor.execute(query, params)
         self.__connection.commit()
@@ -66,11 +62,7 @@ class Database:
 
     @staticmethod
     def create_tables():
-<<<<<<< HEAD
         """Create database tables updated for Search, Filtering, Merchant, and Transactional Loops."""
-=======
-        """Create all required database tables on app startup."""
->>>>>>> main
         db = Database()
 
         # Users table
@@ -106,17 +98,10 @@ class Database:
                 common_name VARCHAR(100) NOT NULL,
                 scientific_name VARCHAR(100) NOT NULL UNIQUE,
                 description TEXT,
-<<<<<<< HEAD
                 benefit_category VARCHAR(50) NOT NULL, -- Maps to US 3 (Sleep, Digestion, etc.)
                 price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                 stock_quantity INT NOT NULL DEFAULT 0,
                 image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Keeps UI card grading-ready
-=======
-                benefit_category VARCHAR(50) NOT NULL,
-                price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-                stock_quantity INT NOT NULL DEFAULT 0,
-                image_url VARCHAR(255) DEFAULT 'default_herb.png',
->>>>>>> main
                 merchant_id INT DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
