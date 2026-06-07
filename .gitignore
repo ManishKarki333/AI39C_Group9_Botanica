@@ -1,29 +1,27 @@
-.env
-# Python bytecode (Stops the pycache conflicts you just had)
+# Python bytecode (compiled files)
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# Python virtual environment (Stops git from tracking thousands of library files)
+# Virtual Environment (Very important to ignore this!)
 venv/
-.venv/
 env/
 ENV/
+.venv/
 
-# Local databases (If you are using SQLite for local testing)
+# Environment variables / Secrets
+.env
+.flaskenv
+
+# Database files
+*.db
 *.sqlite3
 instance/
 
-# IDE and Editor files (Keeps your personal VS Code/PyCharm settings out of the repo)
+# IDE settings
 .vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.swp
 
-# Operating system files
+# OS generated files
 .DS_Store
 Thumbs.db

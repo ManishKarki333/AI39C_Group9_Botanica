@@ -1,0 +1,275 @@
+/* ==========================================================================
+   Page Container & Layout Setup
+   ========================================================================== */
+.cart-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2c3e50;
+}
+
+.cart-title {
+    font-size: 24pt;
+    color: #1b4d3e; /* Botanical Forest Green */
+    margin-bottom: 30px;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+/* Modern Responsive Grid Core */
+.cart-layout {
+    display: grid;
+    grid-template-columns: 1;
+    gap: 30px;
+}
+
+/* Two-column layout grid configuration for standard viewports */
+@media (min-width: 992px) {
+    .cart-layout {
+        grid-template-columns: 65% 35%;
+        align-items: start;
+    }
+}
+
+/* ==========================================================================
+   Left Column: Cart Item Cards
+   ========================================================================== */
+.cart-items-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cart-item-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.cart-item-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Horizontal alignment mapping layout for tablet profiles up to desktop views */
+@media (min-width: 576px) {
+    .cart-item-card {
+        flex-direction: row;
+        text-align: left;
+        justify-content: space-between;
+    }
+    
+    .item-details {
+        flex-grow: 2;
+        padding-left: 20px;
+    }
+    
+    .item-quantity-controls {
+        padding: 0 20px;
+    }
+    
+    .item-pricing {
+        min-width: 100px;
+    }
+}
+
+.item-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: #f7fafc;
+    border: 1px solid #edf2f7;
+}
+
+.item-details h3 {
+    margin: 0 0 4px 0;
+    font-size: 13pt;
+    color: #2d3748;
+}
+
+.scientific-name {
+    margin: 0;
+    font-size: 10pt;
+    font-style: italic;
+    color: #718096;
+}
+
+/* Interactive Quantity Controls */
+.item-quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.qty-btn {
+    background-color: #edf2f7;
+    border: none;
+    color: #4a5568;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.qty-btn:hover {
+    background-color: #e2e8f0;
+    color: #1b4d3e;
+}
+
+.qty-display {
+    display: inline-block;
+    width: 35px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 11pt;
+}
+
+/* Pricing Data Block */
+.item-pricing {
+    font-weight: 600;
+    font-size: 12pt;
+    color: #2d3748;
+}
+
+/* Delete Operations Button */
+.item-remove-btn {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 14pt;
+    transition: color 0.2s;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.item-remove-btn:hover {
+    color: #e53e3e; /* Warning Alert Red */
+    background-color: #fff5f5;
+}
+
+/* ==========================================================================
+   Right Column: Order Summary & Logistics Block
+   ========================================================================== */
+.summary-card {
+    background-color: #fafbf9; /* Soft organic off-white tint */
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+}
+
+.summary-card h2 {
+    margin: 0 0 15px 0;
+    font-size: 15pt;
+    color: #1b4d3e;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 15px 0;
+}
+
+/* Logistics Dropdown Integration */
+.delivery-management-block {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    display: block;
+    font-size: 10pt;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 6px;
+}
+
+.summary-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    font-size: 10pt;
+    color: #4a5568;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.summary-select:focus {
+    border-color: #1b4d3e;
+    box-shadow: 0 0 0 3px rgba(27, 77, 62, 0.15);
+}
+
+/* Financial Readout Columns */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 11pt;
+    color: #4a5568;
+}
+
+.total-row {
+    font-size: 13pt;
+    color: #1b4d3e;
+    margin-top: 5px;
+}
+
+.total-row strong {
+    font-weight: 700;
+}
+
+/* Action Button */
+.btn-checkout {
+    display: block;
+    width: 100%;
+    background-color: #1b4d3e;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 12pt;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-top: 15px;
+}
+
+.btn-checkout:hover {
+    background-color: #143a2f;
+}
+
+.btn-checkout:active {
+    transform: scale(0.99);
+}
+
+.btn-checkout:disabled {
+    background-color: #cbd5e0;
+    color: #718096;
+    cursor: not-allowed;
+    transform: none;
+}

@@ -1,60 +1,15 @@
-/**
- * Botanica Marketplace - Global Navigation Mechanics
- * Handles responsive hamburger menus and persistent Dark Mode styling rules.
- */
-
 document.addEventListener("DOMContentLoaded", () => {
-    // --- 1. Hamburger/Mobile Overlay Logic ---
+    
+    // --- 1. Element Hooks Registration ---
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
     const menuToggle = document.getElementById("menu-toggle-btn");
     const navMenu = document.getElementById("main-nav-menu");
-
-    if (menuToggle && navMenu) {
-        menuToggle.addEventListener("click", () => {
-            const isExpanded = menuToggle.getAttribute("aria-expanded") === "true";
-            
-            // Toggle active visual states
-            menuToggle.setAttribute("aria-expanded", !isExpanded);
-            navMenu.classList.toggle("nav-menu--active");
-            
-            // Swap icon appearances inside the toggle button if applicable
-            const toggleIcon = menuToggle.querySelector("i");
-            if (toggleIcon) {
-                if (navMenu.classList.contains("nav-menu--active")) {
-                    toggleIcon.className = "ri-close-line"; // Remix Icon for close
-                } else {
-                    toggleIcon.className = "ri-menu-line";  // Remix Icon for hamburger
-                }
-            }
-        });
-    }
-
-    // --- 2. Dark Mode Toggle Module (US 2.3 / Local Storage Persistence) ---
-    const themeToggleBtn = document.getElementById("theme-toggle-btn");
     const currentTheme = localStorage.getItem("theme");
 
-    // Check for existing saved theme preferences on page initialization
-    if (currentTheme === "dark") {
-        document.documentElement.classList.add("dark-theme");
-        updateThemeIcon(true);
-    }
-
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener("click", () => {
-            // Toggle core structural classes on the document root element
-            document.documentElement.classList.toggle("dark-theme");
-            
-            const isDarkActive = document.documentElement.classList.contains("dark-theme");
-            
-            // Update client-side browser cache mapping (Local Storage)
-            localStorage.setItem("theme", isDarkActive ? "dark" : "light");
-            
-            // Smoothly adjust structural elements
-            updateThemeIcon(isDarkActive);
-        });
-    }
+    // --- 2. Dark Mode Module (US 2.3 / Local Storage Persistence) ---
 
     /**
-     * Helper mapping function to change theme button icon shapes cleanly
+     * Smoothly updates the visual aesthetic states of the interface theme toggle button icon
      * @param {boolean} isDark 
      */
     function updateThemeIcon(isDark) {
@@ -62,10 +17,53 @@ document.addEventListener("DOMContentLoaded", () => {
         const icon = themeToggleBtn.querySelector("i");
         if (icon) {
             if (isDark) {
-                icon.className = "ri-sun-fill"; // Show Sun icon when dark mode is active
+                // Remix Icon filled sun when dark mode is enabled
+                icon.className = "ri-sun-fill util-icon"; 
             } else {
-                icon.className = "ri-moon-line"; // Show Moon icon when light mode is active
+                // Remix Icon outline moon when light mode is enabled
+                icon.className = "ri-moon-line util-icon"; 
             }
         }
+    }
+
+    // Initialize saved configuration parameters from local browser storage cache
+    if (currentTheme === "dark") {
+        document.documentElement.classList.add("dark-theme");
+        updateThemeIcon(true);
+    } else {
+        // Fallback default state setup
+        updateThemeIcon(false);
+    }
+
+    // Interactive Theme Toggle Listener Click Action
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", () => {
+            document.documentElement.classList.toggle("dark-theme");
+            
+            const isDarkActive = document.documentElement.classList.contains("dark-theme");
+            localStorage.setItem("theme", isDarkActive ? "dark" : "light");
+            
+            updateThemeIcon(isDarkActive);
+        });
+    }
+
+    // --- 3. Responsive Mobile Drawer Fallback Safe Guards ---
+    // Defensively verifies elements to prevent runtime errors if responsive tokens are modified
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener("click", () => {
+            const isExpanded = menuToggle.getAttribute("aria-expanded") === "true";
+            
+            menuToggle.setAttribute("aria-expanded", !isExpanded);
+            navMenu.classList.toggle("nav-menu--active");
+            
+            const toggleIcon = menuToggle.querySelector("i");
+            if (toggleIcon) {
+                if (navMenu.classList.contains("nav-menu--active")) {
+                    toggleIcon.className = "ri-close-line"; 
+                } else {
+                    toggleIcon.className = "ri-menu-line";  
+                }
+            }
+        });
     }
 });
