@@ -29,7 +29,7 @@
                 <p class="excerpt">{{ herb.description|truncate(100) }}</p>
                 
                 <div class="card-actions">
-                    <a href="{{ url_for('auth.herb_details', id=herb.id) }}" class="btn btn-secondary">Learn More</a>
+                    <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="btn btn-secondary">Learn More</a>
                     <a href="#" class="btn btn-primary">Buy Now</a>
                 </div>
             </div>

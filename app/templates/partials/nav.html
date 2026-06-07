@@ -10,24 +10,23 @@
 <body>
     <nav class="botanica-navbar">
         <div class="nav-container">
-            <a href="/" class="nav-logo">
+            <a href="{{ url_for('auth.home') }}" class="nav-logo">
                 <span class="logo-text">Botanica</span>
             </a>
 
             <ul class="nav-menu">
-                <li><a href="/" class="nav-link">Home</a></li>
-                <li><a href="/shop" class="nav-link">Shop Herbs</a></li>
-                <li><a href="/contact" class="nav-link">Contact</a></li>
-                <li><a href="{{ url_for('auth.herb_library') }}" class="nav-link">Library</a></li>
-                
+                <li><a href="{{ url_for('auth.home') }}" class="nav-link">Home</a></li>
+                <li><a href="{{ url_for('shop.shop') }}" class="nav-link">Shop Herbs</a></li>
+                <li><a href="{{ url_for('auth.contact') }}" class="nav-link">Contact</a></li>
+                <li><a href="{{ url_for('shop.herb_library') }}" class="nav-link">Library</a></li>
+
                 {% if session.get('user_id') and session.get('role') == 'merchant' %}
                     <li><a href="{{ url_for('auth.merchant_dashboard') }}" class="nav-link">Merchant Portal</a></li>
                 {% endif %}
             </ul>
 
             <div class="nav-utilities">
-                
-                <a href="/cart" class="util-btn cart-anchor" aria-label="View Shopping Cart">
+                <a href="{{ url_for('shop.view_cart') }}" class="util-btn cart-anchor" aria-label="View Shopping Cart">
                     <i class="ri-shopping-cart-line util-icon"></i>
                     <span class="cart-badge">0</span>
                 </a>
