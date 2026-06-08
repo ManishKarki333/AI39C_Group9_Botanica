@@ -5,6 +5,8 @@ from app.controllers.base_controller import BaseController
 from app.models.database import Database
 from app.models.user_model import User
 from app.models.contact_model import ContactMessage
+from app.models.order_model import Order
+
 
 # Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
@@ -16,6 +18,7 @@ class AuthController(BaseController):
     def __init__(self):
         super().__init__()
         self.user_model = User()
+        self.order_model = Order()
 
     # ── Helpers ──────────────────────────────────────────────
     def is_logged_in(self) -> bool:
@@ -150,4 +153,12 @@ class AuthController(BaseController):
         if session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
-        return render_template("merchant_dashboard.html")
+        
+        # Fetch herbs for the current merchant
+        db = Database()
+        merchant_id = session.get("user_id")
+        herbs = db.fetch_all("SELECT * FROM herbs WHERE merchant_id = %s", (merchant_id,))
+        db.close()
+        # Fetch orders for the current merchant
+        orders = self.order_model.get_merchant_orders(merchant_id)
+        return render_template("merchant_dashboard.html", herbs=herbs, orders=orders)
