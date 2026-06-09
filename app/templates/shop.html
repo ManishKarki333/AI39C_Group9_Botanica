@@ -16,46 +16,61 @@
         <div class="search-container">
             <div class="search-wrapper">
                 <i class="ri-search-line search-icon"></i>
-                <input type="text" id="global-search" placeholder="Search by common or scientific name..." autocomplete="off">
+                <input type="text" id="global-search" placeholder="Search by common or scientific name..." autocomplete="off" value="{{ search }}">
             </div>
         </div>
     </header>
+
+    {% if search or current_category %}
+    <section class="search-feedback-banner">
+        <div class="container">
+            <h3>Marketplace Results</h3>
+            <p>
+                Showing marketplace items for: 
+                {% if search %}<strong>"{{ search }}"</strong>{% endif %}
+                {% if search and current_category %} and {% endif %}
+                {% if current_category %}category: <strong>"{{ current_category }}"</strong>{% endif %}
+            </p>
+            <a href="{{ url_for('shop.shop') }}" class="btn-clear-search">Clear Filters / View All</a>
+        </div>
+    </section>
+    {% endif %}
 
     <div class="shop-layout">
         <aside class="filter-sidebar">
             <div class="sidebar-sticky">
                 <div class="sidebar-header">
                     <h3><i class="ri-filter-3-line"></i> Filter Benefits</h3>
-                    <button id="clear-all-filters" class="clear-btn hidden">Clear All</button>
+                    <button id="clear-all-filters" class="clear-btn {% if not current_category %}hidden{% endif %}">Clear</button>
                 </div>
                 
                 <ul class="benefit-list">
                     <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Sleep">
+                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Sleep' %}active{% endif %}" data-benefit="Sleep">
                             <span class="category-icon"><i class="ri-moon-clear-line"></i></span>
                             <span class="category-label">Sleep & Relaxation</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Digestion">
+                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Digestion' %}active{% endif %}" data-benefit="Digestion">
                             <span class="category-icon"><i class="ri-restaurant-line"></i></span>
                             <span class="category-label">Digestive Health</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Immunity">
+                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Immunity' %}active{% endif %}" data-benefit="Immunity">
                             <span class="category-icon"><i class="ri-shield-flash-line"></i></span>
                             <span class="category-label">Immune Support</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Energy">
+                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Energy' %}active{% endif %}" data-benefit="Energy">
                             <span class="category-icon"><i class="ri-thunderstorms-line"></i></span>
                             <span class="category-label">Energy & Focus</span>
                         </button>
                     </li>
                     <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Respiratory">
+                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Respiratory' %}active{% endif %}" data-benefit="Respiratory">
                             <span class="category-icon"><i class="ri-windy-line"></i></span>
                             <span class="category-label">Respiratory Health</span>
                         </button>
@@ -125,6 +140,7 @@
                     </div>
                     <h4>No Botanicals Found</h4>
                     <p>We couldn't find any items matching your exact query. Try refining your spelling or expanding your health criteria filters.</p>
+                    <a href="{{ url_for('shop.shop') }}" class="btn btn-primary" style="margin-top: 1rem;">Reset Store</a>
                 </div>
             </div>
         </section>
@@ -134,4 +150,5 @@
 
 {% block js %}
 <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 {% endblock %}

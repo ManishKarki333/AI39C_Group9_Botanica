@@ -7,7 +7,6 @@ from app.models.user_model import User
 from app.models.contact_model import ContactMessage
 from app.models.order_model import Order
 
-
 # Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
 # Basic email format validator
@@ -159,6 +158,7 @@ class AuthController(BaseController):
         merchant_id = session.get("user_id")
         herbs = db.fetch_all("SELECT * FROM herbs WHERE merchant_id = %s", (merchant_id,))
         db.close()
-        # Fetch orders for the current merchant
+        
+        # Fetch orders for the current merchant (uses corrected query)
         orders = self.order_model.get_merchant_orders(merchant_id)
         return render_template("merchant_dashboard.html", herbs=herbs, orders=orders)

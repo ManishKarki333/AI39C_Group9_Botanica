@@ -1,135 +1,132 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Initialize primary element hooks
-    const cartItemsSection = document.querySelector('.cart-items-section');
-    const subtotalDisplay = document.getElementById('cart-subtotal');
-    const totalDisplay = document.getElementById('cart-total');
-    const checkoutBtn = document.getElementById('checkout-btn');
-    const deliveryWindowSelect = document.getElementById('delivery-window');
-
-    /**
-     * Updates the financial readouts across the document layout using localized formats
-     */
-    function updateUISummary(subtotalValue) {
-        // FIXED: Standardized to Nepalese Rs. formatting to match templates perfectly
-        const formattedTotal = `Rs. ${subtotalValue.toFixed(2)}`;
-        if (subtotalDisplay) subtotalDisplay.textContent = formattedTotal;
-        if (totalDisplay) totalDisplay.textContent = formattedTotal;
-    }
-
-    /**
-     * Checks if the basket is completely empty to prompt structural UI updates
-     */
-    function checkEmptyCartState() {
-        const itemCards = document.querySelectorAll('.cart-item-card');
+document.addEventListener('DOMContentLoaded', () => {
+    // ────────────────────────────────────────────────────────────────
+    // 1. STOREFRONT: ADD TO CART LISTENER
+    // ────────────────────────────────────────────────────────────────
+    document.addEventListener('click', async (e) => {
+        const cartButton = e.target.closest('.action-add-cart');
         
-        if (itemCards.length === 0 && cartItemsSection) {
-            // FIXED: Synchronized with cart.html template typography and classes
-            cartItemsSection.innerHTML = `
-                <div class="empty-cart-fallback" style="text-align: center; padding: 3rem 1rem;">
-                    <i class="ri-shopping-basket-line" style="font-size: 4rem; color: #ccc;"></i>
-                    <h3>Your basket is empty</h3>
-                    <p>Explore our organic remedies directory to add botanicals here.</p>
-                    <a href="/shop" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Browse Storefront</a>
-                </div>
-            `;
-            if (checkoutBtn) checkoutBtn.disabled = true;
-            if (subtotalDisplay) subtotalDisplay.textContent = "Rs. 0.00";
-            if (totalDisplay) totalDisplay.textContent = "Rs. 0.00";
-        }
-    }
+        if (cartButton) {
+            e.preventDefault();
+            const herbId = cartButton.getAttribute('data-id');
+            const originalIcon = cartButton.innerHTML;
 
-    /**
-     * Sends asynchronous quantity shifts directly to the Flask session engine
-     */
-    function modifyBackendCartQuantity(herbId, action, cardElement) {
-        fetch('/api/cart/update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ herb_id: herbId, action: action })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                updateUISummary(data.subtotal);
-                checkEmptyCartState();
-            } else {
-                console.error("Session update synchronization failure:", data.message);
-            }
-        })
-        .catch(err => console.error("Network communication crash:", err));
-    }
+            // Visual feedback
+            cartButton.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
+            cartButton.disabled = true;
 
-    /**
-     * Sends a direct deletion request to completely drop an item row from memory
-     */
-    function removeBackendCartItem(herbId, cardElement) {
-        fetch('/api/cart/remove', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ herb_id: herbId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                cardElement.remove();
-                updateUISummary(data.subtotal);
-                checkEmptyCartState();
-            }
-        })
-        .catch(err => console.error("Network erasure tracking crash:", err));
-    }
+            try {
+                const response = await fetch('/shop/add_to_cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ herb_id: herbId })
+                });
 
-    /**
-     * Event listener capturing clicks within the items column container
-     */
-    if (cartItemsSection) {
-        cartItemsSection.addEventListener('click', function(event) {
-            const target = event.target;
-            const itemCard = target.closest('.cart-item-card');
-            if (!itemCard) return;
+                const result = await response.json();
 
-            const herbId = itemCard.dataset.herbId;
-            const qtyDisplay = itemCard.querySelector('.qty-display');
-            let currentQty = parseInt(qtyDisplay.textContent, 10);
-
-            // 1. Handle Increment Operations Click
-            if (target.closest('.inc-btn')) {
-                if (currentQty < 99) {
-                    qtyDisplay.textContent = currentQty + 1;
-                    modifyBackendCartQuantity(herbId, 'increment', itemCard);
-                }
-            }
-
-            // 2. Handle Decrement Operations Click
-            else if (target.closest('.dec-btn')) {
-                if (currentQty > 1) {
-                    qtyDisplay.textContent = currentQty - 1;
-                    modifyBackendCartQuantity(herbId, 'decrement', itemCard);
+                if (response.ok) {
+                    cartButton.innerHTML = '<i class="ri-check-line"></i>';
+                    cartButton.style.backgroundColor = '#2c5e3b';
+                    
+                    // Update global navbar count if it exists
+                    const navbarBadge = document.getElementById('navbar-cart-count');
+                    if (navbarBadge) navbarBadge.textContent = result.cart_count;
                 } else {
-                    // Automatically execute removal drop if quantity hits zero
-                    removeBackendCartItem(herbId, itemCard);
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error("Cart Error:", error);
+                cartButton.innerHTML = '<i class="ri-error-warning-line"></i>';
+                cartButton.style.backgroundColor = '#e53e3e';
+            } finally {
+                setTimeout(() => {
+                    cartButton.innerHTML = originalIcon;
+                    cartButton.style.backgroundColor = '';
+                    cartButton.disabled = false;
+                }, 1200);
+            }
+        }
+    });
+
+    // ────────────────────────────────────────────────────────────────
+    // 2. SHOPPING CART PAGE: QUANTITY CONTROLS & REMOVAL
+    // ────────────────────────────────────────────────────────────────
+    const cartLayout = document.querySelector('.cart-layout');
+
+    if (cartLayout) {
+        cartLayout.addEventListener('click', async (e) => {
+            const incBtn = e.target.closest('.inc-btn');
+            const decBtn = e.target.closest('.dec-btn');
+            const removeBtn = e.target.closest('.item-remove-btn');
+
+            // Handle Increment / Decrement
+            if (incBtn || decBtn) {
+                const btn = incBtn || decBtn;
+                const herbId = btn.getAttribute('data-id');
+                const action = incBtn ? 'increment' : 'decrement';
+
+                try {
+                    const response = await fetch('/shop/update_cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ herb_id: herbId, action: action })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.status === 'success') {
+                        // Update individual item quantity display
+                        const qtySpan = document.getElementById(`qty-${herbId}`);
+                        if (qtySpan) qtySpan.textContent = result.cart_count; // Or item-specific quantity if isolated
+                        
+                        // If decremented to 0, remove the element completely
+                        if (action === 'decrement' && parseInt(qtySpan.textContent) <= 0) {
+                            btn.closest('.cart-item-card').remove();
+                        }
+
+                        // Update order summary subtotal & total amounts
+                        if (result.subtotal !== undefined) {
+                            const formattedSub = `Rs. ${parseFloat(result.subtotal).toFixed(2)}`;
+                            document.getElementById('cart-subtotal').textContent = formattedSub;
+                            document.getElementById('cart-total').textContent = formattedSub;
+                        }
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.error("Cart Update Error:", error);
                 }
             }
 
-            // 3. Handle Explicit Single Line Item Deletions
-            else if (target.closest('.item-remove-btn')) {
-                removeBackendCartItem(herbId, itemCard);
-            }
-        });
-    }
+            // Handle Item Removal
+            if (removeBtn) {
+                const herbId = removeBtn.getAttribute('data-id');
 
-    /**
-     * Validates delivery selections before final routing execution
-     */
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', function(e) {
-            if (!deliveryWindowSelect.value) {
-                alert('Please select a preferred delivery window to complete your checkout.');
-                deliveryWindowSelect.focus();
-                return;
+                try {
+                    const response = await fetch('/shop/remove_from_cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ herb_id: herbId })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.status === 'success') {
+                        // Purge card visual tree structure completely
+                        removeBtn.closest('.cart-item-card').remove();
+
+                        // Refresh order summary values
+                        if (result.subtotal !== undefined) {
+                            const formattedSub = `Rs. ${parseFloat(result.subtotal).toFixed(2)}`;
+                            document.getElementById('cart-subtotal').textContent = formattedSub;
+                            document.getElementById('cart-total').textContent = formattedSub;
+                        }
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.error("Cart Removal Error:", error);
+                }
             }
-            alert('Proceeding to backend order generation pipeline...');
         });
     }
 });

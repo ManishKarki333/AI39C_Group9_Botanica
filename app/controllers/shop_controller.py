@@ -29,20 +29,15 @@ class ShopController(BaseController):
         return render_template('shop.html', herbs=herbs_list, search=search_query, current_category=category_filter)
 
     def api_search_and_filter(self):
-        """
-        Asynchronous API Endpoint supporting live search updates.
-        Maps to Sprint 1 Acceptance Criteria for live search filtering.
-        """
         query_param = request.args.get('q', '').strip()
         benefit_param = request.args.get('benefit', '').strip()
         
+        print(f"DEBUG: query_param='{query_param}', benefit_param='{benefit_param}'")
+        
         try:
             db = Database()
-            sql = """
-                SELECT id, common_name, scientific_name, description, 
-                    benefit_category, price, image_url 
-                FROM herbs WHERE 1=1
-            """
+            # Flattened SQL query to prevent formatting/placeholder issues
+            sql = "SELECT id, common_name, scientific_name, description, benefit_category, price, image_url FROM herbs WHERE 1=1"
             query_args = []
             
             if query_param:
@@ -51,26 +46,28 @@ class ShopController(BaseController):
                 query_args.extend([search_term, search_term])
                 
             if benefit_param:
-                sql += " AND benefit_category LIKE %s"
-                benefit_term = f"%{benefit_param}%"
-                query_args.append(benefit_term)
+                sql += " AND LOWER(benefit_category) = LOWER(%s)"
+                query_args.append(benefit_param)
             
+            # Ensure query_args is passed as a tuple
             raw_results = db.fetch_all(sql, tuple(query_args))
             db.close()
             
             formatted_herbs = []
-            for row in raw_results:
-                formatted_herbs.append({
-                    "id": row[0],
-                    "common_name": row[1],
-                    "scientific_name": row[2],
-                    "description": row[3],
-                    "benefit_category": row[4],
-                    "price": float(row[5]) if row[5] else 0.0,
-                    "image_url": row[6] if row[6] else "",
-                    "form_factor": "Raw Herb", 
-                    "on_vacation": False 
-                })
+            if raw_results:
+                for row in raw_results:
+                    # Adjust index mapping if your Database class returns dictionaries instead of tuples
+                    formatted_herbs.append({
+                        "id": row.get('id'),
+                        "common_name": row.get('common_name'),
+                        "scientific_name": row.get('scientific_name'),
+                        "description": row.get('description'),
+                        "benefit_category": row.get('benefit_category'),
+                        "price": float(row['price']) if row.get('price') else 0.0,
+                        "image_url": row.get('image_url') if row.get('image_url') else "",
+                        "form_factor": "Raw Herb", 
+                        "on_vacation": False 
+                    })
             
             return jsonify({
                 "status": "success",
@@ -79,17 +76,43 @@ class ShopController(BaseController):
             }), 200
             
         except Exception as e:
+            print(f"CRITICAL BACKEND ERROR DETAILED: {repr(e)}")
             return jsonify({
                 "status": "error",
                 "message": f"Async engine failed: {str(e)}"
-            }), 500
+            }), 500    
 
     def herb_library(self):
-        """Fetch all herbs for the reference library module."""
+        """Fetch all herbs, or filter/search them for the reference library module."""
         db = Database()
-        herbs = db.fetch_all("SELECT * FROM herbs")
+        search_query = request.args.get('search', '').strip()
+        filter_benefit = request.args.get('filter', '').strip()
+        
+        # Base SQL query
+        query = "SELECT * FROM herbs WHERE 1=1"
+        params = []
+        
+        # Append search condition if present
+        if search_query:
+            query += " AND (common_name LIKE %s OR scientific_name LIKE %s)"
+            search_term = f"%{search_query}%"
+            params.extend([search_term, search_term])
+            
+        # Append filter condition if present
+        if filter_benefit:
+            query += " AND benefit_category LIKE %s"
+            filter_term = f"%{filter_benefit}%"
+            params.append(filter_term)
+            
+        herbs = db.fetch_all(query, tuple(params))
         db.close()
-        return render_template("herb_library.html", herbs=herbs)
+        
+        return render_template(
+            "herb_library.html", 
+            herbs=herbs, 
+            search_query=search_query,
+            filter_benefit=filter_benefit
+        )
     
     def herb_details(self, id):
         db = Database()
@@ -174,12 +197,13 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Product record untraceable"}), 442
 
         # Standardize record parsing structures cleanly
+        # Use the column names defined in your SELECT query
         herb_mapped = {
-            "id": herb[0],
-            "common_name": herb[1],
-            "scientific_name": herb[2],
-            "price": float(herb[3]) if herb[3] else 0.0,
-            "image_url": herb[4] if herb[4] else '/static/uploads/default_herb.png'
+            "id": herb['id'],
+            "common_name": herb['common_name'],
+            "scientific_name": herb['scientific_name'],
+            "price": float(herb['price']) if herb.get('price') else 0.0,
+            "image_url": herb.get('image_url') or '/static/uploads/default_herb.png'
         }
 
         if 'cart' not in session:

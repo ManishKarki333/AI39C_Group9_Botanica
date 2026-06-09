@@ -24,7 +24,6 @@ def create_app():
 
     # 2. Register the returned blueprints natively into the app instance context
     app.register_blueprint(auth_router.register())
-    app.register_blueprint(shop_router.register())
+    app.register_blueprint(shop_router.register(), url_prefix='/shop')  # Optional prefix for shop routes
     app.register_blueprint(order_router.register())
-
     return app
