@@ -106,6 +106,29 @@ class AuthController(BaseController):
             )
 
         return render_template("register.html")
+    
+    # ── Profile ─────────────────────────────────────────────
+    def profile(self):
+        """Render user account profile and order history."""
+        if 'user_id' not in session:
+            flash("Please log in to access your account.", "warning")
+            return redirect(url_for('auth.login'))
+            
+        db = Database()
+        
+        # Fetch user info
+        user_query = "SELECT id, name, email, created_at FROM users WHERE id = %s"
+        user = db.fetch_one(user_query, (session['user_id'],))
+        
+        # Fetch user's order history using the orders table schema
+        orders_query = """
+            SELECT id, total_amount, order_status, created_at 
+            FROM orders WHERE user_id = %s ORDER BY created_at DESC
+        """
+        orders = db.fetch_all(orders_query, (session['user_id'],))
+        db.close()
+        
+        return render_template('profile.html', user=user, orders=orders)
 
     # ── Logout ───────────────────────────────────────────────
     def logout(self):

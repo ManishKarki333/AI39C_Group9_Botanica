@@ -5,7 +5,7 @@ class Order:
         self.db = Database()
 
     def get_merchant_orders(self, merchant_id):
-        query = "SELECT * FROM orders WHERE user_id = %s ORDER BY created_at DESC"
+        query = "SELECT * FROM orders WHERE merchant_id = %s ORDER BY created_at DESC"
         return self.db.fetch_all(query, (merchant_id,))
 
     def update_status(self, order_id, new_status, merchant_id):

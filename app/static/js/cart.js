@@ -76,11 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response.ok && result.status === 'success') {
                         // Update individual item quantity display
                         const qtySpan = document.getElementById(`qty-${herbId}`);
-                        if (qtySpan) qtySpan.textContent = result.cart_count; // Or item-specific quantity if isolated
                         
-                        // If decremented to 0, remove the element completely
-                        if (action === 'decrement' && parseInt(qtySpan.textContent) <= 0) {
-                            btn.closest('.cart-item-card').remove();
+                        if (action === 'decrement' && qtySpan) {
+                            const currentVal = parseInt(qtySpan.textContent, 10) - 1;
+                            if (currentVal <= 0) {
+                                btn.closest('.cart-item-card').remove();
+                            } else {
+                                qtySpan.textContent = currentVal;
+                            }
+                        } else if (action === 'increment' && qtySpan) {
+                            qtySpan.textContent = parseInt(qtySpan.textContent, 10) + 1;
                         }
 
                         // Update order summary subtotal & total amounts
@@ -89,6 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             document.getElementById('cart-subtotal').textContent = formattedSub;
                             document.getElementById('cart-total').textContent = formattedSub;
                         }
+
+                        // Check if cart is empty after modification
+                        evaluateCartEmptyState();
                     } else {
                         throw new Error(result.message);
                     }
@@ -120,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             document.getElementById('cart-subtotal').textContent = formattedSub;
                             document.getElementById('cart-total').textContent = formattedSub;
                         }
+
+                        // Check if cart is empty after purge
+                        evaluateCartEmptyState();
                     } else {
                         throw new Error(result.message);
                     }
@@ -128,5 +139,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 3. CHECKOUT & CART HANDLER
+    // ────────────────────────────────────────────────────────────────
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            const deliveryWindow = document.getElementById('delivery-window').value;
+
+            if (!deliveryWindow) {
+                alert("Please select a preferred delivery window before proceeding.");
+                return;
+            }
+
+            // Redirect to your processing/checkout endpoint 
+            // (Pass window info along or read it server-side from session/form if submitted via form)
+            window.location.href = `/shop/checkout?window=${deliveryWindow}`;
+        });
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 4. UTILITY: EMPTY CART STATE FALLBACK
+    // ────────────────────────────────────────────────────────────────
+    function evaluateCartEmptyState() {
+        const remainingCards = document.querySelectorAll('.cart-item-card');
+        const itemsSection = document.querySelector('.cart-items-section');
+        const checkoutBtn = document.getElementById('checkout-btn');
+
+        if (remainingCards.length === 0) {
+            // Disable Checkout Button
+            if (checkoutBtn) checkoutBtn.disabled = true;
+
+            // Inject empty state HTML dynamically
+            if (itemsSection && !document.querySelector('.empty-cart-fallback')) {
+                itemsSection.innerHTML = `
+                    <div class="empty-cart-fallback" style="text-align: center; padding: 3rem 1rem;">
+                        <i class="ri-shopping-basket-line" style="font-size: 4rem; color: #ccc;"></i>
+                        <h3>Your basket is empty</h3>
+                        <p>Explore our organic remedies directory to add botanicals here.</p>
+                        <a href="/shop" class="btn btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Browse Storefront</a>
+                    </div>
+                `;
+            }
+            
+            // Update global badge count to 0
+            const navbarBadge = document.getElementById('navbar-cart-count');
+            if (navbarBadge) navbarBadge.textContent = '0';
+        }
     }
 });

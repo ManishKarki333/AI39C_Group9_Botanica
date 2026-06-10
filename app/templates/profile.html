@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Botanica - My Account{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="account-dashboard">
+    <aside class="dashboard-sidebar">
+        <div class="user-profile-card">
+            <div class="avatar-circle">{{ user.name[:1] | upper }}</div>
+            <div class="user-meta">
+                <h2>{{ user.name }}</h2>
+                <p>{{ user.email }}</p>
+            </div>
+        </div>
+        <nav class="account-nav">
+            <a href="{{ url_for('auth.profile') }}" class="nav-item active">Order History</a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">Sign Out</a>
+        </nav>
+    </aside>
+
+    <section class="dashboard-content">
+        <h1>Order History</h1>
+        
+        {% if orders %}
+            <div class="table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><strong>#{{ order.id }}</strong></td>
+                            <td>
+                                {% if order.created_at %}
+                                    {{ order.created_at.strftime('%b %d, %Y') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>Rs. {{ "%.2f" | format(order.total_amount | float) }}</td>
+                            <td>
+                                <span class="status-badge status-{{ order.order_status | lower | replace(' ', '-') }}">
+                                    {{ order.order_status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('shop.track_order_status', order_id=order.id) }}" class="btn btn-sm btn-outline">Track Order</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>You haven't placed any orders yet.</p>
+                <a href="{{ url_for('shop.shop') }}" class="btn">Explore Marketplace</a>
+            </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

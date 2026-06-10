@@ -31,7 +31,7 @@
                 </a>
 
                 {% if session.get('user_id') %}
-                    <a href="/account" class="util-btn" aria-label="User Account Settings">
+                    <a href="{{ url_for('auth.profile') }}" class="util-btn" aria-label="User Account Settings">
                         <i class="ri-user-line util-icon"></i>
                     </a>
                     

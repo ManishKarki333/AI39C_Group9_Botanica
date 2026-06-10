@@ -3,6 +3,7 @@ import os
 from flask import render_template, request, session, redirect, url_for, flash, jsonify
 from app.controllers.base_controller import BaseController
 from app.models.database import Database
+from datetime import datetime
 
 class ShopController(BaseController):
     
@@ -190,20 +191,21 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Missing product identifier"}), 400
             
         db = Database()
-        herb = db.fetch_one("SELECT id, common_name, scientific_name, price, image_url FROM herbs WHERE id = %s", (herb_id,))
+        # Added merchant_id to the SELECT query
+        herb = db.fetch_one("SELECT id, common_name, scientific_name, price, image_url, merchant_id FROM herbs WHERE id = %s", (herb_id,))
         db.close()
         
         if not herb:
             return jsonify({"status": "error", "message": "Product record untraceable"}), 442
 
-        # Standardize record parsing structures cleanly
-        # Use the column names defined in your SELECT query
+        # Map merchant_id along with other fields
         herb_mapped = {
             "id": herb['id'],
             "common_name": herb['common_name'],
             "scientific_name": herb['scientific_name'],
             "price": float(herb['price']) if herb.get('price') else 0.0,
-            "image_url": herb.get('image_url') or '/static/uploads/default_herb.png'
+            "image_url": herb.get('image_url') or '/static/uploads/default_herb.png',
+            "merchant_id": herb.get('merchant_id')
         }
 
         if 'cart' not in session:
@@ -211,20 +213,21 @@ class ShopController(BaseController):
             
         cart = session['cart']
         
-        # CRITICAL RESILIENCE FIX: Compare IDs safely as plain strings.
-        # This prevents type crashes if IDs are alphanumeric, UUIDs, or numbers.
+        # Compare IDs safely as plain strings
         existing_item = next((item for item in cart if str(item['id']) == str(herb_mapped['id'])), None)
         
         if existing_item:
             existing_item['quantity'] += 1
         else:
+            # Append merchant_id to the cart item dictionary
             cart.append({
                 'id': herb_mapped['id'],
                 'common_name': herb_mapped['common_name'],
                 'scientific_name': herb_mapped['scientific_name'],
                 'price': herb_mapped['price'],
                 'quantity': 1,
-                'image_url': herb_mapped['image_url']
+                'image_url': herb_mapped['image_url'],
+                'merchant_id': herb_mapped['merchant_id']
             })
             
         session['cart'] = cart
@@ -290,3 +293,116 @@ class ShopController(BaseController):
             "cart_count": sum(i['quantity'] for i in updated_cart),
             "subtotal": subtotal
         }), 200
+    
+    def checkout_page(self):
+        """Step 1: Render the checkout payment page via GET."""
+        if 'cart' not in session or not session['cart']:
+            flash("Your basket is empty.", "warning")
+            return redirect(url_for('shop.shop'))
+            
+        # Grab the delivery window from URL query string and save to session
+        delivery_window = request.args.get('window', '')
+        session['selected_delivery_window'] = delivery_window
+        
+        # Calculate subtotal/total securely from the list session
+        cart_total = 0.0
+        for item in session.get('cart', []):
+            cart_total += float(item.get('price', 0)) * int(item.get('quantity', 1))
+            
+        return render_template('checkout.html', delivery_window=delivery_window, cart_total=cart_total)
+
+    def process_checkout(self):
+        if 'cart' not in session or not session['cart']:
+            flash("Your session expired or your basket is empty.", "warning")
+            return redirect(url_for('shop.shop'))
+            
+        # Securely recalculate the total from the list session
+        cart_total = 0.0
+        for item in session.get('cart', []):
+            cart_total += float(item.get('price', 0)) * int(item.get('quantity', 1))
+            
+        delivery_window = session.get('selected_delivery_window', '')
+        user_id = session.get('user_id')
+        shipping_address = request.form.get('shipping_address', '').strip()
+        
+        cart_items = session.get('cart', [])
+        merchant_id = cart_items[0].get('merchant_id') if cart_items else None
+        
+        if not user_id:
+            flash("You must be logged in to place an order.", "danger")
+            return redirect(url_for('auth.login'))
+
+        if not merchant_id:
+            flash("Cannot determine the merchant for this order.", "danger")
+            return redirect(url_for('shop.view_cart'))
+
+        db = Database()
+        try:
+            # Added delivery_date and CURDATE() to the insert query
+            order_query = """
+                INSERT INTO orders (user_id, merchant_id, total_amount, shipping_address, delivery_date, delivery_window, order_status, created_at)
+                VALUES (%s, %s, %s, %s, CURDATE(), %s, 'Pending', NOW())
+            """
+            db.execute(order_query, (user_id, merchant_id, cart_total, shipping_address, delivery_window))
+            
+            order_id_cursor = db.fetch_one("SELECT LAST_INSERT_ID()") 
+            order_id = order_id_cursor[0] if order_id_cursor else None
+            
+            if order_id:
+                item_query = """
+                    INSERT INTO order_items (order_id, herb_id, quantity, price_at_purchase)
+                    VALUES (%s, %s, %s, %s)
+                """
+                for item in cart_items:
+                    db.execute(item_query, (
+                        order_id, 
+                        item['id'], 
+                        item['quantity'], 
+                        item['price']
+                    ))
+            
+            session.pop('cart', None)
+            session.pop('selected_delivery_window', None)
+            
+            flash("Order placed successfully!", "success")
+            return redirect(url_for('auth.profile'))
+            
+        except Exception as e:
+            print("Database Insert Error:", e)
+            flash("An error occurred while processing your order. Please try again.", "danger")
+            return redirect(url_for('shop.view_cart'))
+            
+        finally:
+            db.close()
+
+    def track_order_status(self, order_id):
+        """Fetch order status and details for a customer using actual db schema."""
+        if 'user_id' not in session:
+            flash("Please log in to view your order status.", "warning")
+            return redirect(url_for('auth.login'))
+            
+        db = Database()
+        
+        # Match schema column names: user_id, order_status
+        order_query = """
+            SELECT id, order_status, total_amount, shipping_address, delivery_date, delivery_window, created_at 
+            FROM orders WHERE id = %s AND user_id = %s
+        """
+        order = db.fetch_one(order_query, (order_id, session['user_id']))
+        
+        if not order:
+            db.close()
+            flash("Order not found or access denied.", "danger")
+            return redirect(url_for('shop.shop'))
+            
+        # Join order_items with herbs to get item details and images using schema keys
+        items_query = """
+            SELECT oi.id, oi.quantity, oi.price_at_purchase, h.common_name, h.scientific_name, h.image_url
+            FROM order_items oi
+            JOIN herbs h ON oi.herb_id = h.id
+            WHERE oi.order_id = %s
+        """
+        order_items = db.fetch_all(items_query, (order_id,))
+        db.close()
+        
+        return render_template('order_status.html', order=order, items=order_items)
