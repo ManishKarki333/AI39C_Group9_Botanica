@@ -1,8 +1,16 @@
-from flask import Blueprint, render_template
+from flask import Blueprint
+from app.controllers.order import OrderController
 
-order_bp = Blueprint('order', __name__)
+class OrderRoutes:
+    def __init__(self):
+        self.bp = Blueprint('order', __name__)
+        self.controller = OrderController()
 
-@order_bp.route('/order_status')
-def order_status():
-    # orders=[] for now since we are only doing frontend
-    return render_template('order_status.html', orders=[])
+    def register(self):
+        self.bp.add_url_rule(
+            '/order_status',
+            endpoint='order_status',
+            view_func=self.controller.order_status,
+            methods=['GET']
+        )
+        return self.bp
