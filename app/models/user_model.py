@@ -13,9 +13,11 @@
 =============================================================
 """
 
+from __future__ import annotations
+from typing import Any
 from werkzeug.security import generate_password_hash, check_password_hash
-from .base_model import BaseModel
-from .database import Database
+from app.models.base_model import BaseModel     # ✅ FIX: absolute import
+from app.models.database import Database        # ✅ FIX: absolute import
 
 
 class User(BaseModel):
@@ -31,22 +33,20 @@ class User(BaseModel):
     """
 
     @property
-    def table(self):
+    def table(self) -> str:
         """Tell BaseModel which database table to use."""
         return "users"
 
-    def __init__(self, name=None, email=None, password=None, role="user"):
-        """
-        Create a User object.
-
-        Encapsulation:
-          - __password is PRIVATE (double underscore).
-          - It can only be set through set_password().
-          - This protects the password from accidental access.
-        """
+    def __init__(
+        self,
+        name: str | None = None,
+        email: str | None = None,
+        password: str | None = None,
+        role: str = "user",
+    ) -> None:
         self.name = name
         self.email = email
-        self.__password: str | None = None   # ✅ declared with type hint
+        self.__password: str | None = None
         self.role = role
 
         if password:
@@ -56,21 +56,16 @@ class User(BaseModel):
         """Hash and store the password securely."""
         self.__password = generate_password_hash(plain_password)
 
-    def get_hashed_password(self) -> str | None:
-        """
-        ✅ NEW: Safe internal getter for the hashed password.
-        Used by from_db() to assign the password cleanly
-        without triggering Pylance name-mangling warnings.
-        """
-        return self.__password
-
     def set_hashed_password(self, hashed: str) -> None:
         """
-        ✅ NEW: Directly assign an already-hashed password.
-        Used by from_db() to restore a User from the database
-        without re-hashing the already hashed value.
+        Directly assign an already-hashed password.
+        Used by from_db() to avoid Pylance name-mangling warnings.
         """
         self.__password = hashed
+
+    def get_hashed_password(self) -> str | None:
+        """Return the hashed password (for internal use only)."""
+        return self.__password
 
     def check_password(self, plain_password: str) -> bool:
         """Check if the given password matches the stored hash."""
@@ -88,10 +83,7 @@ class User(BaseModel):
         db.close()
 
     def update(self, user_id: int, update_password: bool = False) -> None:
-        """
-        Update user in database.
-        If update_password=True, the password is also updated.
-        """
+        """Update user in the database."""
         db = Database()
         if update_password:
             db.execute(
@@ -106,10 +98,7 @@ class User(BaseModel):
         db.close()
 
     def update_profile(self, user_id: int, update_password: bool = False) -> None:
-        """
-        Update profile (name, email, and optionally password).
-        Used when a user edits their own profile (no role change).
-        """
+        """Update profile — name, email, and optionally password."""
         db = Database()
         if update_password:
             db.execute(
@@ -124,10 +113,7 @@ class User(BaseModel):
         db.close()
 
     def email_exists(self, exclude_id: int | None = None) -> bool:
-        """
-        Check if this user's email is already in the database.
-        exclude_id: ignore this user ID when updating.
-        """
+        """Check if this user's email is already in the database."""
         db = Database()
         if exclude_id is not None:
             result = db.fetch_one(
@@ -143,28 +129,23 @@ class User(BaseModel):
         return result is not None
 
     @classmethod
-    def from_db(cls, data: dict | None) -> "User | None":
+    def from_db(cls, data: dict[str, Any] | None) -> User | None:
         """
-        Create a User object from a database dictionary.
-        ✅ FIX: Uses set_hashed_password() instead of name-mangling
-        to avoid Pylance private attribute warnings.
+        Create a User object from a database row dictionary.
+        Uses set_hashed_password() to avoid name-mangling issues.
         """
         if data is None:
             return None
 
         user = cls()
-        user.name = data["name"]
+        user.name  = data["name"]
         user.email = data["email"]
-        user.role = data["role"]
-
-        # ✅ FIX: clean setter instead of _User__password = ...
-        user.set_hashed_password(data["password"])
+        user.role  = data["role"]
+        user.set_hashed_password(data["password"])  # ✅ clean, no mangling
         return user
 
     def __str__(self) -> str:
-        """Human-readable string representation."""
         return f"User(name={self.name}, email={self.email}, role={self.role})"
 
     def __repr__(self) -> str:
-        """Developer-friendly representation for debugging."""
         return f"<User email={self.email}>"
