@@ -118,11 +118,88 @@ class ShopController(BaseController):
     def herb_details(self, id):
         db = Database()
         herb = db.fetch_one("SELECT * FROM herbs WHERE id = %s", (id,))
-        db.close()
+        
         if not herb:
+            db.close()
             flash("Herb record not found.", "danger")
             return redirect(url_for("shop.shop")) 
-        return render_template("herb_details.html", herb=herb)
+            
+        # Fetch reviews for this herb
+        reviews_query = """
+            SELECT r.*, u.name as user_name 
+            FROM reviews r 
+            JOIN users u ON r.user_id = u.id 
+            WHERE r.herb_id = %s 
+            ORDER BY r.created_at DESC
+        """
+        reviews = db.fetch_all(reviews_query, (id,))
+        db.close()
+        
+        # Calculate review statistics
+        total_reviews = len(reviews)
+        average_rating = 0.0
+        if total_reviews > 0:
+            average_rating = sum(r['rating'] for r in reviews) / total_reviews
+            average_rating = round(average_rating, 1)
+
+        return render_template(
+            "herb_details.html", 
+            herb=herb, 
+            reviews=reviews, 
+            average_rating=average_rating, 
+            total_reviews=total_reviews
+        )
+
+    def add_review(self, herb_id):
+        if 'user_id' not in session:
+            flash("Please log in to leave a review.", "danger")
+            return redirect(url_for("auth.login"))
+
+        rating = request.form.get("rating")
+        comment = request.form.get("comment", "").strip()
+        
+        if not rating or not comment:
+            flash("Rating and comment are required.", "danger")
+            return redirect(url_for("shop.herb_details", id=herb_id))
+
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                raise ValueError()
+        except ValueError:
+            flash("Invalid rating selected.", "danger")
+            return redirect(url_for("shop.herb_details", id=herb_id))
+
+        # Handle optional review image upload
+        image_url = None
+        review_image = request.files.get("review_image")
+        if review_image and review_image.filename:
+            upload_dir = 'app/static/uploads'
+            if not os.path.exists(upload_dir):
+                os.makedirs(upload_dir)
+            
+            ext = os.path.splitext(review_image.filename)[1]
+            unique_filename = f"review_{uuid.uuid4().hex}{ext}"
+            save_path = os.path.join(upload_dir, unique_filename)
+            review_image.save(save_path)
+            image_url = f'/static/uploads/{unique_filename}'
+
+        # Save to database
+        db = Database()
+        query = """
+            INSERT INTO reviews (herb_id, user_id, rating, comment, image_url, created_at)
+            VALUES (%s, %s, %s, %s, %s, NOW())
+        """
+        try:
+            db.execute(query, (herb_id, session.get("user_id"), rating, comment, image_url))
+            flash("Your review has been submitted successfully!", "success")
+        except Exception as e:
+            print(f"Error saving review: {e}")
+            flash("An error occurred while saving your review.", "danger")
+        finally:
+            db.close()
+
+        return redirect(url_for("shop.herb_details", id=herb_id))
 
     def add_product(self):
         """Secure multi-part form portal for inventory deployment."""

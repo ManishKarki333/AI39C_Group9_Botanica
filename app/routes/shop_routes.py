@@ -62,4 +62,9 @@ class ShopRoutes:
             self.shop_controller.track_order_status
         )
 
+        # NEW: Add Review Endpoint
+        self.bp.route("/add_review/<int:herb_id>", methods=["POST"])(
+            self.shop_controller.add_review
+        )
+
         return self.bp

@@ -149,13 +149,37 @@ class Database:
                 order_id INT NOT NULL,
                 herb_id INT NOT NULL,
                 quantity INT NOT NULL DEFAULT 1,
-                unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                price_at_purchase DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
                 FOREIGN KEY (herb_id) REFERENCES herbs(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
+        # 5. Reviews Table
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS reviews (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                herb_id INT NOT NULL,
+                user_id INT NOT NULL,
+                rating INT NOT NULL,
+                comment TEXT NOT NULL,
+                image_url VARCHAR(255) DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (herb_id) REFERENCES herbs(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        # Add OTP columns to users if they do not exist
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN otp_expiry DATETIME DEFAULT NULL")
+        except Exception:
+            pass
 
         admin = db.fetch_one(
             "SELECT * FROM users WHERE email = %s",

@@ -30,6 +30,18 @@ class AuthRoutes:
         self.bp.route("/contact", methods=["GET", "POST"])(
             self.controller.contact
         )
+        self.bp.route("/google_login", methods=["POST"])(
+            self.controller.google_login
+        )
+        self.bp.route("/forgot_password", methods=["GET", "POST"])(
+            self.controller.forgot_password
+        )
+        self.bp.route("/verify_otp", methods=["GET", "POST"])(
+            self.controller.verify_otp
+        )
+        self.bp.route("/reset_password", methods=["GET", "POST"])(
+            self.controller.reset_password
+        )
         
         # Dashboard stays under auth management
         self.bp.route("/merchant_dashboard", methods=["GET", "POST"])(
