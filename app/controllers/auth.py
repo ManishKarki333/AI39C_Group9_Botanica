@@ -7,15 +7,9 @@ from app.models.user_model import User
 from app.models.contact_model import ContactMessage
 from app.models.order_model import Order
 
-<<<<<<< HEAD
-# ✅ Security: whitelist of self-registerable roles
-ALLOWED_ROLES = {"user", "merchant"}
-# ✅ Basic email format validator
-=======
 # Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
 # Basic email format validator
->>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 class AuthController(BaseController):
@@ -181,9 +175,6 @@ class AuthController(BaseController):
         if session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
-<<<<<<< HEAD
-        return render_template("merchant_dashboard.html")
-=======
         
         # Fetch herbs for the current merchant
         db = Database()
@@ -194,4 +185,3 @@ class AuthController(BaseController):
         # Fetch orders for the current merchant (uses corrected query)
         orders = self.order_model.get_merchant_orders(merchant_id)
         return render_template("merchant_dashboard.html", herbs=herbs, orders=orders)
->>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
