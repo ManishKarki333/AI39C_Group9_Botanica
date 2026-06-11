@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Formulates target path parameter appending safe URL segments
-        const targetUrl = `/auth/herb-library?search=${encodeURIComponent(queryString.trim())}`;
+        const targetUrl = `/shop/herb_library?search=${encodeURIComponent(queryString.trim())}`;
         
         // Immediate clean client transition mapping
         window.location.href = targetUrl;
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const benefitValue = this.getAttribute('data-benefit');
             if (benefitValue) {
                 // Route query sequence into live target module parameters
-                window.location.href = `/auth/herb-library?filter=${encodeURIComponent(benefitValue)}`;
+                window.location.href = `/shop/herb_library?filter=${encodeURIComponent(benefitValue)}`;
             }
         });
     });

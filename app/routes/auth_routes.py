@@ -21,6 +21,9 @@ class AuthRoutes:
         self.bp.route("/logout", methods=["GET", "POST"])(
             self.controller.logout
         )
+        self.bp.route("/profile", methods=["GET", "POST"])(
+            self.controller.profile
+        )
         self.bp.route("/about", methods=["GET"])(
             self.controller.about
         )

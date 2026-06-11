@@ -163,7 +163,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3; 
   -webkit-box-orient: vertical;
 }
 
@@ -234,6 +233,40 @@ body {
     border-radius: 16px;
     padding: 30px;
     box-shadow: var(--shadow-sm);
+}
+
+.search-feedback-banner {
+    background-color: var(--bg-surface, #ffffff);
+    border-bottom: 1px solid var(--border-muted, #eaeaea);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.search-feedback-banner .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-clear-search {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-primary, #f7faf8);
+    color: var(--text-accent, #2f855a);
+    border: 1px solid var(--border-muted, #eaeaea);
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.btn-clear-search:hover {
+    background-color: var(--bg-surface-hover, #f0f7f4);
 }
 
 /* Desktop upgrade for layouts */

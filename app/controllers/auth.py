@@ -5,10 +5,11 @@ from app.controllers.base_controller import BaseController
 from app.models.database import Database
 from app.models.user_model import User
 from app.models.contact_model import ContactMessage
+from app.models.order_model import Order
 
-# ✅ Security: whitelist of self-registerable roles
+# Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
-# ✅ Basic email format validator
+# Basic email format validator
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 class AuthController(BaseController):
@@ -16,6 +17,7 @@ class AuthController(BaseController):
     def __init__(self):
         super().__init__()
         self.user_model = User()
+        self.order_model = Order()
 
     # ── Helpers ──────────────────────────────────────────────
     def is_logged_in(self) -> bool:
@@ -78,7 +80,7 @@ class AuthController(BaseController):
             password = request.form.get("password", "")
             role     = request.form.get("role", "user")
 
-            # ✅ Sanitize role — never trust user input
+            # Sanitize role — never trust user input
             if role not in ALLOWED_ROLES:
                 role = "user"
 
@@ -86,7 +88,7 @@ class AuthController(BaseController):
                 flash("All fields are required.", "danger")
                 return render_template("register.html")
 
-            # ✅ Validate email format
+            # Validate email format
             if not EMAIL_REGEX.match(email):
                 flash("Please enter a valid email address.", "danger")
                 return render_template("register.html")
@@ -104,6 +106,29 @@ class AuthController(BaseController):
             )
 
         return render_template("register.html")
+    
+    # ── Profile ─────────────────────────────────────────────
+    def profile(self):
+        """Render user account profile and order history."""
+        if 'user_id' not in session:
+            flash("Please log in to access your account.", "warning")
+            return redirect(url_for('auth.login'))
+            
+        db = Database()
+        
+        # Fetch user info
+        user_query = "SELECT id, name, email, created_at FROM users WHERE id = %s"
+        user = db.fetch_one(user_query, (session['user_id'],))
+        
+        # Fetch user's order history using the orders table schema
+        orders_query = """
+            SELECT id, total_amount, order_status, created_at 
+            FROM orders WHERE user_id = %s ORDER BY created_at DESC
+        """
+        orders = db.fetch_all(orders_query, (session['user_id'],))
+        db.close()
+        
+        return render_template('profile.html', user=user, orders=orders)
 
     # ── Logout ───────────────────────────────────────────────
     def logout(self):
@@ -150,4 +175,13 @@ class AuthController(BaseController):
         if session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
-        return render_template("merchant_dashboard.html")
+        
+        # Fetch herbs for the current merchant
+        db = Database()
+        merchant_id = session.get("user_id")
+        herbs = db.fetch_all("SELECT * FROM herbs WHERE merchant_id = %s", (merchant_id,))
+        db.close()
+        
+        # Fetch orders for the current merchant (uses corrected query)
+        orders = self.order_model.get_merchant_orders(merchant_id)
+        return render_template("merchant_dashboard.html", herbs=herbs, orders=orders)
