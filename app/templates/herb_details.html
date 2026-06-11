@@ -25,7 +25,7 @@
 
             <div class="info-block">
                 <h4>Price & Availability</h4>
-                <p><strong>NPR {{ herb.price }}</strong> | <strong>Stock:</strong> {{ herb.stock_quantity }} units available</p>
+                <p><strong>NPR {{ herb.price }}</strong> <br> <strong>Stock:</strong> {{ herb.stock_quantity }} units available</p>
             </div>
 
             <div class="info-block">
@@ -34,7 +34,7 @@
             </div>
 
             <div class="action-wrapper">
-                <a href="#" class="btn btn-primary btn-large">Buy Now - NPR {{ herb.price }} →</a>
+                <a href="{{ url_for('shop.shop') }}" class="btn btn-primary btn-large">Buy Now - NPR {{ herb.price }} →</a>
             </div>
         </div>
     </div>

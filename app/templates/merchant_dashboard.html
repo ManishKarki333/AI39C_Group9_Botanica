@@ -70,6 +70,38 @@
             {% endfor %}
         </div>
     </div>
+    <div class="products-section-container" style="margin-top: 40px;">
+        <div class="section-controls-header">
+            <h2>Order Management</h2>
+        </div>
+
+        <div class="products-list-stack">
+            {% for order in orders %}
+            <div class="figma-product-card">
+                <div class="p-details">
+                    <h3>Order #{{ order.id }}</h3>
+                    <p>Total: NPR {{ order.total_amount }}</p>
+                    <p><small>Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</small></p>
+                </div>
+                
+                <div class="p-card-metrics">
+                    <form action="{{ url_for('order.update_status', order_id=order.id) }}" method="POST">
+                        <label>Status:</label>
+                        <select name="status" onchange="this.form.submit()">
+                            {% for status in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
+                                <option value="{{ status }}" {% if order.order_status == status %}selected{% endif %}>
+                                    {{ status }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <p>No new orders to process.</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
 <!-- Modal anchor block updated with dynamic Image Upload controls -->
