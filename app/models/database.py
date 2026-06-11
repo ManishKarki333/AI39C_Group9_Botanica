@@ -112,37 +112,46 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
         db.execute("""
-
             CREATE TABLE IF NOT EXISTS cart_items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
-            CREATE TABLE IF NOT EXISTS orders (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
-            merchant_id INT NOT NULL, -- Added to enable Merchant Dashboard filtering
-            total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-            shipping_address TEXT NOT NULL, -- Added for order fulfillment
-            delivery_date DATE NOT NULL,
-            delivery_window VARCHAR(100) NOT NULL,
-            order_status ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending',
-            payment_status ENUM('Pending', 'Paid', 'Failed') DEFAULT 'Pending', -- Added for transactional integrity
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """)
-
-        # 4. Order Items Table (NEW - Breakdown for shopping carts supporting multi-vendor line items)
-        db.execute("""
-            CREATE TABLE IF NOT EXISTS order_items (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                order_id INT NOT NULL,
                 herb_id INT NOT NULL,
                 quantity INT NOT NULL DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 UNIQUE KEY unique_user_herb (user_id, herb_id),
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (herb_id) REFERENCES herbs(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                merchant_id INT NOT NULL,
+                total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                shipping_address TEXT NOT NULL,
+                delivery_date DATE NOT NULL,
+                delivery_window VARCHAR(100) NOT NULL,
+                order_status ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending',
+                payment_status ENUM('Pending', 'Paid', 'Failed') DEFAULT 'Pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        # 4. Order Items Table (Breakdown for multi-vendor line items)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS order_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                order_id INT NOT NULL,
+                herb_id INT NOT NULL,
+                quantity INT NOT NULL DEFAULT 1,
+                unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
                 FOREIGN KEY (herb_id) REFERENCES herbs(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)

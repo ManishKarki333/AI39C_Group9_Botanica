@@ -10,16 +10,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
     {% block css %}{% endblock %}
 
-<<<<<<< HEAD
-    <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
-=======
     <script src="{{ url_for('static', filename='js/nav.js') }}" defer></script>
     <script>
         if (localStorage.getItem("theme") === "dark") {
             document.documentElement.classList.add("dark-theme");
         }
     </script>
->>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
 </head>
 <body>
 
