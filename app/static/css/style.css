@@ -7,12 +7,20 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-    background-color: #f7faf8; /* Soft neutral gray-green background matching your theme */
-    color: #1a202c;
-    min-height: 100vh;
+/* Light Theme Variables (Default) */
+:root, html {
+    --bg-primary: #f7faf8;
+    --bg-surface: #ffffff; /* Card/Container background light */
+    --bg-surface-hover: #f0f7f4;
+    --text-brand: #1a3a2a;
+    --text-muted: #4a5568;
+    --text-accent: #2f855a;
+    --border-muted: #eaeaea;
+    --status-critical: #c53030;
+    --text-primary: #1a202c;
 }
 
+<<<<<<< HEAD
 /* Flash Messages */
 .flash-message {
   display: flex;
@@ -41,3 +49,24 @@ body {
   color: #dc2626;
   border: 1px solid #fecaca;
 }
+=======
+/* Dark Theme Variables */
+html.dark-theme {
+    --bg-primary: #0f172a; 
+    --bg-surface: #1e293b; /* Card/Container background dark (slate-800) */
+    --bg-surface-hover: #334155;
+    --text-brand: #34d399; 
+    --text-muted: #94a3b8;
+    --text-accent: #34d399;
+    --border-muted: #334155;
+    --status-critical: #f87171;
+    --text-primary: #f1f5f9; 
+}
+
+body {
+    background-color: var(--bg-primary, #f7faf8); 
+    color: var(--text-primary, #1a202c);
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae

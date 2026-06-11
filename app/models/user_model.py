@@ -56,10 +56,26 @@ class User(BaseModel):
         """Hash and store the password securely."""
         self.__password = generate_password_hash(plain_password)
 
+<<<<<<< HEAD
     def set_hashed_password(self, hashed: str) -> None:
         """
         Directly assign an already-hashed password.
         Used by from_db() to avoid Pylance name-mangling warnings.
+=======
+    def get_hashed_password(self) -> str | None:
+        """
+        NEW: Safe internal getter for the hashed password.
+        Used by from_db() to assign the password cleanly
+        without triggering Pylance name-mangling warnings.
+        """
+        return self.__password
+
+    def set_hashed_password(self, hashed: str) -> None:
+        """
+        NEW: Directly assign an already-hashed password.
+        Used by from_db() to restore a User from the database
+        without re-hashing the already hashed value.
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
         """
         self.__password = hashed
 
@@ -131,8 +147,14 @@ class User(BaseModel):
     @classmethod
     def from_db(cls, data: dict[str, Any] | None) -> User | None:
         """
+<<<<<<< HEAD
         Create a User object from a database row dictionary.
         Uses set_hashed_password() to avoid name-mangling issues.
+=======
+        Create a User object from a database dictionary.
+        FIX: Uses set_hashed_password() instead of name-mangling
+        to avoid Pylance private attribute warnings.
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
         """
         if data is None:
             return None
@@ -140,8 +162,15 @@ class User(BaseModel):
         user = cls()
         user.name  = data["name"]
         user.email = data["email"]
+<<<<<<< HEAD
         user.role  = data["role"]
         user.set_hashed_password(data["password"])  # ✅ clean, no mangling
+=======
+        user.role = data["role"]
+
+        # FIX: clean setter instead of _User__password = ...
+        user.set_hashed_password(data["password"])
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
         return user
 
     def __str__(self) -> str:

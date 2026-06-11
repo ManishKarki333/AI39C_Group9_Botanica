@@ -51,7 +51,11 @@ class Database:
             cursor.close()
 
     def execute(self, query, params=None):
+<<<<<<< HEAD
         """Run a query that changes data."""
+=======
+        """Run a data-modifying query. Returns the last row ID if an INSERT occurs."""
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
         cursor = self.__connection.cursor()
         try:
             cursor.execute(query, params)
@@ -69,7 +73,11 @@ class Database:
 
     @staticmethod
     def create_tables():
+<<<<<<< HEAD
         """Create all required database tables on app startup."""
+=======
+        """Create database tables updated for Search, Filtering, Merchant, and Transactional Loops."""
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
         db = Database()
 
         db.execute("""
@@ -102,19 +110,50 @@ class Database:
                 common_name VARCHAR(100) NOT NULL,
                 scientific_name VARCHAR(100) NOT NULL UNIQUE,
                 description TEXT,
+<<<<<<< HEAD
                 benefit_category VARCHAR(50) NOT NULL,
                 price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                 stock_quantity INT NOT NULL DEFAULT 0,
                 image_url VARCHAR(255) DEFAULT 'default_herb.png',
+=======
+                benefit_category VARCHAR(50) NOT NULL, -- Maps to US 3 (Sleep, Digestion, etc.)
+                price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                stock_quantity INT NOT NULL DEFAULT 0,
+                image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Keeps UI card grading-ready
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
                 merchant_id INT DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
         db.execute("""
+<<<<<<< HEAD
             CREATE TABLE IF NOT EXISTS cart_items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
+=======
+            CREATE TABLE IF NOT EXISTS orders (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            merchant_id INT NOT NULL, -- Added to enable Merchant Dashboard filtering
+            total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+            shipping_address TEXT NOT NULL, -- Added for order fulfillment
+            delivery_date DATE NOT NULL,
+            delivery_window VARCHAR(100) NOT NULL,
+            order_status ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending',
+            payment_status ENUM('Pending', 'Paid', 'Failed') DEFAULT 'Pending', -- Added for transactional integrity
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        # 4. Order Items Table (NEW - Breakdown for shopping carts supporting multi-vendor line items)
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS order_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                order_id INT NOT NULL,
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
                 herb_id INT NOT NULL,
                 quantity INT NOT NULL DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -138,5 +177,9 @@ class Database:
             )
             print("Default admin account created!")
 
+<<<<<<< HEAD
         db.close()
 
+=======
+        db.close()
+>>>>>>> ffbbe146b7b51e9e67d18c219562ea8c3f8932ae
