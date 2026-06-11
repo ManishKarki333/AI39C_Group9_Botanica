@@ -268,16 +268,33 @@ class AuthController(BaseController):
             email = "google_mock_user@example.com"
             name = "Google Mock User"
         elif credential:
+            # CSRF Verification
+            csrf_cookie = request.cookies.get("g_csrf_token")
+            csrf_body = request.form.get("g_csrf_token")
+            if csrf_body and csrf_cookie != csrf_body:
+                flash("CSRF verification failed for Google Sign-In.", "danger")
+                return redirect(url_for("auth.login"))
+
             # Real Google Sign-in verification
             try:
                 # Query Google tokeninfo API to verify JWT
                 url = f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}"
                 with urllib.request.urlopen(url) as response:
                     token_info = json.loads(response.read().decode())
-                    # Validate client ID match
+                    
+                    # Validate Client ID configuration and match
                     client_id = config.GOOGLE_CLIENT_ID
-                    if client_id and token_info.get("aud") != client_id:
+                    if not client_id:
+                        flash("Google login is not configured on this server.", "danger")
+                        return redirect(url_for("auth.login"))
+                    
+                    if token_info.get("aud") != client_id.strip():
                         flash("Google authentication mismatch (Client ID client verification failed).", "danger")
+                        return redirect(url_for("auth.login"))
+                    
+                    # Validate that email is verified by Google
+                    if not token_info.get("email_verified"):
+                        flash("Google email is not verified.", "danger")
                         return redirect(url_for("auth.login"))
                     
                     email = token_info.get("email")
@@ -314,8 +331,10 @@ class AuthController(BaseController):
         session["user_name"] = user_data["name"]
         session["role"]      = user_data["role"]
 
+        # Dynamic backend routing based on role matrix
+        target_route = self._get_redirect_route(user_data["role"])
         return self.flash_and_redirect(
-            "Logged in successfully via Google!", "success", "auth.home"
+            "Logged in successfully via Google!", "success", target_route
         )
 
     # ── Forgot Password & OTP ──────────────────────────────────
