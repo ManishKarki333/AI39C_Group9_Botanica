@@ -9,13 +9,52 @@
 {% block content %}
 <div class="dashboard-wrapper">
     
-    <!-- Title Section -->
+    <!-- Title Section with Profile Details -->
     <div class="dashboard-header-block">
+        <div class="header-user-profile">
+            {% if user.profile_pic %}
+                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" class="header-avatar-img">
+            {% else %}
+                <div class="header-avatar-circle">
+                    {{ user.name[:1] | upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h1 class="header-title">Merchant Dashboard</h1>
+                <p class="subtitle header-subtitle">Welcome back, <strong>{{ user.name }}</strong> ({{ user.email }})</p>
+                <div class="header-status-row">
+                    {% if user.certification_badge %}
+                        <span class="status-badge status-delivered header-badge">✓ Verified Seller</span>
+                    {% else %}
+                        <span class="status-badge status-pending header-badge-pending">⚠ Unverified Seller</span>
+                        <a href="{{ url_for('auth.profile', tab='settings') }}" class="header-certificate-link">Upload Certificate</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         <div>
-            <h1>Merchant Dashboard</h1>
-            <p class="subtitle">Manage your products and inventory</p>
+            <!-- Modal trigger anchor style for adding a product -->
+            <a href="#addProductModal" class="btn-add-product-figma"><span>+</span> Add Product</a>
         </div>
     </div>
+
+    <!-- Low Stock Alert Banner -->
+    {% if low_stock_herbs %}
+    <div class="low-stock-alert-card">
+        <div class="vacation-left">
+            <span class="low-stock-icon">⚠</span>
+            <div>
+                <span class="low-stock-title">Low Stock Warning!</span>
+                <p class="low-stock-description">
+                    Some of your items have critically low stock (5 or fewer units left):
+                    {% for low_herb in low_stock_herbs %}
+                        <strong>{{ low_herb.common_name }}</strong> ({{ low_herb.stock_quantity }} units left){% if not loop.last %}, {% endif %}
+                    {% endfor %}. Please click on them to restock.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Vacation Mode Component Box -->
     <div class="vacation-card-row">
@@ -34,43 +73,81 @@
         </div>
     </div>
 
+    <!-- E-Commerce Analytics Panel -->
+    <div class="products-section-container insights-section-container">
+        <div class="section-controls-header insights-section-header">
+            <h2>Top Selling Herbs Insights</h2>
+        </div>
+        <div class="insights-content-row">
+            <div class="pie-chart-wrapper">
+                <canvas id="salesPieChart"></canvas>
+            </div>
+            <div class="insights-list-column">
+                <h3 class="insights-list-title">Most Selling Herbs</h3>
+                <p class="widget-desc insights-list-description">This chart highlights the quantity share of your top products purchased by clients.</p>
+                {% if top_selling %}
+                    <ul class="insights-list-items">
+                    {% for sales in top_selling %}
+                        <li class="insights-list-item"><strong>{{ sales.common_name }}</strong>: {{ sales.total_sold }} units sold</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="insights-empty-text">No order transactions recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Products Core Container -->
     <div class="products-section-container">
         <div class="section-controls-header">
             <h2>My Products</h2>
-            <!-- Modal trigger anchor style for adding a product -->
-            <a href="#addProductModal" class="btn-add-product-figma"><span>+</span> Add Product</a>
+            <p class="section-controls-subtitle">(Click a card to edit price/stock & view price history)</p>
         </div>
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
-                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">
                     </div>
                     <div class="p-details">
-                        <h3>{{ herb.common_name }}</h3>
+                        <h3 class="product-card-title">{{ herb.common_name }}</h3>
                         <span class="p-scientific">{{ herb.scientific_name }}</span>
                     </div>
                 </div>
-                <div class="p-card-metrics">
+                <div class="p-card-metrics product-card-metrics-cols">
                     <div class="metric-group">
                         <span class="m-label">Price</span>
-                        <span class="m-value">NPR {{ herb.price }}</span>
+                        <span class="m-value">Rs. {{ herb.price }}</span>
                     </div>
                     <div class="metric-group">
                         <span class="m-label">Stock</span>
-                        <span class="m-value font-highlight">{{ herb.stock_quantity }}</span>
+                        <span class="m-value {% if herb.stock_quantity <= 5 %}status-badge status-cancelled{% else %}font-highlight{% endif %} stock-badge-container">
+                            {{ herb.stock_quantity }}
+                            {% if herb.stock_quantity <= 5 %}
+                                (Low)
+                            {% endif %}
+                        </span>
                     </div>
+                    <div class="metric-group">
+                        <span class="m-label">WhatsApp</span>
+                        <span class="m-value metric-whatsapp-text">{{ herb.whatsapp_number or 'Not Set' }}</span>
                     </div>
                 </div>
+                <div class="product-edit-action-col">
+                    <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-line"></i></span>
+                </div>
+            </div>
             {% else %}
             <p>You haven't added any products yet.</p>
             {% endfor %}
         </div>
     </div>
-    <div class="products-section-container" style="margin-top: 40px;">
+
+    <!-- Order Management Container -->
+    <div class="products-section-container order-section-margin">
         <div class="section-controls-header">
             <h2>Order Management</h2>
         </div>
@@ -104,14 +181,13 @@
     </div>
 </div>
 
-<!-- Modal anchor block updated with dynamic Image Upload controls -->
+<!-- Add Product Modal Overlay -->
 <div id="addProductModal" class="dashboard-modal-overlay">
     <div class="modal-body-card">
         <div class="modal-header">
             <h3>Add New Product Spec Sheet</h3>
             <a href="#" class="close-modal-btn">&times;</a>
         </div>
-        <!-- Enctype attribute added for secure file stream transfers -->
         <form class="modal-form-inputs" method="POST" action="{{ url_for('shop.add_product') }}" enctype="multipart/form-data">
     
             <div class="m-input-group">
@@ -152,6 +228,12 @@
             </div>
 
             <div class="m-input-group">
+                <label for="whatsappNumber">WhatsApp Inquiry Number</label>
+                <input type="text" id="whatsappNumber" name="whatsapp_number" placeholder="e.g., +97798XXXXXXXX" required>
+                <small class="input-helper-text">Add your genuine contact number so customers can place direct inquiries.</small>
+            </div>
+
+            <div class="m-input-group">
                 <label for="productImage">Herb Product Image</label>
                 <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
@@ -160,4 +242,51 @@
         </form>
     </div>
 </div>
+
+<!-- Update Product & Price History Modal Overlay -->
+<div id="updateProductModal" class="update-modal-overlay">
+    <div class="modal-body-card update-modal-body">
+        <div class="update-modal-header">
+            <h3 id="updateModalTitle" class="update-modal-title">Edit Product Specifications</h3>
+            <button onclick="closeProductEditModal()" class="update-modal-close-btn">&times;</button>
+        </div>
+        
+        <!-- Price Fluctuation Line Chart -->
+        <div class="price-history-section">
+            <h4 class="price-history-title">Price Fluctuation History</h4>
+            <div class="price-history-canvas-wrapper">
+                <canvas id="priceHistoryChart"></canvas>
+            </div>
+        </div>
+        
+        <form id="updateProductForm" class="modal-form-inputs" method="POST" action="">
+            <div class="m-input-grid">
+                <div>
+                    <label for="editPrice" class="edit-form-label">Price (NPR)/100g</label>
+                    <input type="number" id="editPrice" name="price" step="0.01" placeholder="0.00" required class="edit-form-input">
+                </div>
+                <div>
+                    <label for="editStock" class="edit-form-label">Update Stock Count</label>
+                    <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
+                </div>
+            </div>
+            
+            <button type="submit" class="edit-form-submit">Save Modifications</button>
+        </form>
+    </div>
+</div>
+
+<!-- Embedded Data Node for Top Selling Pie Chart -->
+<script id="top-selling-data" type="application/json">
+    [
+        {% for sales in top_selling %}
+            {"common_name": "{{ sales.common_name | escape }}", "total_sold": {{ sales.total_sold }}}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+</script>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/merchant_dashboard.js') }}"></script>
 {% endblock %}

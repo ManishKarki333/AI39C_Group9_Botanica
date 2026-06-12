@@ -40,6 +40,14 @@
     text-decoration: none;
     display: flex;
     align-items: center;
+    gap: 10px;
+}
+
+.logo-image {
+    height: 38px;
+    width: auto;
+    border-radius: 6px;
+    object-fit: contain;
 }
 
 .logo-text {

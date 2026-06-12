@@ -4,14 +4,15 @@
 =============================================================
   - Abstraction: We define WHAT every model should do
     (find, create, update, delete) without saying HOW.
-  - Inheritance: Child classes (like User) will inherit
-    these methods and reuse them automatically.
+  - Inheritance: Child classes (like User, ContactMessage)
+    will inherit these methods and reuse them automatically.
   - Encapsulation: The database connection details are
     hidden inside this class — outside code never sees them.
 =============================================================
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 from .database import Database
 
 
@@ -25,52 +26,76 @@ class BaseModel(ABC):
     - Child classes INHERIT all the helper methods below.
     """
 
-    # ── Abstract Property (child MUST define this) ──────────
     @property
     @abstractmethod
-    def table(self):
+    def table(self) -> str:
         """Each child model must specify its database table name."""
         pass
 
-    # ── Shared Methods (inherited by all child models) ──────
+    def _validate_identifier(self, identifier: str) -> str:
+        """
+        Allow only simple SQL identifiers like column/table names.
+        Prevents SQL injection in dynamic column/order usage.
+        """
+        if not isinstance(identifier, str) or not identifier.replace("_", "").isalnum():
+            raise ValueError(f"Invalid SQL identifier: {identifier}")
+        return identifier
 
-    def find_by_id(self, record_id):
+    def find_by_id(self, record_id: int) -> dict[str, Any] | None:
         """Find a single record by its ID."""
         db = Database()
         result = db.fetch_one(
-            f"SELECT * FROM {self.table} WHERE id = %s", (record_id,)
+            f"SELECT * FROM {self.table} WHERE id = %s",
+            (record_id,)
         )
         db.close()
         return result
 
-    def find_by(self, column, value):
-        """Find a single record by any column. Example: find_by('email', 'a@b.com')"""
+    def find_by(self, column: str, value: Any) -> dict[str, Any] | None:
+        """Find a single record by any allowed column."""
+        column = self._validate_identifier(column)
         db = Database()
         result = db.fetch_one(
-            f"SELECT * FROM {self.table} WHERE {column} = %s", (value,)
+            f"SELECT * FROM {self.table} WHERE {column} = %s",
+            (value,)
         )
         db.close()
         return result
 
-    def find_all(self, order_by="id"):
-        """Get all records from the table, ordered by a column."""
+    def find_all(self, order_by: str = "id") -> list[dict[str, Any]]:
+        """Get all records from the table, ordered by a valid column."""
+        order_by = self._validate_identifier(order_by)
         db = Database()
-        results = db.fetch_all(
+        raw = db.fetch_all(
             f"SELECT * FROM {self.table} ORDER BY {order_by}"
         )
         db.close()
-        return results
 
-    def count_all(self):
+        # ✅ FIX: explicitly convert to list — db.fetch_all()
+        # may return a tuple, None, or list depending on the
+        # database driver. We always guarantee a list[dict] here.
+        if raw is None:
+            return []
+        return list(raw)
+
+    def count_all(self) -> int:
         """Count total records in the table."""
         db = Database()
-        result = db.fetch_one(f"SELECT COUNT(*) AS total FROM {self.table}")
+        result = db.fetch_one(
+            f"SELECT COUNT(*) AS total FROM {self.table}"
+        )
         db.close()
-        return result["total"]
 
+        # ✅ FIX: guard against None before subscripting
+        if result is None:
+            return 0
+        return int(result["total"])
 
-    def delete_by_id(self, record_id):
+    def delete_by_id(self, record_id: int) -> None:
         """Delete a record by its ID."""
         db = Database()
-        db.execute(f"DELETE FROM {self.table} WHERE id = %s", (record_id,))
+        db.execute(
+            f"DELETE FROM {self.table} WHERE id = %s",
+            (record_id,)
+        )
         db.close()
