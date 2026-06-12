@@ -79,6 +79,9 @@ class Database:
                 email VARCHAR(100) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
                 role VARCHAR(20) NOT NULL DEFAULT 'user',
+                profile_pic VARCHAR(255) DEFAULT NULL,
+                certification_badge VARCHAR(255) DEFAULT NULL,
+                is_active TINYINT DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
@@ -107,6 +110,7 @@ class Database:
                 stock_quantity INT NOT NULL DEFAULT 0,
                 image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Keeps UI card grading-ready
                 merchant_id INT DEFAULT NULL,
+                whatsapp_number VARCHAR(20) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -171,6 +175,17 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
+        # 6. Price History Table
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS price_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                herb_id INT NOT NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (herb_id) REFERENCES herbs(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
         # Add OTP columns to users if they do not exist
         try:
             db.execute("ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
@@ -178,6 +193,22 @@ class Database:
             pass
         try:
             db.execute("ALTER TABLE users ADD COLUMN otp_expiry DATETIME DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN certification_badge VARCHAR(255) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE users ADD COLUMN is_active TINYINT DEFAULT 1")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE herbs ADD COLUMN whatsapp_number VARCHAR(20) DEFAULT NULL")
         except Exception:
             pass
 

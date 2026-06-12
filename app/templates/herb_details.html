@@ -25,7 +25,17 @@
 
             <div class="info-block">
                 <h4>Price & Availability</h4>
-                <p><strong>NPR {{ herb.price }}</strong> <br> <strong>Stock:</strong> {{ herb.stock_quantity }} units available</p>
+                <p style="font-size:1.15rem; margin-bottom: 0.5rem;"><strong>Rs. {{ herb.price }}</strong> / 100g</p>
+                <p>
+                    <strong>Stock:</strong> 
+                    {% if herb.stock_quantity == 0 %}
+                        <span style="color:#e53e3e; font-weight:700; background:#fff5f5; padding:2px 8px; border-radius:4px; font-size:0.9rem;">❌ Out of Stock</span>
+                    {% elif herb.stock_quantity <= 5 %}
+                        <span style="color:#dd6b20; font-weight:700; background:#fffaf0; padding:2px 8px; border-radius:4px; font-size:0.9rem;">⚠️ Only {{ herb.stock_quantity }} left in stock - order soon!</span>
+                    {% else %}
+                        <span style="color:#2f855a; font-weight:600; background:#f0fff4; padding:2px 8px; border-radius:4px; font-size:0.9rem;">✓ In Stock ({{ herb.stock_quantity }} units available)</span>
+                    {% endif %}
+                </p>
             </div>
 
             <div class="info-block">
@@ -33,8 +43,18 @@
                 <p>{{ herb.benefit_category }}</p>
             </div>
 
-            <div class="action-wrapper">
-                <a href="{{ url_for('shop.shop') }}" class="btn btn-primary btn-large">Buy Now - NPR {{ herb.price }} →</a>
+            <div class="action-wrapper" style="display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;">
+                {% if herb.stock_quantity > 0 %}
+                    <a href="{{ url_for('shop.shop') }}" class="btn btn-primary btn-large" style="flex:1; text-align:center;">Buy Now - Rs. {{ herb.price }} →</a>
+                {% else %}
+                    <button class="btn btn-large" disabled style="flex:1; background-color:#cbd5e1; color:#94a3b8; cursor:not-allowed; border:none; text-align:center; padding: 12px 24px; border-radius: 8px;">Out of Stock</button>
+                {% endif %}
+                
+                {% if herb.whatsapp_number %}
+                    <a href="https://wa.me/{{ herb.whatsapp_number.replace('+', '').replace(' ', '') }}?text=Hello!%20I%20have%20an%20inquiry%20about%20{{ herb.common_name | urlencode }}%20on%20Botanica." target="_blank" class="btn btn-secondary btn-large" style="background-color:#25d366; color:#fff; border:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; flex:1; text-decoration:none; font-weight:600; text-align:center; padding:12px 24px; border-radius:8px; transition:background 0.2s;">
+                        <i class="ri-whatsapp-line" style="font-size:1.3rem;"></i> More Inquiry
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

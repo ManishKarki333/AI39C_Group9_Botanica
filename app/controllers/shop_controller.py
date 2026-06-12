@@ -38,7 +38,7 @@ class ShopController(BaseController):
         try:
             db = Database()
             # Flattened SQL query to prevent formatting/placeholder issues
-            sql = "SELECT id, common_name, scientific_name, description, benefit_category, price, image_url FROM herbs WHERE 1=1"
+            sql = "SELECT id, common_name, scientific_name, description, benefit_category, price, image_url, stock_quantity, whatsapp_number FROM herbs WHERE 1=1"
             query_args = []
             
             if query_param:
@@ -67,7 +67,9 @@ class ShopController(BaseController):
                         "price": float(row['price']) if row.get('price') else 0.0,
                         "image_url": row.get('image_url') if row.get('image_url') else "",
                         "form_factor": "Raw Herb", 
-                        "on_vacation": False 
+                        "on_vacation": False,
+                        "stock_quantity": row.get('stock_quantity', 0),
+                        "whatsapp_number": row.get('whatsapp_number') or ""
                     })
             
             return jsonify({
@@ -214,6 +216,7 @@ class ShopController(BaseController):
             price = request.form.get("price", 0)
             benefit_category = request.form.get("benefit_category", "")
             stock_quantity = request.form.get("stock_quantity", 0)
+            whatsapp_number = request.form.get("whatsapp_number", "").strip()
             
             product_image = request.files.get('product_image')
             image_url = '/static/uploads/default_herb.png' 
@@ -232,13 +235,22 @@ class ShopController(BaseController):
             try:
                 db = Database()
                 query = """INSERT INTO herbs 
-                        (common_name, scientific_name, description, price, benefit_category, stock_quantity, image_url, merchant_id) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                        (common_name, scientific_name, description, price, benefit_category, stock_quantity, image_url, merchant_id, whatsapp_number) 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
                 
                 db.execute(query, (
                     common_name, scientific_name, description, price, 
-                    benefit_category, stock_quantity, image_url, session.get("user_id")
+                    benefit_category, stock_quantity, image_url, session.get("user_id"), whatsapp_number
                 ))
+                
+                # Fetch the ID of the new herb to seed the price history
+                new_herb = db.fetch_one("SELECT id FROM herbs WHERE scientific_name = %s", (scientific_name,))
+                if new_herb:
+                    db.execute(
+                        "INSERT INTO price_history (herb_id, price) VALUES (%s, %s)",
+                        (new_herb["id"], price)
+                    )
+                
                 db.close()
                 flash("Product published successfully!", "success")
             except Exception as e:
@@ -246,6 +258,89 @@ class ShopController(BaseController):
                 flash("Error saving product. Please check your inputs.", "danger")
                 
             return redirect(url_for("auth.merchant_dashboard"))
+
+    def update_product(self, id):
+        """Secure multi-part form portal for updating a product's price and stock."""
+        if session.get("role") != "merchant":
+            flash("Unauthorized entry context.", "danger")
+            return redirect(url_for("auth.login"))
+            
+        if request.method == "POST":
+            price = request.form.get("price")
+            stock_quantity = request.form.get("stock_quantity")
+            
+            if not price or stock_quantity is None:
+                flash("Price and Stock Quantity are required.", "danger")
+                return redirect(url_for("auth.merchant_dashboard"))
+                
+            try:
+                price = float(price)
+                stock_quantity = int(stock_quantity)
+                
+                db = Database()
+                # Fetch current herb details to see if price changed
+                herb = db.fetch_one("SELECT price, merchant_id FROM herbs WHERE id = %s", (id,))
+                if not herb or herb["merchant_id"] != session.get("user_id"):
+                    flash("Unauthorized or product not found.", "danger")
+                    db.close()
+                    return redirect(url_for("auth.merchant_dashboard"))
+                    
+                # Update stock and price
+                db.execute(
+                    "UPDATE herbs SET price = %s, stock_quantity = %s WHERE id = %s",
+                    (price, stock_quantity, id)
+                )
+                
+                # If price changed, log in history
+                if float(herb["price"]) != price:
+                     db.execute(
+                         "INSERT INTO price_history (herb_id, price) VALUES (%s, %s)",
+                         (id, price)
+                     )
+                     
+                db.close()
+                flash("Product updated successfully!", "success")
+            except Exception as e:
+                print(f"Error updating product: {e}")
+                flash("Failed to update product.", "danger")
+                
+            return redirect(url_for("auth.merchant_dashboard"))
+
+    def api_price_history(self, herb_id):
+        """Fetch the price history of a product for the chart."""
+        if session.get("role") != "merchant":
+            return jsonify({"status": "error", "message": "Unauthorized"}), 403
+            
+        db = Database()
+        # Check if product belongs to merchant
+        herb = db.fetch_one("SELECT merchant_id, price FROM herbs WHERE id = %s", (herb_id,))
+        if not herb or herb["merchant_id"] != session.get("user_id"):
+            db.close()
+            return jsonify({"status": "error", "message": "Unauthorized"}), 403
+            
+        # Fetch history
+        history = db.fetch_all("SELECT price, created_at FROM price_history WHERE herb_id = %s ORDER BY created_at ASC", (herb_id,))
+        
+        # If history is empty, seed it with the current price of the herb
+        if not history:
+            db.execute("INSERT INTO price_history (herb_id, price) VALUES (%s, %s)", (herb_id, herb["price"]))
+            history = db.fetch_all("SELECT price, created_at FROM price_history WHERE herb_id = %s ORDER BY created_at ASC", (herb_id,))
+            
+        db.close()
+        
+        # Format history for JSON response
+        formatted_history = []
+        for record in history:
+            date_str = record["created_at"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(record["created_at"], datetime) else str(record["created_at"])
+            formatted_history.append({
+                "price": float(record["price"]),
+                "date": date_str
+            })
+            
+        return jsonify({
+            "status": "success",
+            "history": formatted_history
+        })
 
     # ────────────────────────────────────────────────────────────────
     #  SHOPPING CART TRANSACTION MODULES (RESILIENT TYPE-MATCHING)

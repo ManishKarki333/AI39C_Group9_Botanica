@@ -24,6 +24,12 @@ class AuthRoutes:
         self.bp.route("/profile", methods=["GET", "POST"])(
             self.controller.profile
         )
+        self.bp.route("/deactivate_account", methods=["POST"])(
+            self.controller.deactivate_account
+        )
+        self.bp.route("/delete_account", methods=["POST"])(
+            self.controller.delete_account
+        )
         self.bp.route("/about", methods=["GET"])(
             self.controller.about
         )

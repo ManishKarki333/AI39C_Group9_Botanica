@@ -121,6 +121,10 @@ class AuthController(BaseController):
                 user = User.from_db(user_data)
 
                 if user is not None and user.check_password(password):
+                    if user.is_active == 0:
+                        flash("This account has been deactivated. Please contact support to reactivate it.", "danger")
+                        return render_template("login.html", google_client_id=config.GOOGLE_CLIENT_ID)
+
                     session["user_id"]   = user_data["id"]
                     session["user_name"] = user_data["name"]
                     session["role"]      = user_data["role"]
@@ -176,26 +180,115 @@ class AuthController(BaseController):
     
     # ── Profile ─────────────────────────────────────────────
     def profile(self):
-        """Render user account profile and order history."""
+        """Render and handle user account profile settings and order history."""
         if 'user_id' not in session:
             flash("Please log in to access your account.", "warning")
             return redirect(url_for('auth.login'))
             
+        user_id = session['user_id']
         db = Database()
         
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
+            
+            if not name or not email:
+                flash("Name and email are required.", "danger")
+                db.close()
+                return redirect(url_for('auth.profile'))
+                
+            # Check if email is already in use by another user
+            existing = db.fetch_one("SELECT id FROM users WHERE email = %s AND id != %s", (email, user_id))
+            if existing:
+                flash("That email address is already in use.", "danger")
+                db.close()
+                return redirect(url_for('auth.profile'))
+                
+            # Fetch current user details to keep files if not updated
+            current_user = db.fetch_one("SELECT profile_pic, certification_badge, role FROM users WHERE id = %s", (user_id,))
+            profile_pic = current_user.get("profile_pic")
+            certification_badge = current_user.get("certification_badge")
+            role = current_user.get("role")
+            
+            # Handle profile pic upload
+            profile_pic_file = request.files.get("profile_pic")
+            if profile_pic_file and profile_pic_file.filename:
+                upload_dir = 'app/static/uploads'
+                if not os.path.exists(upload_dir):
+                    os.makedirs(upload_dir)
+                ext = os.path.splitext(profile_pic_file.filename)[1]
+                filename = f"profile_{user_id}_{uuid.uuid4().hex}{ext}"
+                profile_pic_file.save(os.path.join(upload_dir, filename))
+                profile_pic = f"/static/uploads/{filename}"
+                
+            # Handle certificate badge upload
+            if role == "merchant":
+                cert_file = request.files.get("certification_badge")
+                if cert_file and cert_file.filename:
+                    upload_dir = 'app/static/uploads'
+                    if not os.path.exists(upload_dir):
+                        os.makedirs(upload_dir)
+                    ext = os.path.splitext(cert_file.filename)[1]
+                    filename = f"cert_{user_id}_{uuid.uuid4().hex}{ext}"
+                    cert_file.save(os.path.join(upload_dir, filename))
+                    certification_badge = f"/static/uploads/{filename}"
+            
+            # Update user info in db
+            db.execute(
+                "UPDATE users SET name = %s, email = %s, profile_pic = %s, certification_badge = %s WHERE id = %s",
+                (name, email, profile_pic, certification_badge, user_id)
+            )
+            
+            # Update session variables
+            session["user_name"] = name
+            
+            flash("Profile updated successfully!", "success")
+            db.close()
+            return redirect(url_for('auth.profile'))
+            
         # Fetch user info
-        user_query = "SELECT id, name, email, created_at FROM users WHERE id = %s"
-        user = db.fetch_one(user_query, (session['user_id'],))
+        user_query = "SELECT id, name, email, role, profile_pic, certification_badge, created_at FROM users WHERE id = %s"
+        user = db.fetch_one(user_query, (user_id,))
         
         # Fetch user's order history using the orders table schema
         orders_query = """
             SELECT id, total_amount, order_status, created_at 
             FROM orders WHERE user_id = %s ORDER BY created_at DESC
         """
-        orders = db.fetch_all(orders_query, (session['user_id'],))
+        orders = db.fetch_all(orders_query, (user_id,))
         db.close()
         
         return render_template('profile.html', user=user, orders=orders)
+
+    def deactivate_account(self):
+        """Deactivate the logged in user account."""
+        if 'user_id' not in session:
+            flash("Please log in first.", "warning")
+            return redirect(url_for('auth.login'))
+            
+        user_id = session['user_id']
+        db = Database()
+        db.execute("UPDATE users SET is_active = 0 WHERE id = %s", (user_id,))
+        db.close()
+        
+        session.clear()
+        flash("Your account has been deactivated successfully.", "info")
+        return redirect(url_for('auth.login'))
+
+    def delete_account(self):
+        """Delete the logged in user account permanently."""
+        if 'user_id' not in session:
+            flash("Please log in first.", "warning")
+            return redirect(url_for('auth.login'))
+            
+        user_id = session['user_id']
+        db = Database()
+        db.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        db.close()
+        
+        session.clear()
+        flash("Your account has been deleted permanently.", "info")
+        return redirect(url_for('auth.login'))
 
     # ── Logout ───────────────────────────────────────────────
     def logout(self):
@@ -243,15 +336,34 @@ class AuthController(BaseController):
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
         
-        # Fetch herbs for the current merchant
-        db = Database()
         merchant_id = session.get("user_id")
+        db = Database()
+        
+        # Fetch merchant user info (profile pic, certificate status)
+        user = db.fetch_one("SELECT name, email, profile_pic, certification_badge FROM users WHERE id = %s", (merchant_id,))
+        
+        # Fetch herbs for the current merchant
         herbs = db.fetch_all("SELECT * FROM herbs WHERE merchant_id = %s", (merchant_id,))
+        
+        # Fetch top selling herbs for this merchant
+        chart_query = """
+            SELECT h.common_name, CAST(SUM(oi.quantity) AS UNSIGNED) as total_sold
+            FROM order_items oi
+            JOIN herbs h ON oi.herb_id = h.id
+            WHERE h.merchant_id = %s
+            GROUP BY oi.herb_id
+            ORDER BY total_sold DESC
+        """
+        top_selling = db.fetch_all(chart_query, (merchant_id,))
+        
         db.close()
+        
+        # Identify low stock items (stock <= 5)
+        low_stock_herbs = [h for h in herbs if h["stock_quantity"] <= 5]
         
         # Fetch orders for the current merchant (uses corrected query)
         orders = self.order_model.get_merchant_orders(merchant_id)
-        return render_template("merchant_dashboard.html", herbs=herbs, orders=orders)
+        return render_template("merchant_dashboard.html", herbs=herbs, orders=orders, user=user, top_selling=top_selling, low_stock_herbs=low_stock_herbs)
 
     # ── Google OAuth Login ─────────────────────────────────────
     def google_login(self):
@@ -318,11 +430,16 @@ class AuthController(BaseController):
             random_pw = str(uuid.uuid4())
             hashed_pw = generate_password_hash(random_pw)
             db.execute(
-                "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
+                "INSERT INTO users (name, email, password, role, is_active) VALUES (%s, %s, %s, %s, 1)",
                 (name, email, hashed_pw, "user")
             )
             user_data = db.fetch_one("SELECT * FROM users WHERE email = %s", (email,))
             print(f"Registered new Google OAuth user: {email}")
+        else:
+            if user_data.get("is_active") == 0:
+                db.close()
+                flash("This account has been deactivated. Please contact support to reactivate it.", "danger")
+                return redirect(url_for("auth.login"))
 
         db.close()
 

@@ -86,10 +86,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const article = document.createElement('article');
             article.className = `product-card ${herb.on_vacation ? 'on-vacation' : ''}`;
             article.setAttribute('data-benefits', herb.benefit_category);
+            
+            let badgeHtml = '';
+            if (herb.on_vacation) {
+                badgeHtml = '<span class="vacation-banner">On Vacation</span>';
+            } else if (herb.stock_quantity === 0) {
+                badgeHtml = '<span class="vacation-banner" style="background-color:#e53e3e; color:#fff;">Out of Stock</span>';
+            } else if (herb.stock_quantity <= 5) {
+                badgeHtml = `<span class="vacation-banner" style="background-color:#dd6b20; color:#fff;">Only ${herb.stock_quantity} Left</span>`;
+            }
+
+            const cleanPhone = herb.whatsapp_number ? herb.whatsapp_number.replace(/\+/g, '').replace(/\s+/g, '') : '';
+            const waBtn = herb.whatsapp_number ? `
+                <a href="https://wa.me/${cleanPhone}?text=Hello!%20I%20have%20an%20inquiry%20about%20${encodeURIComponent(herb.common_name)}%20on%20Botanica." target="_blank" class="action-whatsapp" title="WhatsApp Inquiry" style="display:inline-flex; align-items:center; justify-content:center; background:#25d366; color:#fff; border:none; padding:8px 10px; border-radius:8px; font-size:1.1rem; text-decoration:none;">
+                    <i class="ri-whatsapp-line"></i>
+                </a>
+            ` : '';
+
+            const isCartDisabled = herb.on_vacation || herb.stock_quantity === 0;
+            const cartContent = herb.stock_quantity === 0 ? '<span style="font-size:11px; font-weight:600; padding:0 4px;">Out</span>' : '<i class="ri-shopping-cart-2-line"></i>';
+
             article.innerHTML = `
                 <a href="/shop/herb_details/${herb.id}" class="product-card-media-link">
                     <div class="card-image-wrapper">
-                        ${herb.on_vacation ? '<span class="vacation-banner">On Vacation</span>' : ''}
+                        ${badgeHtml}
                         <img src="${herb.image_url || '/static/uploads/default_herb.png'}" alt="${herb.common_name}" class="product-image">
                         <div class="card-badge">${herb.form_factor || 'Raw Herb'}</div>
                     </div>
@@ -102,15 +122,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </a>
                     <p class="herb-excerpt">${herb.description || ''}</p>
-                    <div class="card-footer">
+                    <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                         <div class="price-block">
                             <span class="currency">Rs.</span>
                             <span class="price-value">${herb.price}</span>
                             <span class="unit">/100g</span>
                         </div>
-                        <button class="action-add-cart" data-id="${herb.id}" title="Add to Cart" ${herb.on_vacation ? 'disabled' : ''}>
-                            <i class="ri-shopping-cart-2-line"></i>
-                        </button>
+                        <div style="display:flex; gap:6px;">
+                            ${waBtn}
+                            <button class="action-add-cart" data-id="${herb.id}" title="Add to Cart" ${isCartDisabled ? 'disabled' : ''}>
+                                ${cartContent}
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;

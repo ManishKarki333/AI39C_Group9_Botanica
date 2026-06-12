@@ -43,11 +43,17 @@ class User(BaseModel):
         email: str | None = None,
         password: str | None = None,
         role: str = "user",
+        profile_pic: str | None = None,
+        certification_badge: str | None = None,
+        is_active: int = 1,
     ) -> None:
         self.name = name
         self.email = email
         self.__password: str | None = None
         self.role = role
+        self.profile_pic = profile_pic
+        self.certification_badge = certification_badge
+        self.is_active = is_active
 
         if password:
             self.set_password(password)
@@ -77,8 +83,8 @@ class User(BaseModel):
         """Insert this user into the database."""
         db = Database()
         db.execute(
-            "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
-            (self.name, self.email, self.__password, self.role),
+            "INSERT INTO users (name, email, password, role, profile_pic, certification_badge, is_active) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (self.name, self.email, self.__password, self.role, self.profile_pic, self.certification_badge, self.is_active),
         )
         db.close()
 
@@ -87,28 +93,27 @@ class User(BaseModel):
         db = Database()
         if update_password:
             db.execute(
-                "UPDATE users SET name=%s, email=%s, password=%s, role=%s WHERE id=%s",
-                (self.name, self.email, self.__password, self.role, user_id),
+                "UPDATE users SET name=%s, email=%s, password=%s, role=%s, profile_pic=%s, certification_badge=%s, is_active=%s WHERE id=%s",
+                (self.name, self.email, self.__password, self.role, self.profile_pic, self.certification_badge, self.is_active, user_id),
             )
         else:
             db.execute(
-                "UPDATE users SET name=%s, email=%s, role=%s WHERE id=%s",
-                (self.name, self.email, self.role, user_id),
+                "UPDATE users SET name=%s, email=%s, role=%s, profile_pic=%s, certification_badge=%s, is_active=%s WHERE id=%s",
+                (self.name, self.email, self.role, self.profile_pic, self.certification_badge, self.is_active, user_id),
             )
         db.close()
 
     def update_profile(self, user_id: int, update_password: bool = False) -> None:
-        pass
         db = Database()
         if update_password:
             db.execute(
-                "UPDATE users SET name=%s, email=%s, password=%s WHERE id=%s",
-                (self.name, self.email, self.__password, user_id),
+                "UPDATE users SET name=%s, email=%s, password=%s, profile_pic=%s, certification_badge=%s WHERE id=%s",
+                (self.name, self.email, self.__password, self.profile_pic, self.certification_badge, user_id),
             )
         else:
             db.execute(
-                "UPDATE users SET name=%s, email=%s WHERE id=%s",
-                (self.name, self.email, user_id),
+                "UPDATE users SET name=%s, email=%s, profile_pic=%s, certification_badge=%s WHERE id=%s",
+                (self.name, self.email, self.profile_pic, self.certification_badge, user_id),
             )
         db.close()
 
@@ -141,6 +146,9 @@ class User(BaseModel):
         user.name  = data["name"]
         user.email = data["email"]
         user.role  = data["role"]
+        user.profile_pic = data.get("profile_pic")
+        user.certification_badge = data.get("certification_badge")
+        user.is_active = data.get("is_active", 1)
         user.set_hashed_password(data["password"])  # ✅ clean, no mangling
         return user
 
