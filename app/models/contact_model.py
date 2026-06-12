@@ -47,11 +47,11 @@ class ContactMessage(BaseModel):
         created_at is automatically set to the current time.
         """
         self.first_name = first_name
-        self.last_name  = last_name
-        self.email      = email
-        self.inquiry    = inquiry
-        self.subject    = subject
-        self.message    = message
+        self.last_name = last_name
+        self.email = email
+        self.inquiry = inquiry
+        self.subject = subject
+        self.message = message
         self.created_at = datetime.now()
 
     def save(self):

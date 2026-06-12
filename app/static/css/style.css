@@ -7,17 +7,24 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+}
+
 /* Light Theme Variables (Default) */
 :root, html {
-    --bg-primary: #f7faf8;
+    --bg-primary: #fbfbf8; /* Warm organic cream linen */
     --bg-surface: #ffffff; /* Card/Container background light */
-    --bg-surface-hover: #f0f7f4;
-    --text-brand: #1a3a2a;
-    --text-muted: #4a5568;
-    --text-accent: #2f855a;
-    --border-muted: #eaeaea;
-    --status-critical: #c53030;
-    --text-primary: #1a202c;
+    --bg-surface-hover: #f3f5f0;
+    --text-brand: #0f3423; /* Rich deep forest green */
+    --text-muted: #64748b;
+    --text-accent: #15803d; /* Elegant fresh green */
+    --text-amber: #b45309; /* Premium gold/amber accent */
+    --border-muted: #e2e8f0;
+    --status-critical: #dc2626;
+    --text-primary: #1e293b;
+    --shadow-premium: 0 10px 30px rgba(15, 52, 35, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    --transition-premium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Flash Messages */
@@ -51,15 +58,17 @@
 
 /* Dark Theme Variables */
 html.dark-theme {
-    --bg-primary: #0f172a; 
-    --bg-surface: #1e293b; /* Card/Container background dark (slate-800) */
-    --bg-surface-hover: #334155;
-    --text-brand: #34d399; 
+    --bg-primary: #090e0b; /* Rich deep moss black */
+    --bg-surface: #121c17; /* Dark forest canvas */
+    --bg-surface-hover: #1b2a22;
+    --text-brand: #34d399; /* Vibrant emerald green */
     --text-muted: #94a3b8;
     --text-accent: #34d399;
-    --border-muted: #334155;
+    --text-amber: #fbbf24;
+    --border-muted: #24352b;
     --status-critical: #f87171;
-    --text-primary: #f1f5f9; 
+    --text-primary: #e2e8f0; 
+    --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 body {

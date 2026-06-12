@@ -2,6 +2,7 @@ from flask import Blueprint
 from app.controllers.order_controller import OrderController
 from app.auth import merchant_required
 
+
 class OrderRoutes:
     def __init__(self):
         self.bp = Blueprint("order", __name__)

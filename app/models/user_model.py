@@ -84,7 +84,8 @@ class User(BaseModel):
         db = Database()
         db.execute(
             "INSERT INTO users (name, email, password, role, profile_pic, certification_badge, is_active) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (self.name, self.email, self.__password, self.role, self.profile_pic, self.certification_badge, self.is_active),
+            (self.name, self.email, self.__password, self.role,
+             self.profile_pic, self.certification_badge, self.is_active),
         )
         db.close()
 
@@ -94,12 +95,14 @@ class User(BaseModel):
         if update_password:
             db.execute(
                 "UPDATE users SET name=%s, email=%s, password=%s, role=%s, profile_pic=%s, certification_badge=%s, is_active=%s WHERE id=%s",
-                (self.name, self.email, self.__password, self.role, self.profile_pic, self.certification_badge, self.is_active, user_id),
+                (self.name, self.email, self.__password, self.role, self.profile_pic,
+                 self.certification_badge, self.is_active, user_id),
             )
         else:
             db.execute(
                 "UPDATE users SET name=%s, email=%s, role=%s, profile_pic=%s, certification_badge=%s, is_active=%s WHERE id=%s",
-                (self.name, self.email, self.role, self.profile_pic, self.certification_badge, self.is_active, user_id),
+                (self.name, self.email, self.role, self.profile_pic,
+                 self.certification_badge, self.is_active, user_id),
             )
         db.close()
 
@@ -108,12 +111,14 @@ class User(BaseModel):
         if update_password:
             db.execute(
                 "UPDATE users SET name=%s, email=%s, password=%s, profile_pic=%s, certification_badge=%s WHERE id=%s",
-                (self.name, self.email, self.__password, self.profile_pic, self.certification_badge, user_id),
+                (self.name, self.email, self.__password,
+                 self.profile_pic, self.certification_badge, user_id),
             )
         else:
             db.execute(
                 "UPDATE users SET name=%s, email=%s, profile_pic=%s, certification_badge=%s WHERE id=%s",
-                (self.name, self.email, self.profile_pic, self.certification_badge, user_id),
+                (self.name, self.email, self.profile_pic,
+                 self.certification_badge, user_id),
             )
         db.close()
 
@@ -143,9 +148,9 @@ class User(BaseModel):
             return None
 
         user = cls()
-        user.name  = data["name"]
+        user.name = data["name"]
         user.email = data["email"]
-        user.role  = data["role"]
+        user.role = data["role"]
         user.profile_pic = data.get("profile_pic")
         user.certification_badge = data.get("certification_badge")
         user.is_active = data.get("is_active", 1)

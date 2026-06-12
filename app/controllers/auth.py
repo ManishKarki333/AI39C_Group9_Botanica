@@ -74,10 +74,12 @@ def send_otp_email(recipient_email, otp_code, expiry_time):
         print(f"[EMAIL ERROR] Failed to send OTP email: {e}")
         return False
 
+
 # Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
 # Basic email format validator
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
 
 class AuthController(BaseController):
 
@@ -108,7 +110,7 @@ class AuthController(BaseController):
             return redirect(url_for(self._get_redirect_route(current_role)))
 
         if request.method == "POST":
-            email    = request.form.get("email", "").strip()
+            email = request.form.get("email", "").strip()
             password = request.form.get("password", "")
 
             if not email or not password:
@@ -122,13 +124,14 @@ class AuthController(BaseController):
 
                 if user is not None and user.check_password(password):
                     if user.is_active == 0:
-                        flash("This account has been deactivated. Please contact support to reactivate it.", "danger")
+                        flash(
+                            "This account has been deactivated. Please contact support to reactivate it.", "danger")
                         return render_template("login.html", google_client_id=config.GOOGLE_CLIENT_ID)
 
-                    session["user_id"]   = user_data["id"]
+                    session["user_id"] = user_data["id"]
                     session["user_name"] = user_data["name"]
-                    session["role"]      = user_data["role"]
-                    
+                    session["role"] = user_data["role"]
+
                     # Dynamic backend routing based on database role matrix
                     target_route = self._get_redirect_route(user_data["role"])
                     return self.flash_and_redirect(
@@ -146,10 +149,10 @@ class AuthController(BaseController):
             return redirect(url_for("auth.home"))
 
         if request.method == "POST":
-            name     = request.form.get("name", "").strip()
-            email    = request.form.get("email", "").strip()
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
             password = request.form.get("password", "")
-            role     = request.form.get("role", "user")
+            role = request.form.get("role", "user")
 
             # Sanitize role — never trust user input
             if role not in ALLOWED_ROLES:
@@ -169,47 +172,50 @@ class AuthController(BaseController):
                 flash("Email already registered. Please log in.", "warning")
                 return redirect(url_for("auth.login"))
 
-            new_user = User(name=name, email=email, password=password, role=role)
+            new_user = User(name=name, email=email,
+                            password=password, role=role)
             new_user.save()
-            
+
             return self.flash_and_redirect(
                 "Registration successful! Please login.", "success", "auth.login"
             )
 
         return render_template("register.html")
-    
+
     # ── Profile ─────────────────────────────────────────────
     def profile(self):
         """Render and handle user account profile settings and order history."""
         if 'user_id' not in session:
             flash("Please log in to access your account.", "warning")
             return redirect(url_for('auth.login'))
-            
+
         user_id = session['user_id']
         db = Database()
-        
+
         if request.method == "POST":
             name = request.form.get("name", "").strip()
             email = request.form.get("email", "").strip()
-            
+
             if not name or not email:
                 flash("Name and email are required.", "danger")
                 db.close()
                 return redirect(url_for('auth.profile'))
-                
+
             # Check if email is already in use by another user
-            existing = db.fetch_one("SELECT id FROM users WHERE email = %s AND id != %s", (email, user_id))
+            existing = db.fetch_one(
+                "SELECT id FROM users WHERE email = %s AND id != %s", (email, user_id))
             if existing:
                 flash("That email address is already in use.", "danger")
                 db.close()
                 return redirect(url_for('auth.profile'))
-                
+
             # Fetch current user details to keep files if not updated
-            current_user = db.fetch_one("SELECT profile_pic, certification_badge, role FROM users WHERE id = %s", (user_id,))
+            current_user = db.fetch_one(
+                "SELECT profile_pic, certification_badge, role FROM users WHERE id = %s", (user_id,))
             profile_pic = current_user.get("profile_pic")
             certification_badge = current_user.get("certification_badge")
             role = current_user.get("role")
-            
+
             # Handle profile pic upload
             profile_pic_file = request.files.get("profile_pic")
             if profile_pic_file and profile_pic_file.filename:
@@ -220,7 +226,7 @@ class AuthController(BaseController):
                 filename = f"profile_{user_id}_{uuid.uuid4().hex}{ext}"
                 profile_pic_file.save(os.path.join(upload_dir, filename))
                 profile_pic = f"/static/uploads/{filename}"
-                
+
             # Handle certificate badge upload
             if role == "merchant":
                 cert_file = request.files.get("certification_badge")
@@ -232,24 +238,24 @@ class AuthController(BaseController):
                     filename = f"cert_{user_id}_{uuid.uuid4().hex}{ext}"
                     cert_file.save(os.path.join(upload_dir, filename))
                     certification_badge = f"/static/uploads/{filename}"
-            
+
             # Update user info in db
             db.execute(
                 "UPDATE users SET name = %s, email = %s, profile_pic = %s, certification_badge = %s WHERE id = %s",
                 (name, email, profile_pic, certification_badge, user_id)
             )
-            
+
             # Update session variables
             session["user_name"] = name
-            
+
             flash("Profile updated successfully!", "success")
             db.close()
             return redirect(url_for('auth.profile'))
-            
+
         # Fetch user info
         user_query = "SELECT id, name, email, role, profile_pic, certification_badge, created_at FROM users WHERE id = %s"
         user = db.fetch_one(user_query, (user_id,))
-        
+
         # Fetch user's order history using the orders table schema
         orders_query = """
             SELECT id, total_amount, order_status, created_at 
@@ -257,7 +263,7 @@ class AuthController(BaseController):
         """
         orders = db.fetch_all(orders_query, (user_id,))
         db.close()
-        
+
         return render_template('profile.html', user=user, orders=orders)
 
     def deactivate_account(self):
@@ -265,12 +271,12 @@ class AuthController(BaseController):
         if 'user_id' not in session:
             flash("Please log in first.", "warning")
             return redirect(url_for('auth.login'))
-            
+
         user_id = session['user_id']
         db = Database()
         db.execute("UPDATE users SET is_active = 0 WHERE id = %s", (user_id,))
         db.close()
-        
+
         session.clear()
         flash("Your account has been deactivated successfully.", "info")
         return redirect(url_for('auth.login'))
@@ -280,12 +286,12 @@ class AuthController(BaseController):
         if 'user_id' not in session:
             flash("Please log in first.", "warning")
             return redirect(url_for('auth.login'))
-            
+
         user_id = session['user_id']
         db = Database()
         db.execute("DELETE FROM users WHERE id = %s", (user_id,))
         db.close()
-        
+
         session.clear()
         flash("Your account has been deleted permanently.", "info")
         return redirect(url_for('auth.login'))
@@ -304,11 +310,11 @@ class AuthController(BaseController):
     def contact(self):
         if request.method == "POST":
             first_name = request.form.get("first_name", "").strip()
-            last_name  = request.form.get("last_name",  "").strip()
-            email      = request.form.get("email",      "").strip()
-            inquiry    = request.form.get("inquiry",    "").strip()
-            subject    = request.form.get("subject",    "").strip()
-            message    = request.form.get("message",    "").strip()
+            last_name = request.form.get("last_name",  "").strip()
+            email = request.form.get("email",      "").strip()
+            inquiry = request.form.get("inquiry",    "").strip()
+            subject = request.form.get("subject",    "").strip()
+            message = request.form.get("message",    "").strip()
 
             if not all([first_name, last_name, email, subject, message]):
                 flash("All fields are required.", "danger")
@@ -335,16 +341,18 @@ class AuthController(BaseController):
         if session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
-        
+
         merchant_id = session.get("user_id")
         db = Database()
-        
+
         # Fetch merchant user info (profile pic, certificate status)
-        user = db.fetch_one("SELECT name, email, profile_pic, certification_badge FROM users WHERE id = %s", (merchant_id,))
-        
+        user = db.fetch_one(
+            "SELECT name, email, profile_pic, certification_badge FROM users WHERE id = %s", (merchant_id,))
+
         # Fetch herbs for the current merchant
-        herbs = db.fetch_all("SELECT * FROM herbs WHERE merchant_id = %s", (merchant_id,))
-        
+        herbs = db.fetch_all(
+            "SELECT * FROM herbs WHERE merchant_id = %s", (merchant_id,))
+
         # Fetch top selling herbs for this merchant
         chart_query = """
             SELECT h.common_name, CAST(SUM(oi.quantity) AS UNSIGNED) as total_sold
@@ -355,12 +363,12 @@ class AuthController(BaseController):
             ORDER BY total_sold DESC
         """
         top_selling = db.fetch_all(chart_query, (merchant_id,))
-        
+
         db.close()
-        
+
         # Identify low stock items (stock <= 5)
         low_stock_herbs = [h for h in herbs if h["stock_quantity"] <= 5]
-        
+
         # Fetch orders for the current merchant (uses corrected query)
         orders = self.order_model.get_merchant_orders(merchant_id)
         return render_template("merchant_dashboard.html", herbs=herbs, orders=orders, user=user, top_selling=top_selling, low_stock_herbs=low_stock_herbs)
@@ -370,8 +378,9 @@ class AuthController(BaseController):
         credential = request.form.get("credential")
         if not credential:
             # Check if it is a mock request (JSON payload or query parameter)
-            credential = request.json.get("credential") if request.is_json else None
-        
+            credential = request.json.get(
+                "credential") if request.is_json else None
+
         email = None
         name = None
 
@@ -393,37 +402,41 @@ class AuthController(BaseController):
                 url = f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}"
                 with urllib.request.urlopen(url) as response:
                     token_info = json.loads(response.read().decode())
-                    
+
                     # Validate Client ID configuration and match
                     client_id = config.GOOGLE_CLIENT_ID
                     if not client_id:
-                        flash("Google login is not configured on this server.", "danger")
+                        flash(
+                            "Google login is not configured on this server.", "danger")
                         return redirect(url_for("auth.login"))
-                    
+
                     if token_info.get("aud") != client_id.strip():
-                        flash("Google authentication mismatch (Client ID client verification failed).", "danger")
+                        flash(
+                            "Google authentication mismatch (Client ID client verification failed).", "danger")
                         return redirect(url_for("auth.login"))
-                    
+
                     # Validate that email is verified by Google
                     if not token_info.get("email_verified"):
                         flash("Google email is not verified.", "danger")
                         return redirect(url_for("auth.login"))
-                    
+
                     email = token_info.get("email")
-                    name = token_info.get("name", email.split('@')[0] if email else "Google User")
+                    name = token_info.get("name", email.split(
+                        '@')[0] if email else "Google User")
             except Exception as e:
                 print(f"Google Token Verification Failed: {e}")
                 flash("Failed to verify Google credentials. Please try again.", "danger")
                 return redirect(url_for("auth.login"))
-        
+
         if not email:
             flash("Invalid Google Sign-In attempt.", "danger")
             return redirect(url_for("auth.login"))
 
         # Log user in or register automatically
         db = Database()
-        user_data = db.fetch_one("SELECT * FROM users WHERE email = %s", (email,))
-        
+        user_data = db.fetch_one(
+            "SELECT * FROM users WHERE email = %s", (email,))
+
         if not user_data:
             # Register new Google user
             # Password can be a random secure hash
@@ -433,20 +446,22 @@ class AuthController(BaseController):
                 "INSERT INTO users (name, email, password, role, is_active) VALUES (%s, %s, %s, %s, 1)",
                 (name, email, hashed_pw, "user")
             )
-            user_data = db.fetch_one("SELECT * FROM users WHERE email = %s", (email,))
+            user_data = db.fetch_one(
+                "SELECT * FROM users WHERE email = %s", (email,))
             print(f"Registered new Google OAuth user: {email}")
         else:
             if user_data.get("is_active") == 0:
                 db.close()
-                flash("This account has been deactivated. Please contact support to reactivate it.", "danger")
+                flash(
+                    "This account has been deactivated. Please contact support to reactivate it.", "danger")
                 return redirect(url_for("auth.login"))
 
         db.close()
 
         # Set session variables
-        session["user_id"]   = user_data["id"]
+        session["user_id"] = user_data["id"]
         session["user_name"] = user_data["name"]
-        session["role"]      = user_data["role"]
+        session["role"] = user_data["role"]
 
         # Dynamic backend routing based on role matrix
         target_route = self._get_redirect_route(user_data["role"])
@@ -463,7 +478,8 @@ class AuthController(BaseController):
                 return render_template("forgot_password.html")
 
             db = Database()
-            user = db.fetch_one("SELECT * FROM users WHERE email = %s", (email,))
+            user = db.fetch_one(
+                "SELECT * FROM users WHERE email = %s", (email,))
             if not user:
                 db.close()
                 flash("No account matches that email address.", "danger")
@@ -482,10 +498,12 @@ class AuthController(BaseController):
             db.close()
 
             # Try sending via real email first, fall back to terminal
-            email_sent = send_otp_email(email, otp, expiry.strftime('%I:%M:%S %p'))
+            email_sent = send_otp_email(
+                email, otp, expiry.strftime('%I:%M:%S %p'))
 
             if email_sent:
-                flash("A 6-digit verification code has been sent to your email inbox.", "success")
+                flash(
+                    "A 6-digit verification code has been sent to your email inbox.", "success")
             else:
                 # Fallback: print to terminal for local dev/grading
                 print("\n" + "="*50)
@@ -493,7 +511,8 @@ class AuthController(BaseController):
                 print(f" OTP CODE: {otp}")
                 print(f" EXPIRES AT: {expiry.strftime('%I:%M:%S %p')}")
                 print("="*50 + "\n")
-                flash("A verification code has been generated. Check terminal/console for dev testing.", "success")
+                flash(
+                    "A verification code has been generated. Check terminal/console for dev testing.", "success")
             session["otp_reset_email"] = email
             return redirect(url_for("auth.verify_otp"))
 
@@ -512,8 +531,9 @@ class AuthController(BaseController):
                 return render_template("verify_otp.html", email=email)
 
             db = Database()
-            user = db.fetch_one("SELECT * FROM users WHERE email = %s", (email,))
-            
+            user = db.fetch_one(
+                "SELECT * FROM users WHERE email = %s", (email,))
+
             if not user or not user.get("otp_code") or user.get("otp_code") != otp_input:
                 db.close()
                 flash("Invalid OTP code. Please try again.", "danger")
@@ -524,7 +544,7 @@ class AuthController(BaseController):
             expiry = user.get("otp_expiry")
             if isinstance(expiry, str):
                 expiry = datetime.strptime(expiry, '%Y-%m-%d %H:%M:%S')
-            
+
             if expiry and expiry < datetime.now():
                 db.close()
                 flash("OTP code has expired. Please request a new one.", "danger")
@@ -568,7 +588,8 @@ class AuthController(BaseController):
 
             # Clear verification from session
             session.pop("otp_verified_email", None)
-            flash("Your password has been reset successfully! You can now log in.", "success")
+            flash(
+                "Your password has been reset successfully! You can now log in.", "success")
             return redirect(url_for("auth.login"))
 
         return render_template("reset_password.html")

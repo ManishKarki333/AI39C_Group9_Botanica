@@ -1,6 +1,7 @@
 from flask import Blueprint
 from app.controllers.shop_controller import ShopController
-from app.auth import merchant_required 
+from app.auth import merchant_required
+
 
 class ShopRoutes:
     def __init__(self):
@@ -19,7 +20,7 @@ class ShopRoutes:
         self.bp.route("/herb_details/<int:id>", methods=["GET"])(
             self.shop_controller.herb_details
         )
-        
+
         # Protected Merchant Inventory Actions
         self.bp.route("/add_product", methods=["POST"])(
             merchant_required(self.shop_controller.add_product)
@@ -30,13 +31,13 @@ class ShopRoutes:
         self.bp.route("/api/price_history/<int:herb_id>", methods=["GET"])(
             merchant_required(self.shop_controller.api_price_history)
         )
-        
+
         # Synchronous Cart View Page
         # FIXED: Bound to shop_controller rather than auth_controller
         self.bp.route("/cart", methods=["GET"])(
             self.shop_controller.view_cart
         )
-        
+
         # GET route to view the checkout form
         self.bp.route("/checkout", methods=["GET"])(
             self.shop_controller.checkout_page
@@ -45,7 +46,7 @@ class ShopRoutes:
         # POST route triggered when the user submits their payment/checkout form
         self.bp.route("/process_checkout", methods=["POST"])(
             self.shop_controller.process_checkout
-)
+        )
 
         # Asynchronous API Endpoints (Sprint 3 Cart Transactions)
         self.bp.route("/add_to_cart", methods=["POST"])(
@@ -57,7 +58,7 @@ class ShopRoutes:
         self.bp.route("/remove_from_cart", methods=["POST"])(
             self.shop_controller.remove_from_cart
         )
-        
+
         # ADD THIS: Search API for search.js
         self.bp.route("/api/search", methods=["GET"])(
             self.shop_controller.api_search_and_filter

@@ -10,42 +10,42 @@
 <div class="dashboard-wrapper">
     
     <!-- Title Section with Profile Details -->
-    <div class="dashboard-header-block" style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-bottom:30px;">
-        <div style="display:flex; align-items:center; gap:15px; flex:1; min-width:280px;">
+    <div class="dashboard-header-block">
+        <div class="header-user-profile">
             {% if user.profile_pic %}
-                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid var(--figma-green);">
+                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" class="header-avatar-img">
             {% else %}
-                <div class="avatar-circle" style="width:70px; height:70px; background:var(--figma-green); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; box-shadow:0 2px 4px rgba(39, 174, 96, 0.25);">
+                <div class="header-avatar-circle">
                     {{ user.name[:1] | upper }}
                 </div>
             {% endif %}
             <div>
-                <h1 style="margin:0; font-size:28px;">Merchant Dashboard</h1>
-                <p class="subtitle" style="margin:2px 0 0 0;">Welcome back, <strong>{{ user.name }}</strong> ({{ user.email }})</p>
-                <div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
+                <h1 class="header-title">Merchant Dashboard</h1>
+                <p class="subtitle header-subtitle">Welcome back, <strong>{{ user.name }}</strong> ({{ user.email }})</p>
+                <div class="header-status-row">
                     {% if user.certification_badge %}
-                        <span class="status-badge status-delivered" style="font-size:11px; padding:2px 8px; font-weight:600;">✓ Verified Seller</span>
+                        <span class="status-badge status-delivered header-badge">✓ Verified Seller</span>
                     {% else %}
-                        <span class="status-badge status-pending" style="font-size:11px; padding:2px 8px; font-weight:600;">⚠ Unverified Seller</span>
-                        <a href="{{ url_for('auth.profile', tab='settings') }}" style="font-size:12px; color:var(--figma-green); text-decoration:underline; font-weight:500;">Upload Certificate</a>
+                        <span class="status-badge status-pending header-badge-pending">⚠ Unverified Seller</span>
+                        <a href="{{ url_for('auth.profile', tab='settings') }}" class="header-certificate-link">Upload Certificate</a>
                     {% endif %}
                 </div>
             </div>
         </div>
         <div>
             <!-- Modal trigger anchor style for adding a product -->
-            <a href="#addProductModal" class="btn-add-product-figma" style="white-space:nowrap; padding:12px 20px;"><span>+</span> Add Product</a>
+            <a href="#addProductModal" class="btn-add-product-figma"><span>+</span> Add Product</a>
         </div>
     </div>
 
     <!-- Low Stock Alert Banner -->
     {% if low_stock_herbs %}
-    <div class="vacation-card-row" style="background:#fffaf0; border-color:#feebc8; margin-bottom:20px; display:flex; padding:16px 20px; border-radius:12px;">
-        <div class="vacation-left" style="display:flex; align-items:center; gap:12px;">
-            <span class="power-icon" style="color:#dd6b20; background:#feebc8; font-weight:bold; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:18px;">⚠</span>
+    <div class="low-stock-alert-card">
+        <div class="vacation-left">
+            <span class="low-stock-icon">⚠</span>
             <div>
-                <span class="widget-title" style="color:#dd6b20; font-weight:600;">Low Stock Warning!</span>
-                <p class="widget-desc" style="color:#7b341e; margin:2px 0 0 0; font-size:13px; line-height:1.4;">
+                <span class="low-stock-title">Low Stock Warning!</span>
+                <p class="low-stock-description">
                     Some of your items have critically low stock (5 or fewer units left):
                     {% for low_herb in low_stock_herbs %}
                         <strong>{{ low_herb.common_name }}</strong> ({{ low_herb.stock_quantity }} units left){% if not loop.last %}, {% endif %}
@@ -74,25 +74,25 @@
     </div>
 
     <!-- E-Commerce Analytics Panel -->
-    <div class="products-section-container" style="margin-bottom: 30px;">
-        <div class="section-controls-header" style="border-bottom: 1px solid var(--figma-border); padding-bottom:12px; margin-bottom:20px;">
-            <h2 style="font-size:18px;">Top Selling Herbs Insights</h2>
+    <div class="products-section-container insights-section-container">
+        <div class="section-controls-header insights-section-header">
+            <h2>Top Selling Herbs Insights</h2>
         </div>
-        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:40px; padding:10px 0;">
-            <div style="width:220px; height:220px; position:relative; flex-shrink:0;">
+        <div class="insights-content-row">
+            <div class="pie-chart-wrapper">
                 <canvas id="salesPieChart"></canvas>
             </div>
-            <div style="flex:1; min-width:250px;">
-                <h3 style="margin:0 0 8px 0; font-size:16px; font-weight:600;">Most Selling Herbs</h3>
-                <p class="widget-desc" style="font-size:13px; margin:0 0 12px 0;">This chart highlights the quantity share of your top products purchased by clients.</p>
+            <div class="insights-list-column">
+                <h3 class="insights-list-title">Most Selling Herbs</h3>
+                <p class="widget-desc insights-list-description">This chart highlights the quantity share of your top products purchased by clients.</p>
                 {% if top_selling %}
-                    <ul style="padding-left:18px; color:var(--figma-text-dark); font-size:13.5px; margin:0; line-height:1.6;">
+                    <ul class="insights-list-items">
                     {% for sales in top_selling %}
-                        <li style="margin-bottom:4px;"><strong>{{ sales.common_name }}</strong>: {{ sales.total_sold }} units sold</li>
+                        <li class="insights-list-item"><strong>{{ sales.common_name }}</strong>: {{ sales.total_sold }} units sold</li>
                     {% endfor %}
                     </ul>
                 {% else %}
-                    <p style="font-style:italic; color:var(--figma-text-gray); font-size:13px; margin:0;">No order transactions recorded yet.</p>
+                    <p class="insights-empty-text">No order transactions recorded yet.</p>
                 {% endif %}
             </div>
         </div>
@@ -102,29 +102,29 @@
     <div class="products-section-container">
         <div class="section-controls-header">
             <h2>My Products</h2>
-            <p style="font-size:12px; color:var(--figma-text-gray); margin:0;">(Click a card to edit price/stock & view price history)</p>
+            <p class="section-controls-subtitle">(Click a card to edit price/stock & view price history)</p>
         </div>
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card" onclick="openProductEditModal({{ herb.id }}, '{{ herb.common_name | escape }}', {{ herb.price }}, {{ herb.stock_quantity }})" style="cursor:pointer; transition: transform 0.2s, box-shadow 0.2s; hover: transform: translateY(-2px)">
+            <div class="figma-product-card" onclick="openProductEditModal({{ herb.id }}, '{{ herb.common_name | escape }}', {{ herb.price }}, {{ herb.stock_quantity }})">
                 <div class="p-card-left">
                     <div class="p-img-box">
-                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">
                     </div>
                     <div class="p-details">
-                        <h3 style="font-size:15px; margin-bottom:2px;">{{ herb.common_name }}</h3>
+                        <h3 class="product-card-title">{{ herb.common_name }}</h3>
                         <span class="p-scientific">{{ herb.scientific_name }}</span>
                     </div>
                 </div>
-                <div class="p-card-metrics" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="p-card-metrics product-card-metrics-cols">
                     <div class="metric-group">
                         <span class="m-label">Price</span>
                         <span class="m-value">Rs. {{ herb.price }}</span>
                     </div>
                     <div class="metric-group">
                         <span class="m-label">Stock</span>
-                        <span class="m-value {% if herb.stock_quantity <= 5 %}status-badge status-cancelled{% else %}font-highlight{% endif %}" style="width:fit-content; padding:2px 8px; border-radius:12px; font-size:13px;">
+                        <span class="m-value {% if herb.stock_quantity <= 5 %}status-badge status-cancelled{% else %}font-highlight{% endif %} stock-badge-container">
                             {{ herb.stock_quantity }}
                             {% if herb.stock_quantity <= 5 %}
                                 (Low)
@@ -133,11 +133,11 @@
                     </div>
                     <div class="metric-group">
                         <span class="m-label">WhatsApp</span>
-                        <span class="m-value" style="font-size:12px; color:var(--figma-text-gray); font-weight:500;">{{ herb.whatsapp_number or 'Not Set' }}</span>
+                        <span class="m-value metric-whatsapp-text">{{ herb.whatsapp_number or 'Not Set' }}</span>
                     </div>
                 </div>
-                <div style="margin-left:auto;">
-                    <span style="font-size:12px; color:var(--figma-green); font-weight:600; display:flex; align-items:center; gap:4px;">Edit Specs <i class="ri-edit-line"></i></span>
+                <div class="product-edit-action-col">
+                    <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-line"></i></span>
                 </div>
             </div>
             {% else %}
@@ -147,7 +147,7 @@
     </div>
 
     <!-- Order Management Container -->
-    <div class="products-section-container" style="margin-top: 40px;">
+    <div class="products-section-container order-section-margin">
         <div class="section-controls-header">
             <h2>Order Management</h2>
         </div>
@@ -244,17 +244,17 @@
 </div>
 
 <!-- Update Product & Price History Modal Overlay -->
-<div id="updateProductModal" class="dashboard-modal-overlay" style="display:none; align-items:center; justify-content:center;">
-    <div class="modal-body-card" style="max-width:520px; width:90%; border-radius:12px; padding:24px;">
-        <div class="modal-header" style="margin-bottom:15px;">
-            <h3 id="updateModalTitle" style="font-size:18px; margin:0;">Edit Product Specifications</h3>
-            <button onclick="closeProductEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--figma-text-gray);">&times;</button>
+<div id="updateProductModal" class="update-modal-overlay">
+    <div class="modal-body-card update-modal-body">
+        <div class="update-modal-header">
+            <h3 id="updateModalTitle" class="update-modal-title">Edit Product Specifications</h3>
+            <button onclick="closeProductEditModal()" class="update-modal-close-btn">&times;</button>
         </div>
         
         <!-- Price Fluctuation Line Chart -->
-        <div style="margin-bottom:20px; border-bottom:1px solid var(--figma-border); padding-bottom:20px;">
-            <h4 style="margin:0 0 10px 0; font-size:13.5px; font-weight:600; color:var(--figma-text-dark);">Price Fluctuation History</h4>
-            <div style="height:170px; position:relative; background:#f8fafc; border-radius:8px; padding:10px; border:1px solid #edf2f7;">
+        <div class="price-history-section">
+            <h4 class="price-history-title">Price Fluctuation History</h4>
+            <div class="price-history-canvas-wrapper">
                 <canvas id="priceHistoryChart"></canvas>
             </div>
         </div>
@@ -262,165 +262,31 @@
         <form id="updateProductForm" class="modal-form-inputs" method="POST" action="">
             <div class="m-input-grid">
                 <div>
-                    <label for="editPrice" style="font-weight:500; font-size:13px; color:#4a5568;">Price (NPR)/100g</label>
-                    <input type="number" id="editPrice" name="price" step="0.01" placeholder="0.00" required style="width:100%; box-sizing:border-box;">
+                    <label for="editPrice" class="edit-form-label">Price (NPR)/100g</label>
+                    <input type="number" id="editPrice" name="price" step="0.01" placeholder="0.00" required class="edit-form-input">
                 </div>
                 <div>
-                    <label for="editStock" style="font-weight:500; font-size:13px; color:#4a5568;">Update Stock Count</label>
-                    <input type="number" id="editStock" name="stock_quantity" min="0" required style="width:100%; box-sizing:border-box;">
+                    <label for="editStock" class="edit-form-label">Update Stock Count</label>
+                    <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
                 </div>
             </div>
             
-            <button type="submit" class="btn-modal-submit" style="width:100%; font-weight:600;">Save Modifications</button>
+            <button type="submit" class="edit-form-submit">Save Modifications</button>
         </form>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Render Sales Pie Chart
-        const pieCtx = document.getElementById('salesPieChart');
-        if (pieCtx) {
-            const labels = [];
-            const data = [];
-            
-            {% for sales in top_selling %}
-                labels.push('{{ sales.common_name | escape }}');
-                data.push({{ sales.total_sold }});
-            {% endfor %}
-            
-            if (data.length === 0) {
-                // Fallback visual data if no sales
-                labels.push('No Sales Recorded');
-                data.push(1);
-            }
-            
-            new Chart(pieCtx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#2f855a', '#48bb78', '#38b2ac', '#4299e1', '#667eea', '#9f7aea', '#ed64a6'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: data.length > 0 && labels[0] !== 'No Sales Recorded',
-                            position: 'right',
-                            labels: {
-                                boxWidth: 12,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    });
-    
-    let priceChartInstance = null;
-    
-    function openProductEditModal(id, commonName, currentPrice, currentStock) {
-        const modal = document.getElementById('updateProductModal');
-        document.getElementById('updateModalTitle').innerText = 'Edit Specs: ' + commonName;
-        document.getElementById('editPrice').value = currentPrice;
-        document.getElementById('editStock').value = currentStock;
-        document.getElementById('updateProductForm').action = '/shop/update_product/' + id;
-        
-        modal.style.display = 'flex';
-        
-        // Fetch price history
-        fetch('/shop/api/price_history/' + id)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const prices = data.history.map(item => item.price);
-                    const dates = data.history.map(item => {
-                        const d = new Date(item.date);
-                        return d.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
-                    });
-                    
-                    const chartCtx = document.getElementById('priceHistoryChart').getContext('2d');
-                    
-                    if (priceChartInstance) {
-                        priceChartInstance.destroy();
-                    }
-                    
-                    priceChartInstance = new Chart(chartCtx, {
-                        type: 'line',
-                        data: {
-                            labels: dates,
-                            datasets: [{
-                                label: 'Price (NPR)',
-                                data: prices,
-                                borderColor: '#2f855a',
-                                backgroundColor: 'rgba(47, 133, 90, 0.08)',
-                                borderWidth: 2.5,
-                                fill: true,
-                                tension: 0.15,
-                                pointRadius: 4,
-                                pointBackgroundColor: '#2f855a'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: false,
-                                    grid: {
-                                        color: '#f0f4f8'
-                                    },
-                                    ticks: {
-                                        font: { size: 10 },
-                                        callback: function(value) { return 'Rs.' + value; }
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        display: false
-                                    },
-                                    ticks: {
-                                        font: { size: 10 }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('Error fetching price history:', err);
-            });
-    }
-    
-    function closeProductEditModal() {
-        document.getElementById('updateProductModal').style.display = 'none';
-    }
-    
-    // Prevent click inside modal from closing it
-    document.querySelector('#updateProductModal .modal-body-card').addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
-    
-    // Close modal when clicking on overlay background
-    document.getElementById('updateProductModal').addEventListener('click', function() {
-        closeProductEditModal();
-    });
+<!-- Embedded Data Node for Top Selling Pie Chart -->
+<script id="top-selling-data" type="application/json">
+    [
+        {% for sales in top_selling %}
+            {"common_name": "{{ sales.common_name | escape }}", "total_sold": {{ sales.total_sold }}}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
 </script>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/merchant_dashboard.js') }}"></script>
 {% endblock %}

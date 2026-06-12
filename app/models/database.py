@@ -7,8 +7,8 @@ class Database:
     def __init__(self):
         """Open a database connection when object is created."""
         try:
-            host     = config.MYSQL_HOST
-            user     = config.MYSQL_USER
+            host = config.MYSQL_HOST
+            user = config.MYSQL_USER
             password = config.MYSQL_PASSWORD
             database = config.MYSQL_DATABASE
 
@@ -19,7 +19,7 @@ class Database:
                 host=host,
                 user=user,
                 password=password,
-                db=database,
+                database=database,
                 cursorclass=pymysql.cursors.DictCursor,
                 charset="utf8mb4",
                 use_unicode=True,
@@ -188,27 +188,33 @@ class Database:
 
         # Add OTP columns to users if they do not exist
         try:
-            db.execute("ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
+            db.execute(
+                "ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute("ALTER TABLE users ADD COLUMN otp_expiry DATETIME DEFAULT NULL")
+            db.execute(
+                "ALTER TABLE users ADD COLUMN otp_expiry DATETIME DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL")
+            db.execute(
+                "ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute("ALTER TABLE users ADD COLUMN certification_badge VARCHAR(255) DEFAULT NULL")
+            db.execute(
+                "ALTER TABLE users ADD COLUMN certification_badge VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute("ALTER TABLE users ADD COLUMN is_active TINYINT DEFAULT 1")
+            db.execute(
+                "ALTER TABLE users ADD COLUMN is_active TINYINT DEFAULT 1")
         except Exception:
             pass
         try:
-            db.execute("ALTER TABLE herbs ADD COLUMN whatsapp_number VARCHAR(20) DEFAULT NULL")
+            db.execute(
+                "ALTER TABLE herbs ADD COLUMN whatsapp_number VARCHAR(20) DEFAULT NULL")
         except Exception:
             pass
 
@@ -220,7 +226,8 @@ class Database:
         if not admin:
             db.execute(
                 "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
-                ("Admin", "admin@admin.com", generate_password_hash("admin123"), "admin"),
+                ("Admin", "admin@admin.com",
+                 generate_password_hash("admin123"), "admin"),
             )
             print("Default admin account created!")
 

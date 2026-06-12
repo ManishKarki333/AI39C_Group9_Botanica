@@ -1,6 +1,7 @@
 from flask import Blueprint
 from app.controllers.auth import AuthController
-from app.auth import merchant_required 
+from app.auth import merchant_required
+
 
 class AuthRoutes:
     def __init__(self):
@@ -48,10 +49,10 @@ class AuthRoutes:
         self.bp.route("/reset_password", methods=["GET", "POST"])(
             self.controller.reset_password
         )
-        
+
         # Dashboard stays under auth management
         self.bp.route("/merchant_dashboard", methods=["GET", "POST"])(
             merchant_required(self.controller.merchant_dashboard)
         )
-        
+
         return self.bp
