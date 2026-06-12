@@ -107,7 +107,7 @@
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card" onclick="openProductEditModal({{ herb.id }}, '{{ herb.common_name | escape }}', {{ herb.price }}, {{ herb.stock_quantity }})">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
                         <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">

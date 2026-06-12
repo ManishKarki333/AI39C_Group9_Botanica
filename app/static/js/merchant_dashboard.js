@@ -25,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
             closeProductEditModal();
         });
     }
+
+    // 3. Bind Click Event on Product Cards to open specs edit modal
+    const productCards = document.querySelectorAll('.product-spec-card');
+    productCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const id = card.getAttribute('data-id');
+            const name = card.getAttribute('data-name');
+            const price = parseFloat(card.getAttribute('data-price')) || 0.0;
+            const stock = parseInt(card.getAttribute('data-stock'), 10) || 0;
+            openProductEditModal(id, name, price, stock);
+        });
+    });
 });
 
 /**
