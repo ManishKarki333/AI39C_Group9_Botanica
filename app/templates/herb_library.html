@@ -40,9 +40,8 @@
                 <h3>{{ herb.common_name }}</h3>
                 <p class="excerpt">{{ herb.description|truncate(100) }}</p>
                 
-                <div class="card-actions">
-                    <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="btn btn-secondary">Learn More</a>
-                    <a href="{{ url_for('shop.shop') }}" class="btn btn-primary">Buy Now</a>
+                <div class="card-actions" style="margin-top: 15px;">
+                    <a href="{{ url_for('shop.herb_detail_library', id=herb.id) }}" class="btn btn-secondary" style="width: 100%; text-align: center;">Learn More</a>
                 </div>
             </div>
         </article>

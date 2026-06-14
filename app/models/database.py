@@ -127,6 +127,7 @@ class Database:
                 image_url VARCHAR(255) DEFAULT 'default_herb.png',
                 merchant_id INT DEFAULT NULL,
                 whatsapp_number VARCHAR(20) DEFAULT NULL,
+                reference_url VARCHAR(255) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -222,6 +223,10 @@ class Database:
             pass
         try:
             db.execute("ALTER TABLE herbs ADD COLUMN whatsapp_number VARCHAR(20) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE herbs ADD COLUMN reference_url VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
 

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Botanica - Herb Detail Library{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="details-container">
+    <a href="{{ url_for('shop.herb_library') }}" class="back-link">← Back to Reference Library</a>
+
+    <div class="profile-layout">
+        <div class="profile-visual">
+            <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:auto; border-radius: 8px;">
+        </div>
+
+        <div class="profile-info">
+            <span class="detail-scientific">{{ herb.scientific_name }}</span>
+            <h1>{{ herb.common_name }}</h1>
+            <p class="lead-description">{{ herb.description }}</p>
+            
+            <hr class="divider">
+
+            <div class="info-block">
+                <h4>Botanical Benefit Category</h4>
+                <p style="background-color: var(--secondary-color); padding: 8px 16px; border-radius: 6px; display: inline-block; font-weight: 600; color: var(--primary-color);">
+                    {{ herb.benefit_category }}
+                </p>
+            </div>
+
+            <!-- External Reference Block -->
+            <div class="reference-block">
+                <h4>More Information & External Resources</h4>
+                <p>
+                    Explore detailed botanical research, chemical composition, history, or scientific studies on this specimen.
+                </p>
+                {% if herb.reference_url %}
+                    <a href="{{ herb.reference_url }}" target="_blank" class="reference-link">
+                        <i class="ri-external-link-line"></i> View Wikipedia / Academic Reference
+                    </a>
+                {% else %}
+                    <a href="https://en.wikipedia.org/wiki/{{ herb.common_name.replace(' ', '_') }}" target="_blank" class="reference-link">
+                        <i class="ri-external-link-line"></i> Search "{{ herb.common_name }}" on Wikipedia
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <section class="reviews-section">
+        <h2 class="section-title">Community & Herbalist Feedback</h2>
+        
+        <div class="reviews-summary-layout">
+            <div class="rating-summary-card">
+                <div class="rating-value">{{ average_rating }}</div>
+                <div class="rating-stars">
+                    {% for i in range(1, 6) %}
+                        {% if average_rating >= i %}
+                            <i class="ri-star-fill star-icon active"></i>
+                        {% elif average_rating >= i - 0.5 %}
+                            <i class="ri-star-half-fill star-icon active"></i>
+                        {% else %}
+                            <i class="ri-star-line star-icon"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="rating-count">Based on {{ total_reviews }} review{{ 's' if total_reviews != 1 else '' }}</div>
+            </div>
+
+            <div class="review-form-container">
+                {% if session.get('user_id') %}
+                    <h3>Share Your Knowledge & Feedback</h3>
+                    <form action="{{ url_for('shop.add_review', herb_id=herb.id) }}" method="POST" enctype="multipart/form-data" class="review-form">
+                        <div class="rating-input-group">
+                            <label class="form-label">Botanical Rating</label>
+                            <div class="star-rating-selector">
+                                <input type="radio" id="star5" name="rating" value="5" required />
+                                <label for="star5" title="5 stars"><i class="ri-star-fill"></i></label>
+                                <input type="radio" id="star4" name="rating" value="4" />
+                                <label for="star4" title="4 stars"><i class="ri-star-fill"></i></label>
+                                <input type="radio" id="star3" name="rating" value="3" />
+                                <label for="star3" title="3 stars"><i class="ri-star-fill"></i></label>
+                                <input type="radio" id="star2" name="rating" value="2" />
+                                <label for="star2" title="2 stars"><i class="ri-star-fill"></i></label>
+                                <input type="radio" id="star1" name="rating" value="1" />
+                                <label for="star1" title="1 star"><i class="ri-star-fill"></i></label>
+                            </div>
+                        </div>
+
+                        <div class="comment-input-group">
+                            <label for="comment" class="form-label">Reference Note / Comment</label>
+                            <textarea id="comment" name="comment" rows="4" placeholder="Tell others about your experience, dosage, or research with this herb..." required></textarea>
+                        </div>
+
+                        <div class="image-upload-group">
+                            <label for="review_image" class="form-label">Add Specimen Photo (Optional)</label>
+                            <div class="upload-file-wrapper">
+                                <input type="file" id="review_image" name="review_image" accept="image/*">
+                                <div class="upload-dummy">
+                                    <i class="ri-image-add-line"></i>
+                                    <span>Choose a photo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-review-btn">
+                            <span>Submit Review</span>
+                            <i class="ri-send-plane-line"></i>
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="login-prompt-card">
+                        <i class="ri-chat-voice-line prompt-icon"></i>
+                        <p>Only registered members can leave reviews. Log in to share your experience!</p>
+                        <a href="{{ url_for('auth.login') }}" class="login-prompt-btn">Sign In to Review</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="reviews-list-container">
+            <h3>Recent Notes & Reviews ({{ total_reviews }})</h3>
+            {% if reviews %}
+                <div class="reviews-grid">
+                    {% for review in reviews %}
+                        <div class="review-card">
+                            
+                            <div class="review-header">
+                                <div class="reviewer-meta">
+                                    <div class="reviewer-avatar">
+                                        {{ review.user_name[0] | upper }}
+                                    </div>
+                                    <div>
+                                        <div class="reviewer-name">{{ review.user_name }}</div>
+                                        <div class="review-date">{{ review.created_at.strftime('%B %d, %Y') if review.created_at else '' }}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="review-actions-wrapper">
+                                    <div class="review-stars-display">
+                                        {% for j in range(1, 6) %}
+                                            {% if review.rating >= j %}
+                                                <i class="ri-star-fill star-icon active"></i>
+                                            {% else %}
+                                                <i class="ri-star-line star-icon"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                    {% if session.get('user_id') and (session.get('user_id') == review.user_id or session.get('role') == 'admin') %}
+                                        <form action="{{ url_for('shop.delete_review', review_id=review.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this review? This action cannot be undone.');" class="delete-review-form">
+                                            <button type="submit" class="delete-review-btn" title="Delete Review">
+                                                <i class="ri-delete-bin-6-line"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <p class="review-comment-text">{{ review.comment }}</p>
+
+                            {% if review.image_url %}
+                                <div class="review-image-attachment">
+                                    <img src="{{ review.image_url }}" alt="Review attachment from {{ review.user_name }}" class="review-attached-img" onclick="openReviewImageModal(this.src)">
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-reviews-fallback">
+                    <i class="ri-chat-history-line empty-icon"></i>
+                    <p>No reviews yet. Be the first to share your notes on this herb!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <div id="image-modal-portal" class="image-modal-portal" onclick="closeReviewImageModal()">
+        <span class="close-modal-btn">&times;</span>
+        <img class="modal-image-content" id="img-modal-target">
+    </div>
+
+    <script>
+        function openReviewImageModal(src) {
+            document.getElementById('img-modal-target').src = src;
+            document.getElementById('image-modal-portal').classList.add('active');
+        }
+
+        function closeReviewImageModal() {
+            document.getElementById('image-modal-portal').classList.remove('active');
+        }
+    </script>
+</main>
+{% endblock %}

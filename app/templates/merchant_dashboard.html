@@ -103,7 +103,7 @@
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-reference-url="{{ herb.reference_url or '' }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
                         <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">
@@ -130,8 +130,11 @@
                         <span class="m-value metric-whatsapp-text"><i class="ri-whatsapp-line"></i> {{ herb.whatsapp_number or 'Not Configured' }}</span>
                     </div>
                 </div>
-                <div class="product-edit-action-col">
+                <div class="product-edit-action-col" style="display: flex; flex-direction: column; gap: 8px;">
                     <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-box-line"></i></span>
+                    <form action="{{ url_for('shop.delete_product', id=herb.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete &quot;{{ herb.common_name | escape }}&quot; from the catalog?');" style="width: 100%;">
+                        <button type="submit" class="delete-product-trigger">Delete <i class="ri-delete-bin-line"></i></button>
+                    </form>
                 </div>
             </div>
             {% else %}
@@ -237,6 +240,11 @@
                 <small class="input-helper-text">Add your genuine contact number so customers can place direct inquiries.</small>
             </div>
             <div class="m-input-group">
+                <label for="referenceUrl">Reference Link (e.g. Wikipedia)</label>
+                <input type="url" id="referenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/...">
+                <small class="input-helper-text">Add a Wikipedia or academic reference link for the reference Herb Library.</small>
+            </div>
+            <div class="m-input-group">
                 <label for="productImage">Herb Product Image</label>
                 <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
@@ -267,6 +275,10 @@
                     <label for="editStock" class="edit-form-label">Update Stock Count</label>
                     <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
                 </div>
+            </div>
+            <div class="m-input-group">
+                <label for="editReferenceUrl" class="edit-form-label">Reference Link (e.g. Wikipedia)</label>
+                <input type="url" id="editReferenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/..." class="edit-form-input">
             </div>
             <button type="submit" class="edit-form-submit">Save Modifications</button>
         </form>

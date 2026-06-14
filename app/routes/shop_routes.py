@@ -20,6 +20,9 @@ class ShopRoutes:
         self.bp.route("/herb_details/<int:id>", methods=["GET"])(
             self.shop_controller.herb_details
         )
+        self.bp.route("/herb_detail_library/<int:id>", methods=["GET"])(
+            self.shop_controller.herb_detail_library
+        )
 
         # Protected Merchant Inventory Actions
         self.bp.route("/add_product", methods=["POST"])(
@@ -27,6 +30,9 @@ class ShopRoutes:
         )
         self.bp.route("/update_product/<int:id>", methods=["POST"])(
             merchant_required(self.shop_controller.update_product)
+        )
+        self.bp.route("/delete_product/<int:id>", methods=["POST"])(
+            merchant_required(self.shop_controller.delete_product)
         )
         self.bp.route("/api/price_history/<int:herb_id>", methods=["GET"])(
             merchant_required(self.shop_controller.api_price_history)
