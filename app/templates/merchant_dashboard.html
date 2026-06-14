@@ -4,12 +4,12 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/merchant.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-wrapper">
     
-    <!-- Title Section with Profile Details -->
     <div class="dashboard-header-block">
         <div class="header-user-profile">
             {% if user.profile_pic %}
@@ -24,59 +24,57 @@
                 <p class="subtitle header-subtitle">Welcome back, <strong>{{ user.name }}</strong> ({{ user.email }})</p>
                 <div class="header-status-row">
                     {% if user.certification_badge %}
-                        <span class="status-badge status-delivered header-badge">✓ Verified Seller</span>
+                        <span class="status-badge status-delivered header-badge"><i class="ri-checkbox-circle-fill"></i> Verified Seller</span>
                     {% else %}
-                        <span class="status-badge status-pending header-badge-pending">⚠ Unverified Seller</span>
+                        <span class="status-badge status-pending header-badge-pending"><i class="ri-error-warning-fill"></i> Unverified Seller</span>
                         <a href="{{ url_for('auth.profile', tab='settings') }}" class="header-certificate-link">Upload Certificate</a>
                     {% endif %}
                 </div>
             </div>
         </div>
         <div>
-            <!-- Modal trigger anchor style for adding a product -->
-            <a href="#addProductModal" class="btn-add-product-figma"><span>+</span> Add Product</a>
+            <a href="#addProductModal" class="btn-add-product-figma"><i class="ri-add-line"></i> Add New Herb</a>
         </div>
     </div>
 
-    <!-- Low Stock Alert Banner -->
     {% if low_stock_herbs %}
     <div class="low-stock-alert-card">
         <div class="vacation-left">
-            <span class="low-stock-icon">⚠</span>
+            <span class="low-stock-icon"><i class="ri-alert-line"></i></span>
             <div>
                 <span class="low-stock-title">Low Stock Warning!</span>
                 <p class="low-stock-description">
                     Some of your items have critically low stock (5 or fewer units left):
                     {% for low_herb in low_stock_herbs %}
-                        <strong>{{ low_herb.common_name }}</strong> ({{ low_herb.stock_quantity }} units left){% if not loop.last %}, {% endif %}
-                    {% endfor %}. Please click on them to restock.
+                        <strong>{{ low_herb.common_name }}</strong> (<span class="danger-text">{{ low_herb.stock_quantity }} units left</span>){% if not loop.last %}, {% endif %}
+                    {% endfor %}. Please update specs to restock.
                 </p>
             </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- Vacation Mode Component Box -->
-    <div class="vacation-card-row">
-        <div class="vacation-left">
-            <span class="power-icon">⏻</span>
-            <div>
-                <span class="widget-title">Vacation Mode</span>
-                <p class="widget-desc">Temporarily hide all your products</p>
+    <div class="dashboard-top-grid">
+        <div class="vacation-card-row custom-vacation-card">
+            <div class="vacation-info-group">
+                <span class="power-icon-wrapper"><i class="ri-shut-down-line"></i></span>
+                <div class="vacation-text-group">
+                    <span class="widget-title">Vacation Mode</span>
+                    <p class="widget-desc">Temporarily hide all your products</p>
+                </div>
             </div>
-        </div>
-        <div class="vacation-right">
-            <label class="figma-switch">
-                <input type="checkbox" id="vacationToggle">
-                <span class="figma-slider"></span>
-            </label>
+            <div class="vacation-toggle-group">
+                <label class="figma-switch">
+                    <input type="checkbox" id="vacationToggle">
+                    <span class="figma-slider"></span>
+                </label>
+            </div>
         </div>
     </div>
 
-    <!-- E-Commerce Analytics Panel -->
     <div class="products-section-container insights-section-container">
         <div class="section-controls-header insights-section-header">
-            <h2>Top Selling Herbs Insights</h2>
+            <h2><i class="ri-pie-chart-2-line"></i> Top Selling Herbs Insights</h2>
         </div>
         <div class="insights-content-row">
             <div class="pie-chart-wrapper">
@@ -88,21 +86,19 @@
                 {% if top_selling %}
                     <ul class="insights-list-items">
                     {% for sales in top_selling %}
-                        <li class="insights-list-item"><strong>{{ sales.common_name }}</strong>: {{ sales.total_sold }} units sold</li>
+                        <li class="insights-list-item"><i class="ri-seedling-line"></i> <strong>{{ sales.common_name }}</strong>: {{ sales.total_sold }} units sold</li>
                     {% endfor %}
                     </ul>
                 {% else %}
-                    <p class="insights-empty-text">No order transactions recorded yet.</p>
+                    <p class="insights-empty-text"><i class="ri-inbox-line"></i> No order transactions recorded yet.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Products Core Container -->
     <div class="products-section-container">
         <div class="section-controls-header">
-            <h2>My Products</h2>
-            <p class="section-controls-subtitle">(Click a card to edit price/stock & view price history)</p>
+            <h2><i class="ri-store-2-line"></i> My Catalog Products</h2>
         </div>
 
         <div class="products-list-stack">
@@ -120,86 +116,97 @@
                 <div class="p-card-metrics product-card-metrics-cols">
                     <div class="metric-group">
                         <span class="m-label">Price</span>
-                        <span class="m-value">Rs. {{ herb.price }}</span>
+                        <span class="m-value price-text">Rs. {{ herb.price }}</span>
                     </div>
                     <div class="metric-group">
-                        <span class="m-label">Stock</span>
-                        <span class="m-value {% if herb.stock_quantity <= 5 %}status-badge status-cancelled{% else %}font-highlight{% endif %} stock-badge-container">
-                            {{ herb.stock_quantity }}
-                            {% if herb.stock_quantity <= 5 %}
-                                (Low)
-                            {% endif %}
+                        <span class="m-label">Stock Status</span>
+                        <span class="m-value {% if herb.stock_quantity <= 5 %}badge-stock-low{% else %}badge-stock-healthy{% endif %}">
+                            {{ herb.stock_quantity }} units
+                            {% if herb.stock_quantity <= 5 %} (Low){% endif %}
                         </span>
                     </div>
                     <div class="metric-group">
-                        <span class="m-label">WhatsApp</span>
-                        <span class="m-value metric-whatsapp-text">{{ herb.whatsapp_number or 'Not Set' }}</span>
+                        <span class="m-label">WhatsApp Contact</span>
+                        <span class="m-value metric-whatsapp-text"><i class="ri-whatsapp-line"></i> {{ herb.whatsapp_number or 'Not Configured' }}</span>
                     </div>
                 </div>
                 <div class="product-edit-action-col">
-                    <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-line"></i></span>
+                    <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-box-line"></i></span>
                 </div>
             </div>
             {% else %}
-            <p>You haven't added any products yet.</p>
+            <div class="empty-state-box">
+                <i class="ri-archive-line"></i>
+                <p>You haven't listed any premium botanical items yet.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Order Management Container -->
     <div class="products-section-container order-section-margin">
         <div class="section-controls-header">
-            <h2>Order Management</h2>
+            <h2><i class="ri-file-list-3-line"></i> Fulfillment & Order Management</h2>
         </div>
 
         <div class="products-list-stack">
             {% for order in orders %}
-            <div class="figma-product-card">
-                <div class="p-details">
-                    <h3>Order #{{ order.id }}</h3>
-                    <p>Total: NPR {{ order.total_amount }}</p>
-                    <p><small>Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</small></p>
+            <div class="figma-product-card order-management-card">
+                <div class="p-card-left">
+                    <div class="order-icon-avatar">
+                        <i class="ri-shopping-bag-3-line"></i>
+                    </div>
+                    <div class="p-details">
+                        <h3 class="order-card-title">Order #{{ order.id }}</h3>
+                        <p class="order-meta-text"><i class="ri-calendar-line"></i> Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</p>
+                    </div>
                 </div>
                 
-                <div class="p-card-metrics">
-                    <form action="{{ url_for('order.update_status', order_id=order.id) }}" method="POST">
-                        <label>Status:</label>
-                        <select name="status" onchange="this.form.submit()">
+                <div class="order-amount-block">
+                    <span class="m-label">Revenue Amount</span>
+                    <span class="order-total-value">NPR {{ order.total_amount }}</span>
+                </div>
+                
+                <div class="order-status-action-block">
+                    <label class="m-label"><i class="ri-pushed-line"></i> Order Lifecycle:</label>
+                    <div class="custom-select-wrapper">
+                        <select class="select-premium-control" 
+                                onchange="dispatchStatusUpdate('{{ order.id }}', this.value)">
+                            
                             {% for status in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
-                                <option value="{{ status }}" {% if order.order_status == status %}selected{% endif %}>
+                                <option value="{{ status }}" {% if order.order_status and order.order_status.strip() == status %}selected{% endif %}>
                                     {{ status }}
                                 </option>
                             {% endfor %}
                         </select>
-                    </form>
+                        <div class="custom-select-arrow"><i class="ri-arrow-down-s-line"></i></div>
+                    </div>
                 </div>
             </div>
             {% else %}
-            <p>No new orders to process.</p>
+            <div class="empty-state-box">
+                <i class="ri-check-double-line"></i>
+                <p>All clean! No customer orders awaiting sorting or distribution.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Add Product Modal Overlay -->
 <div id="addProductModal" class="dashboard-modal-overlay">
     <div class="modal-body-card">
         <div class="modal-header">
             <h3>Add New Product Spec Sheet</h3>
-            <a href="#" class="close-modal-btn">&times;</a>
+            <a href="#" class="close-modal-btn"><i class="ri-close-line"></i></a>
         </div>
         <form class="modal-form-inputs" method="POST" action="{{ url_for('shop.add_product') }}" enctype="multipart/form-data">
-    
             <div class="m-input-group">
                 <label for="productName">Product Display Name</label>
                 <input type="text" id="productName" name="common_name" placeholder="e.g., Brahmi Leaf Powder" required>
             </div>
-
             <div class="m-input-group">
                 <label for="scientificName">Scientific Name</label>
                 <input type="text" id="scientificName" name="scientific_name" placeholder="e.g., Bacopa monnieri" required>
             </div>
-
             <div class="m-input-group">
                 <label for="category">Benefit Category</label>
                 <select id="category" name="benefit_category" required>
@@ -210,12 +217,10 @@
                     <option value="Immunity">Immunity</option>
                 </select>
             </div>
-
             <div class="m-input-group">
                 <label for="description">Product Description</label>
                 <textarea id="description" name="description" rows="3" placeholder="Describe the herb's benefits..."></textarea>
             </div>
-
             <div class="m-input-grid">
                 <div>
                     <label for="productPrice">Price (NPR)/100g</label>
@@ -226,39 +231,32 @@
                     <input type="number" id="productStock" name="stock_quantity" value="0" min="0" required>
                 </div>
             </div>
-
             <div class="m-input-group">
                 <label for="whatsappNumber">WhatsApp Inquiry Number</label>
                 <input type="text" id="whatsappNumber" name="whatsapp_number" placeholder="e.g., +97798XXXXXXXX" required>
                 <small class="input-helper-text">Add your genuine contact number so customers can place direct inquiries.</small>
             </div>
-
             <div class="m-input-group">
                 <label for="productImage">Herb Product Image</label>
                 <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
-            
             <button type="submit" class="btn-modal-submit">Publish to Live Storefront</button>
         </form>
     </div>
 </div>
 
-<!-- Update Product & Price History Modal Overlay -->
 <div id="updateProductModal" class="update-modal-overlay">
     <div class="modal-body-card update-modal-body">
         <div class="update-modal-header">
             <h3 id="updateModalTitle" class="update-modal-title">Edit Product Specifications</h3>
-            <button onclick="closeProductEditModal()" class="update-modal-close-btn">&times;</button>
+            <button onclick="closeProductEditModal()" class="update-modal-close-btn"><i class="ri-close-line"></i></button>
         </div>
-        
-        <!-- Price Fluctuation Line Chart -->
         <div class="price-history-section">
             <h4 class="price-history-title">Price Fluctuation History</h4>
             <div class="price-history-canvas-wrapper">
                 <canvas id="priceHistoryChart"></canvas>
             </div>
         </div>
-        
         <form id="updateProductForm" class="modal-form-inputs" method="POST" action="">
             <div class="m-input-grid">
                 <div>
@@ -270,19 +268,47 @@
                     <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
                 </div>
             </div>
-            
             <button type="submit" class="edit-form-submit">Save Modifications</button>
         </form>
     </div>
 </div>
 
-<!-- Embedded Data Node for Top Selling Pie Chart -->
 <script id="top-selling-data" type="application/json">
     [
         {% for sales in top_selling %}
             {"common_name": "{{ sales.common_name | escape }}", "total_sold": {{ sales.total_sold }}}{% if not loop.last %},{% endif %}
         {% endfor %}
     ]
+</script>
+
+<script>
+function dispatchStatusUpdate(orderId, chosenStatus) {
+    if (!orderId) return;
+
+    // Use modern Fetch API instead of form.submit() to update silently in the background
+    fetch(`/update/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'order_status': chosenStatus
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log(`Order ${orderId} successfully updated to ${chosenStatus}`);
+            // Optional: You can trigger a small toast notification here!
+            
+        } else {
+            console.error('Database update failed.');
+            alert('Could not update status. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Network error encountered:', error);
+    });
+}
 </script>
 {% endblock %}
 

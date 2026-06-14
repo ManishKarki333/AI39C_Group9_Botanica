@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, flash, session
+from flask import request, jsonify, session
 from app.controllers.base_controller import BaseController
 from app.models.order_model import Order
 from app.auth import merchant_required
@@ -12,28 +12,25 @@ class OrderController(BaseController):
 
     @merchant_required
     def update_status(self, order_id):
-        new_status = request.form.get("status")
-        valid_statuses = ['Pending', 'Processing',
-                          'Shipped', 'Delivered', 'Cancelled']
+        new_status = request.form.get("order_status")
+        
+        valid_statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 
         if not new_status or new_status not in valid_statuses:
-            flash("Invalid status selection.", "danger")
-            return redirect(url_for("auth.merchant_dashboard"))
+            return jsonify({"status": "error", "message": "Invalid status selection."}), 400
 
         try:
-            # Pass the logged-in user's ID to ensure they only edit THEIR orders
             merchant_id = session.get("user_id")
-            success = self.order_model.update_status(
-                order_id, new_status, merchant_id)
+            success = self.order_model.update_status(order_id, new_status, merchant_id)
 
             if success:
-                flash(f"Order #{order_id} updated to {new_status}.", "success")
+                return jsonify({
+                    "status": "success", 
+                    "message": f"Order #{order_id} updated to {new_status}."
+                }), 200
             else:
-                # The model should return False if the order doesn't exist OR doesn't belong to this merchant
-                flash("Unauthorized access or order not found.", "danger")
+                return jsonify({"status": "error", "message": "Unauthorized access or order not found."}), 403
 
         except Exception as e:
             logging.error(f"Error updating order {order_id}: {e}")
-            flash("A system error occurred.", "danger")
-
-        return redirect(url_for("auth.merchant_dashboard"))
+            return jsonify({"status": "error", "message": "A system error occurred."}), 500
