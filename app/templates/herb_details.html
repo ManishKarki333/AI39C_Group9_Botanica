@@ -8,7 +8,6 @@
 
 {% block content %}
 <main class="details-container">
-    <!-- Back Button pointing back to the library view -->
     <a href="{{ url_for('shop.herb_library') }}" class="back-link">← Back to Directory</a>
 
     <div class="profile-layout">
@@ -59,7 +58,6 @@
         </div>
     </div>
 
-    <!-- Reviews Section -->
     <section class="reviews-section">
         <h2 class="section-title">Customer Reviews</h2>
         
@@ -137,6 +135,7 @@
                 <div class="reviews-grid">
                     {% for review in reviews %}
                         <div class="review-card">
+                            
                             <div class="review-header">
                                 <div class="reviewer-meta">
                                     <div class="reviewer-avatar">
@@ -147,14 +146,25 @@
                                         <div class="review-date">{{ review.created_at.strftime('%B %d, %Y') if review.created_at else '' }}</div>
                                     </div>
                                 </div>
-                                <div class="review-stars-display">
-                                    {% for j in range(1, 6) %}
-                                        {% if review.rating >= j %}
-                                            <i class="ri-star-fill star-icon active"></i>
-                                        {% else %}
-                                            <i class="ri-star-line star-icon"></i>
-                                        {% endif %}
-                                    {% endfor %}
+                                
+                                <div class="review-actions-wrapper">
+                                    <div class="review-stars-display">
+                                        {% for j in range(1, 6) %}
+                                            {% if review.rating >= j %}
+                                                <i class="ri-star-fill star-icon active"></i>
+                                            {% else %}
+                                                <i class="ri-star-line star-icon"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                    {% if session.get('user_id') and (session.get('user_id') == review.user_id or session.get('role') == 'admin') %}
+                                        <form action="{{ url_for('shop.delete_review', review_id=review.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this review? This action cannot be undone.');" class="delete-review-form">
+                                            <button type="submit" class="delete-review-btn" title="Delete Review">
+                                                <i class="ri-delete-bin-6-line"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 </div>
                             </div>
                             
@@ -177,7 +187,6 @@
         </div>
     </section>
 
-    <!-- Photo Lightbox Modal -->
     <div id="image-modal-portal" class="image-modal-portal" onclick="closeReviewImageModal()">
         <span class="close-modal-btn">&times;</span>
         <img class="modal-image-content" id="img-modal-target">

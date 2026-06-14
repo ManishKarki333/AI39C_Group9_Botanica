@@ -64,7 +64,6 @@
         </div>
 
         {% if google_client_id %}
-            <!-- Real Google Login -->
             <script src="https://accounts.google.com/gsi/client" async defer></script>
             <div class="google-btn-container">
                 <div id="g_id_onload"
@@ -81,11 +80,9 @@
                      data-text="signin_with"
                      data-size="large"
                      data-logo_alignment="left"
-                     data-width="100%">
-                </div>
+                     data-width="360"> </div>
             </div>
         {% else %}
-            <!-- Dev Mock Google Login -->
             <form action="{{ url_for('auth.google_login') }}" method="POST" class="google-mock-form">
                 <input type="hidden" name="credential" value="mock_google_token">
                 <button type="submit" class="google-mock-btn">

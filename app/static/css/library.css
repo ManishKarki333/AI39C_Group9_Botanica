@@ -269,6 +269,90 @@ body {
     background-color: var(--bg-surface-hover, #f0f7f4);
 }
 
+/* --- Review Cards Grid Layout --- */
+.reviews-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.review-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Review Header Flex Container --- */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap; /* Falls back elegantly on mobile layouts */
+}
+
+/* Reviewer Info Alignment */
+.reviewer-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Star Display and Deletion Alignment Wrapper */
+.review-actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.review-stars-display {
+    display: flex;
+    gap: 4px;
+}
+
+/* --- Delete Button Styling --- */
+.delete-review-form {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+.delete-review-btn {
+    background: none;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.delete-review-btn i {
+    font-size: 1.2rem;
+}
+
+.delete-review-btn:hover {
+    background-color: #fff5f5;
+    color: #c53030;
+}
+
+/* --- Text Formatting inside Reviews --- */
+.review-comment-text {
+    margin-top: 12px;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.review-image-attachment {
+    margin-top: 12px;
+}
+
 /* Desktop upgrade for layouts */
 @media (min-width: 768px) {
     .profile-layout {

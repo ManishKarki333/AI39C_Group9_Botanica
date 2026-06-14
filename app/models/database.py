@@ -1,6 +1,7 @@
 import pymysql
-from werkzeug.security import generate_password_hash  # ✅ moved to top
-import config                                          # ✅ root-level config
+from pymysql.constants import CLIENT 
+from werkzeug.security import generate_password_hash  
+import config                                         
 
 
 class Database:
@@ -24,6 +25,7 @@ class Database:
                 charset="utf8mb4",
                 use_unicode=True,
                 autocommit=False,
+                client_flag=CLIENT.FOUND_ROWS 
             )
             print("Database connected successfully!")
 
@@ -51,11 +53,25 @@ class Database:
             cursor.close()
 
     def execute(self, query, params=None):
-        """Run a data-modifying query. Returns the last row ID if an INSERT occurs."""
+        """Run a data-modifying query. Returns lastrowid for INSERTs, or rowcount for updates/deletes."""
         cursor = self.__connection.cursor()
         try:
             cursor.execute(query, params)
             self.__connection.commit()
+            
+            # FIX: Force connection synchronization to clear transaction snapshot caching.
+            # This ensures that when the page redirects to the dashboard, the SELECT queries
+            # read the fresh updates immediately from the disk.
+            self.__connection.commit()
+            
+            clean_query = query.strip().upper()
+            
+            if clean_query.startswith("INSERT"):
+                return cursor.lastrowid
+            else:
+                # With CLIENT.FOUND_ROWS active, this safely returns 1 if row matches WHERE criteria
+                return cursor.rowcount
+                
         except Exception:
             self.__connection.rollback()
             raise
@@ -105,10 +121,10 @@ class Database:
                 common_name VARCHAR(100) NOT NULL,
                 scientific_name VARCHAR(100) NOT NULL UNIQUE,
                 description TEXT,
-                benefit_category VARCHAR(50) NOT NULL, -- Maps to US 3 (Sleep, Digestion, etc.)
+                benefit_category VARCHAR(50) NOT NULL,
                 price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                 stock_quantity INT NOT NULL DEFAULT 0,
-                image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Keeps UI card grading-ready
+                image_url VARCHAR(255) DEFAULT 'default_herb.png',
                 merchant_id INT DEFAULT NULL,
                 whatsapp_number VARCHAR(20) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -138,7 +154,7 @@ class Database:
                 shipping_address TEXT NOT NULL,
                 delivery_date DATE NOT NULL,
                 delivery_window VARCHAR(100) NOT NULL,
-                order_status ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending',
+                order_status ENUM('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending',
                 payment_status ENUM('Pending', 'Paid', 'Failed') DEFAULT 'Pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -146,7 +162,6 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
-        # 4. Order Items Table (Breakdown for multi-vendor line items)
         db.execute("""
             CREATE TABLE IF NOT EXISTS order_items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -160,7 +175,6 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
-        # 5. Reviews Table
         db.execute("""
             CREATE TABLE IF NOT EXISTS reviews (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -175,7 +189,6 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
-        # 6. Price History Table
         db.execute("""
             CREATE TABLE IF NOT EXISTS price_history (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -186,35 +199,29 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
-        # Add OTP columns to users if they do not exist
+        # Structural sanity checks for secondary columns
         try:
-            db.execute(
-                "ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
+            db.execute("ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute(
-                "ALTER TABLE users ADD COLUMN otp_expiry DATETIME DEFAULT NULL")
+            db.execute("ALTER TABLE users ADD COLUMN otp_expiry DATETIME DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute(
-                "ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL")
+            db.execute("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute(
-                "ALTER TABLE users ADD COLUMN certification_badge VARCHAR(255) DEFAULT NULL")
+            db.execute("ALTER TABLE users ADD COLUMN certification_badge VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
         try:
-            db.execute(
-                "ALTER TABLE users ADD COLUMN is_active TINYINT DEFAULT 1")
+            db.execute("ALTER TABLE users ADD COLUMN is_active TINYINT DEFAULT 1")
         except Exception:
             pass
         try:
-            db.execute(
-                "ALTER TABLE herbs ADD COLUMN whatsapp_number VARCHAR(20) DEFAULT NULL")
+            db.execute("ALTER TABLE herbs ADD COLUMN whatsapp_number VARCHAR(20) DEFAULT NULL")
         except Exception:
             pass
 

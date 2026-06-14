@@ -21,4 +21,10 @@ class Order:
         """
         rows_affected = self.db.execute(
             query, (new_status, order_id, merchant_id))
+        print(f"--- DEBUG UPDATE ---")
+        print(f"Order ID: {order_id} (Type: {type(order_id)})")
+        print(f"New Status: {new_status}")
+        print(f"Merchant ID: {merchant_id} (Type: {type(merchant_id)})")
+        print(f"Rows Impacted: {rows_affected}")
+        print(f"--------------------")
         return rows_affected > 0  # Returns True only if an order was actually updated

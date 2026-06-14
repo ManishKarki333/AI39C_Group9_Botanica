@@ -74,4 +74,9 @@ class ShopRoutes:
             self.shop_controller.add_review
         )
 
+        self.bp.route("/delete_review/<int:review_id>", methods=["POST"])(
+            self.shop_controller.delete_review
+        )
+
+
         return self.bp
