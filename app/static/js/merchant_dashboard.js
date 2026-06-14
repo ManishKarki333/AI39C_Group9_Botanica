@@ -20,6 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const customerModal = document.getElementById('customerDetailsModal');
+    if (customerModal) {
+        const modalBody = customerModal.querySelector('.modal-body-card');
+        
+        // Prevent closing modal when clicking inside card content
+        modalBody?.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Close modal when clicking outside on the overlay
+        customerModal.addEventListener('click', () => {
+            closeCustomerDetailsModal();
+        });
+    }
+
     // 3. Bind Click Event on Product Cards to open specs edit modal
     const productCards = document.querySelectorAll('.product-spec-card');
     productCards.forEach(card => {

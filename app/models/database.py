@@ -229,6 +229,10 @@ class Database:
             db.execute("ALTER TABLE herbs ADD COLUMN reference_url VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
+        try:
+            db.execute("ALTER TABLE orders MODIFY COLUMN order_status ENUM('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending'")
+        except Exception:
+            pass
 
         admin = db.fetch_one(
             "SELECT * FROM users WHERE email = %s",
