@@ -103,7 +103,7 @@
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-reference-url="{{ herb.reference_url or '' }}">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-scientific-name="{{ herb.scientific_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-whatsapp-number="{{ herb.whatsapp_number or '' }}" data-reference-url="{{ herb.reference_url or '' }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
                         <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">
@@ -266,6 +266,14 @@
             </div>
         </div>
         <form id="updateProductForm" class="modal-form-inputs" method="POST" action="">
+            <div class="m-input-group">
+                <label for="editCommonName" class="edit-form-label">Product Display Name</label>
+                <input type="text" id="editCommonName" name="common_name" required class="edit-form-input">
+            </div>
+            <div class="m-input-group">
+                <label for="editScientificName" class="edit-form-label">Scientific Name</label>
+                <input type="text" id="editScientificName" name="scientific_name" required class="edit-form-input">
+            </div>
             <div class="m-input-grid">
                 <div>
                     <label for="editPrice" class="edit-form-label">Price (NPR)/100g</label>
@@ -275,6 +283,10 @@
                     <label for="editStock" class="edit-form-label">Update Stock Count</label>
                     <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
                 </div>
+            </div>
+            <div class="m-input-group">
+                <label for="editWhatsappNumber" class="edit-form-label">WhatsApp Inquiry Number</label>
+                <input type="text" id="editWhatsappNumber" name="whatsapp_number" required class="edit-form-input">
             </div>
             <div class="m-input-group">
                 <label for="editReferenceUrl" class="edit-form-label">Reference Link (e.g. Wikipedia)</label>

@@ -298,18 +298,21 @@ class ShopController(BaseController):
             return redirect(url_for("auth.merchant_dashboard"))
 
     def update_product(self, id):
-        """Secure multi-part form portal for updating a product's price and stock."""
+        """Secure multi-part form portal for updating a product's details and price/stock."""
         if session.get("role") != "merchant":
             flash("Unauthorized entry context.", "danger")
             return redirect(url_for("auth.login"))
 
         if request.method == "POST":
+            common_name = request.form.get("common_name", "").strip()
+            scientific_name = request.form.get("scientific_name", "").strip()
             price = request.form.get("price")
             stock_quantity = request.form.get("stock_quantity")
+            whatsapp_number = request.form.get("whatsapp_number", "").strip()
             reference_url = request.form.get("reference_url", "").strip()
 
-            if not price or stock_quantity is None:
-                flash("Price and Stock Quantity are required.", "danger")
+            if not common_name or not scientific_name or not price or stock_quantity is None:
+                flash("Name, Scientific Name, Price, and Stock Quantity are required.", "danger")
                 return redirect(url_for("auth.merchant_dashboard"))
 
             try:
@@ -324,8 +327,8 @@ class ShopController(BaseController):
                     return redirect(url_for("auth.merchant_dashboard"))
 
                 db.execute(
-                    "UPDATE herbs SET price = %s, stock_quantity = %s, reference_url = %s WHERE id = %s",
-                    (price, stock_quantity, reference_url, id)
+                    "UPDATE herbs SET common_name = %s, scientific_name = %s, price = %s, stock_quantity = %s, whatsapp_number = %s, reference_url = %s WHERE id = %s",
+                    (common_name, scientific_name, price, stock_quantity, whatsapp_number, reference_url, id)
                 )
                 if hasattr(db, 'commit'): db.commit()
 
@@ -340,7 +343,10 @@ class ShopController(BaseController):
                 flash("Product updated successfully!", "success")
             except Exception as e:
                 print(f"Error updating product: {e}")
-                flash("Failed to update product.", "danger")
+                if "Duplicate entry" in str(e) or "1062" in str(e):
+                    flash("Failed to update product: The scientific name is already in use by another herb.", "danger")
+                else:
+                    flash("Failed to update product.", "danger")
 
             return redirect(url_for("auth.merchant_dashboard"))
 

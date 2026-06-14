@@ -26,10 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', () => {
             const id = card.getAttribute('data-id');
             const name = card.getAttribute('data-name');
+            const scientificName = card.getAttribute('data-scientific-name');
             const price = parseFloat(card.getAttribute('data-price')) || 0.0;
             const stock = parseInt(card.getAttribute('data-stock'), 10) || 0;
+            const whatsappNumber = card.getAttribute('data-whatsapp-number') || '';
             const refUrl = card.getAttribute('data-reference-url') || '';
-            openProductEditModal(id, name, price, stock, refUrl);
+            openProductEditModal(id, name, scientificName, price, stock, whatsappNumber, refUrl);
         });
     });
 
@@ -144,7 +146,7 @@ function initSalesChart() {
  * and fetches the pricing data points to render the line chart.
  * Exposed globally for the inline product card onclick attributes.
  */
-function openProductEditModal(id, commonName, currentPrice, currentStock, referenceUrl) {
+function openProductEditModal(id, commonName, scientificName, currentPrice, currentStock, whatsappNumber, referenceUrl) {
     const modal = document.getElementById('updateProductModal');
     if (!modal) return;
 
@@ -152,11 +154,20 @@ function openProductEditModal(id, commonName, currentPrice, currentStock, refere
     const modalTitle = document.getElementById('updateModalTitle');
     if (modalTitle) modalTitle.innerText = `Edit Specs: ${commonName}`;
 
+    const editCommonNameInput = document.getElementById('editCommonName');
+    if (editCommonNameInput) editCommonNameInput.value = commonName;
+
+    const editScientificNameInput = document.getElementById('editScientificName');
+    if (editScientificNameInput) editScientificNameInput.value = scientificName;
+
     const editPriceInput = document.getElementById('editPrice');
     if (editPriceInput) editPriceInput.value = currentPrice;
 
     const editStockInput = document.getElementById('editStock');
     if (editStockInput) editStockInput.value = currentStock;
+
+    const editWhatsappNumberInput = document.getElementById('editWhatsappNumber');
+    if (editWhatsappNumberInput) editWhatsappNumberInput.value = whatsappNumber;
 
     const editRefUrlInput = document.getElementById('editReferenceUrl');
     if (editRefUrlInput) editRefUrlInput.value = referenceUrl;

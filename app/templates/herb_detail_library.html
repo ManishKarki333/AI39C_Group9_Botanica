@@ -45,6 +45,29 @@
                     </a>
                 {% endif %}
             </div>
+
+            <!-- Purchase Interest Prompt Block -->
+            <div class="interest-block" id="interestBlock">
+                <h4>Are you interested in buying this herb?</h4>
+                <p>We source premium {{ herb.common_name }} directly from verified regional merchants.</p>
+                <div class="interest-actions">
+                    <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="btn-interest-yes">Yes</a>
+                    <button type="button" class="btn-interest-no" onclick="dismissInterestBlock()">No</button>
+                </div>
+            </div>
+
+            <script>
+                function dismissInterestBlock() {
+                    const block = document.getElementById('interestBlock');
+                    if (block) {
+                        block.style.opacity = '0';
+                        block.style.transform = 'translateY(10px)';
+                        setTimeout(() => {
+                            block.style.display = 'none';
+                        }, 300);
+                    }
+                }
+            </script>
         </div>
     </div>
 
