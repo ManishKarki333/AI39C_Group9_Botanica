@@ -252,6 +252,7 @@ class ShopController(BaseController):
             benefit_category = request.form.get("benefit_category", "")
             stock_quantity = request.form.get("stock_quantity", 0)
             whatsapp_number = request.form.get("whatsapp_number", "").strip()
+            reference_url = request.form.get("reference_url", "").strip()
 
             product_image = request.files.get('product_image')
             image_url = '/static/uploads/default_herb.png'
@@ -271,12 +272,12 @@ class ShopController(BaseController):
             try:
                 db = Database()
                 query = """INSERT INTO herbs 
-                        (common_name, scientific_name, description, price, benefit_category, stock_quantity, image_url, merchant_id, whatsapp_number) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                        (common_name, scientific_name, description, price, benefit_category, stock_quantity, image_url, merchant_id, whatsapp_number, reference_url) 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
                 db.execute(query, (
                     common_name, scientific_name, description, price,
-                    benefit_category, stock_quantity, image_url, session.get("user_id"), whatsapp_number
+                    benefit_category, stock_quantity, image_url, session.get("user_id"), whatsapp_number, reference_url
                 ))
                 if hasattr(db, 'commit'): db.commit()
 
@@ -297,17 +298,21 @@ class ShopController(BaseController):
             return redirect(url_for("auth.merchant_dashboard"))
 
     def update_product(self, id):
-        """Secure multi-part form portal for updating a product's price and stock."""
+        """Secure multi-part form portal for updating a product's details and price/stock."""
         if session.get("role") != "merchant":
             flash("Unauthorized entry context.", "danger")
             return redirect(url_for("auth.login"))
 
         if request.method == "POST":
+            common_name = request.form.get("common_name", "").strip()
+            scientific_name = request.form.get("scientific_name", "").strip()
             price = request.form.get("price")
             stock_quantity = request.form.get("stock_quantity")
+            whatsapp_number = request.form.get("whatsapp_number", "").strip()
+            reference_url = request.form.get("reference_url", "").strip()
 
-            if not price or stock_quantity is None:
-                flash("Price and Stock Quantity are required.", "danger")
+            if not common_name or not scientific_name or not price or stock_quantity is None:
+                flash("Name, Scientific Name, Price, and Stock Quantity are required.", "danger")
                 return redirect(url_for("auth.merchant_dashboard"))
 
             try:
@@ -322,8 +327,8 @@ class ShopController(BaseController):
                     return redirect(url_for("auth.merchant_dashboard"))
 
                 db.execute(
-                    "UPDATE herbs SET price = %s, stock_quantity = %s WHERE id = %s",
-                    (price, stock_quantity, id)
+                    "UPDATE herbs SET common_name = %s, scientific_name = %s, price = %s, stock_quantity = %s, whatsapp_number = %s, reference_url = %s WHERE id = %s",
+                    (common_name, scientific_name, price, stock_quantity, whatsapp_number, reference_url, id)
                 )
                 if hasattr(db, 'commit'): db.commit()
 
@@ -338,9 +343,85 @@ class ShopController(BaseController):
                 flash("Product updated successfully!", "success")
             except Exception as e:
                 print(f"Error updating product: {e}")
-                flash("Failed to update product.", "danger")
+                if "Duplicate entry" in str(e) or "1062" in str(e):
+                    flash("Failed to update product: The scientific name is already in use by another herb.", "danger")
+                else:
+                    flash("Failed to update product.", "danger")
 
             return redirect(url_for("auth.merchant_dashboard"))
+
+    def delete_product(self, id):
+        """Secure endpoint for deleting a product from inventory."""
+        if session.get("role") != "merchant":
+            flash("Unauthorized entry context.", "danger")
+            return redirect(url_for("auth.login"))
+
+        db = Database()
+        try:
+            # Check if product belongs to merchant
+            herb = db.fetch_one("SELECT merchant_id, image_url, common_name FROM herbs WHERE id = %s", (id,))
+            if not herb or herb["merchant_id"] != session.get("user_id"):
+                flash("Product not found or unauthorized.", "danger")
+                db.close()
+                return redirect(url_for("auth.merchant_dashboard"))
+
+            # Delete the product image if it's not the default image
+            if herb.get("image_url") and herb["image_url"] != '/static/uploads/default_herb.png':
+                relative_path = herb["image_url"].lstrip('/')
+                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+                absolute_image_path = os.path.join(base_dir, relative_path)
+                if os.path.exists(absolute_image_path):
+                    try:
+                        os.remove(absolute_image_path)
+                    except Exception as img_err:
+                        print(f"Error removing product image file: {img_err}")
+
+            # Delete from database
+            db.execute("DELETE FROM herbs WHERE id = %s", (id,))
+            if hasattr(db, 'commit'): db.commit()
+            
+            flash(f"Product '{herb['common_name']}' deleted successfully.", "success")
+        except Exception as e:
+            print(f"Error deleting product: {e}")
+            flash("Failed to delete product.", "danger")
+        finally:
+            db.close()
+
+        return redirect(url_for("auth.merchant_dashboard"))
+
+    def herb_detail_library(self, id):
+        """Fetch details of a herb specifically for the academic reference library view."""
+        db = Database()
+        herb = db.fetch_one("SELECT * FROM herbs WHERE id = %s", (id,))
+
+        if not herb:
+            db.close()
+            flash("Herb record not found.", "danger")
+            return redirect(url_for("shop.herb_library"))
+
+        reviews_query = """
+            SELECT r.*, u.name as user_name 
+            FROM reviews r 
+            JOIN users u ON r.user_id = u.id 
+            WHERE r.herb_id = %s 
+            ORDER BY r.created_at DESC
+        """
+        reviews = db.fetch_all(reviews_query, (id,))
+        db.close()
+
+        total_reviews = len(reviews)
+        average_rating = 0.0
+        if total_reviews > 0:
+            average_rating = sum(r['rating'] for r in reviews) / total_reviews
+            average_rating = round(average_rating, 1)
+
+        return render_template(
+            "herb_detail_library.html",
+            herb=herb,
+            reviews=reviews,
+            average_rating=average_rating,
+            total_reviews=total_reviews
+        )
 
     def api_price_history(self, herb_id):
         if session.get("role") != "merchant":

@@ -103,7 +103,7 @@
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-scientific-name="{{ herb.scientific_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-whatsapp-number="{{ herb.whatsapp_number or '' }}" data-reference-url="{{ herb.reference_url or '' }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
                         <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">
@@ -130,8 +130,11 @@
                         <span class="m-value metric-whatsapp-text"><i class="ri-whatsapp-line"></i> {{ herb.whatsapp_number or 'Not Configured' }}</span>
                     </div>
                 </div>
-                <div class="product-edit-action-col">
+                <div class="product-edit-action-col" style="display: flex; flex-direction: column; gap: 8px;">
                     <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-box-line"></i></span>
+                    <form action="{{ url_for('shop.delete_product', id=herb.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete &quot;{{ herb.common_name | escape }}&quot; from the catalog?');" style="width: 100%;">
+                        <button type="submit" class="delete-product-trigger">Delete <i class="ri-delete-bin-line"></i></button>
+                    </form>
                 </div>
             </div>
             {% else %}
@@ -156,7 +159,7 @@
                         <i class="ri-shopping-bag-3-line"></i>
                     </div>
                     <div class="p-details">
-                        <h3 class="order-card-title">Order #{{ order.id }}</h3>
+                        <h3 class="order-card-title" style="cursor: pointer; color: var(--figma-green); text-decoration: underline;" onclick="openCustomerDetailsModal('{{ order.id }}', '{{ order.customer_name | escape }}', '{{ order.customer_email | escape }}', '{{ order.shipping_address | escape }}', '{{ order.delivery_date }}', '{{ order.delivery_window | escape }}')" title="Click to view customer details">Order #{{ order.id }}</h3>
                         <p class="order-meta-text"><i class="ri-calendar-line"></i> Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</p>
                     </div>
                 </div>
@@ -237,6 +240,11 @@
                 <small class="input-helper-text">Add your genuine contact number so customers can place direct inquiries.</small>
             </div>
             <div class="m-input-group">
+                <label for="referenceUrl">Reference Link (e.g. Wikipedia)</label>
+                <input type="url" id="referenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/...">
+                <small class="input-helper-text">Add a Wikipedia or academic reference link for the reference Herb Library.</small>
+            </div>
+            <div class="m-input-group">
                 <label for="productImage">Herb Product Image</label>
                 <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
@@ -258,6 +266,14 @@
             </div>
         </div>
         <form id="updateProductForm" class="modal-form-inputs" method="POST" action="">
+            <div class="m-input-group">
+                <label for="editCommonName" class="edit-form-label">Product Display Name</label>
+                <input type="text" id="editCommonName" name="common_name" required class="edit-form-input">
+            </div>
+            <div class="m-input-group">
+                <label for="editScientificName" class="edit-form-label">Scientific Name</label>
+                <input type="text" id="editScientificName" name="scientific_name" required class="edit-form-input">
+            </div>
             <div class="m-input-grid">
                 <div>
                     <label for="editPrice" class="edit-form-label">Price (NPR)/100g</label>
@@ -268,8 +284,53 @@
                     <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
                 </div>
             </div>
+            <div class="m-input-group">
+                <label for="editWhatsappNumber" class="edit-form-label">WhatsApp Inquiry Number</label>
+                <input type="text" id="editWhatsappNumber" name="whatsapp_number" required class="edit-form-input">
+            </div>
+            <div class="m-input-group">
+                <label for="editReferenceUrl" class="edit-form-label">Reference Link (e.g. Wikipedia)</label>
+                <input type="url" id="editReferenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/..." class="edit-form-input">
+            </div>
             <button type="submit" class="edit-form-submit">Save Modifications</button>
         </form>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<div id="customerDetailsModal" class="dashboard-modal-overlay">
+    <div class="modal-body-card">
+        <div class="modal-header">
+            <h3 id="customerModalTitle">Customer Details</h3>
+            <button onclick="closeCustomerDetailsModal()" class="close-modal-btn" style="background: none; border: none; font-size: 22px; cursor: pointer;"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="customer-info-content" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="info-group">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Customer Name</label>
+                <span id="customerName" style="font-size: 15px; font-weight: 600; color: var(--figma-text-dark);">John Doe</span>
+            </div>
+            <div class="info-group">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Customer Email</label>
+                <a id="customerEmailLink" href="mailto:" style="font-size: 15px; font-weight: 600; color: var(--figma-green); text-decoration: none;"><span id="customerEmail">john@example.com</span></a>
+            </div>
+            <div class="info-group">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Shipping Address</label>
+                <span id="shippingAddress" style="font-size: 14px; color: var(--figma-text-muted); line-height: 1.5; display: block;">123 Street Address, Kathmandu</span>
+            </div>
+            <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="info-group">
+                    <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Delivery Date</label>
+                    <span id="deliveryDate" style="font-size: 14px; color: var(--figma-text-muted);">2026-06-15</span>
+                </div>
+                <div class="info-group">
+                    <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Delivery Window</label>
+                    <span id="deliveryWindow" style="font-size: 14px; color: var(--figma-text-muted); text-transform: capitalize;">Morning</span>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 24px; text-align: right;">
+            <button onclick="closeCustomerDetailsModal()" class="btn-modal-submit" style="margin-top: 0; padding: 10px 20px; font-size: 14px;">Close</button>
+        </div>
     </div>
 </div>
 
@@ -308,6 +369,30 @@ function dispatchStatusUpdate(orderId, chosenStatus) {
     .catch(error => {
         console.error('Network error encountered:', error);
     });
+}
+
+function openCustomerDetailsModal(orderId, name, email, address, date, window) {
+    const modal = document.getElementById('customerDetailsModal');
+    if (!modal) return;
+
+    document.getElementById('customerModalTitle').innerText = `Customer Details: Order #${orderId}`;
+    document.getElementById('customerName').innerText = name;
+    document.getElementById('customerEmail').innerText = email;
+    document.getElementById('customerEmailLink').href = `mailto:${email}`;
+    document.getElementById('shippingAddress').innerText = address;
+    document.getElementById('deliveryDate').innerText = date;
+    document.getElementById('deliveryWindow').innerText = window;
+
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+}
+
+function closeCustomerDetailsModal() {
+    const modal = document.getElementById('customerDetailsModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
 }
 </script>
 {% endblock %}
