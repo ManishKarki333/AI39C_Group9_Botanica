@@ -72,21 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
         });
     });
-
-    // 4. Clean event delegation for order management dropdown selectors
-    const orderDropdowns = document.querySelectorAll('.select-premium-control');
-    orderDropdowns.forEach(dropdown => {
-        // Prevent clicking the dropdown list options from triggering any underlying card actions
-        dropdown.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-        });
-        
-        // 🔥 FIXED: Bypasses the obsolete `.closest('form')` requirement. 
-        // Leverages the clean global navigation method we built directly inside the template instead!
-        dropdown.addEventListener('change', function(e) {
-            e.stopPropagation();
-        });
-    });
 });
 
 /**
