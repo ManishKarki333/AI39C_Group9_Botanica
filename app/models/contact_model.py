@@ -11,9 +11,9 @@
 =============================================================
 """
 
-from app.models.base_model import BaseModel
-from app.models.database import Database
 from datetime import datetime
+from app.models.base_model import BaseModel   # ✅ absolute import
+from app.models.database import Database      # ✅ absolute import
 
 
 class ContactMessage(BaseModel):
@@ -28,13 +28,11 @@ class ContactMessage(BaseModel):
       - delete_by_id(id)
     """
 
-    # ── Polymorphism: Override the abstract 'table' property ──
     @property
-    def table(self):
+    def table(self) -> str:                   # ✅ return type added
         """Tell BaseModel which database table to use."""
         return "contact_messages"
 
-    # ── Constructor ─────────────────────────────────────────
     def __init__(
         self,
         first_name=None,
@@ -49,23 +47,21 @@ class ContactMessage(BaseModel):
         created_at is automatically set to the current time.
         """
         self.first_name = first_name
-        self.last_name  = last_name
-        self.email      = email
-        self.inquiry    = inquiry
-        self.subject    = subject
-        self.message    = message
+        self.last_name = last_name
+        self.email = email
+        self.inquiry = inquiry
+        self.subject = subject
+        self.message = message
         self.created_at = datetime.now()
 
-    # ── Create: Save contact message to the database ─────────
     def save(self):
         """Insert this contact message into the database."""
         db = Database()
         db.execute(
             """
             INSERT INTO contact_messages
-                (first_name, last_name, email, inquiry, subject, message, created_at)
-            VALUES
-                (%s, %s, %s, %s, %s, %s, %s)
+            (first_name, last_name, email, inquiry, subject, message, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 self.first_name,
@@ -79,13 +75,11 @@ class ContactMessage(BaseModel):
         )
         db.close()
 
-    # ── Helper: Full name convenience property ───────────────
     @property
     def full_name(self):
-        """Returns the full name of the sender."""
+        """Return the full name of the sender."""
         return f"{self.first_name} {self.last_name}"
 
-    # ── Magic Methods ─────────────────────────────────────────
     def __str__(self):
         return f"ContactMessage(from={self.full_name}, subject={self.subject})"
 

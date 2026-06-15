@@ -1,5 +1,6 @@
 from app.models.database import Database
 
+
 class Order:
     def __init__(self):
         self.db = Database()
@@ -18,5 +19,6 @@ class Order:
             SET order_status = %s 
             WHERE id = %s AND merchant_id = %s
         """
-        rows_affected = self.db.execute(query, (new_status, order_id, merchant_id))
+        rows_affected = self.db.execute(
+            query, (new_status, order_id, merchant_id))
         return rows_affected > 0  # Returns True only if an order was actually updated

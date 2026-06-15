@@ -39,7 +39,7 @@
             <div class="auth-input-group">
                 <div class="auth-label-row">
                     <label for="password" class="auth-field-label">Password</label>
-                    <a href="#" class="auth-forgot-anchor">Forgot?</a>
+                    <a href="{{ url_for('auth.forgot_password') }}" class="auth-forgot-anchor">Forgot?</a>
                 </div>
                 <div class="auth-interactive-field">
                     <input type="password" id="password" name="password" class="auth-input-element" placeholder="••••••••" required autocomplete="current-password">
@@ -58,6 +58,42 @@
                 <i class="ri-arrow-right-line"></i>
             </button>
         </form>
+
+        <div class="auth-divider">
+            <span>or continue with</span>
+        </div>
+
+        {% if google_client_id %}
+            <!-- Real Google Login -->
+            <script src="https://accounts.google.com/gsi/client" async defer></script>
+            <div class="google-btn-container">
+                <div id="g_id_onload"
+                     data-client_id="{{ google_client_id }}"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-login_uri="{{ url_for('auth.google_login', _external=True) }}"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left"
+                     data-width="100%">
+                </div>
+            </div>
+        {% else %}
+            <!-- Dev Mock Google Login -->
+            <form action="{{ url_for('auth.google_login') }}" method="POST" class="google-mock-form">
+                <input type="hidden" name="credential" value="mock_google_token">
+                <button type="submit" class="google-mock-btn">
+                    <i class="ri-google-fill google-icon"></i>
+                    <span>Sign in with Google (Dev Mock)</span>
+                </button>
+            </form>
+        {% endif %}
 
         <div class="auth-card-footer">
             <p>New to our community? <a href="{{ url_for('auth.register') }}" class="auth-redirect-anchor">Create an account</a></p>
