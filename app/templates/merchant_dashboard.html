@@ -389,6 +389,13 @@
                 <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #dc2626; display: block; margin-bottom: 4px;">Cancellation Reason</label>
                 <span id="cancellationReason" style="font-size: 14px; color: #b71c1c; font-weight: 500; display: block; word-break: break-all;">No reason provided</span>
             </div>
+            
+            <div class="info-group" style="border-top: 1px solid var(--figma-border); padding-top: 15px;">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 8px;">Items Ordered</label>
+                <div id="orderItemsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                    <p style="font-size: 13px; color: var(--figma-text-muted); font-style: italic; margin: 0;">Loading items...</p>
+                </div>
+            </div>
         </div>
         <div style="margin-top: 24px; text-align: right;">
             <button onclick="closeCustomerDetailsModal()" class="btn-modal-submit" style="margin-top: 0; padding: 10px 20px; font-size: 14px;">Close</button>
@@ -476,6 +483,40 @@ function openCustomerDetailsModal(orderId, name, email, address, date, window, c
         cancelGroup.style.display = 'block';
     } else {
         cancelGroup.style.display = 'none';
+    }
+
+    const container = document.getElementById('orderItemsContainer');
+    if (container) {
+        container.innerHTML = `<p style="font-size: 13px; color: var(--figma-text-muted); font-style: italic; margin: 0;">Loading items...</p>`;
+        
+        fetch(`/shop/api/order_items/${orderId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.items && data.items.length > 0) {
+                    container.innerHTML = '';
+                    data.items.forEach(item => {
+                        const scientificHTML = item.scientific_name ? `<span style="font-size: 12px; color: var(--figma-text-gray); display: block; font-style: italic;">${item.scientific_name}</span>` : '';
+                        container.innerHTML += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--figma-bg-light); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--figma-border);">
+                                <div>
+                                    <span style="font-weight: 600; font-size: 14px; color: var(--figma-text-dark);">${item.common_name}</span>
+                                    ${scientificHTML}
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 700; color: var(--figma-green); font-size: 13px; display: block;">Rs. ${item.price_at_purchase.toFixed(2)}</span>
+                                    <span style="font-size: 12px; color: var(--figma-text-muted);">Qty: ${item.quantity}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = `<p style="font-size: 13px; color: #dc2626; font-weight: 500; margin: 0;">Failed to load order items.</p>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = `<p style="font-size: 13px; color: #dc2626; font-weight: 500; margin: 0;">Error fetching items.</p>`;
+            });
     }
 
     modal.style.display = 'flex';

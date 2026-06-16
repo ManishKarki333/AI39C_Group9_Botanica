@@ -826,3 +826,44 @@ class ShopController(BaseController):
             db.close()
 
         return redirect(url_for('shop.track_order_status', order_id=order_id))
+
+    def api_order_items(self, order_id):
+        if session.get("role") != "merchant":
+            return jsonify({"status": "error", "message": "Unauthorized"}), 403
+
+        merchant_id = session.get("user_id")
+        db = Database()
+        try:
+            # Verify order belongs to this merchant
+            order = db.fetch_one("SELECT id FROM orders WHERE id = %s AND merchant_id = %s", (order_id, merchant_id))
+            if not order:
+                return jsonify({"status": "error", "message": "Order not found or unauthorized"}), 404
+
+            # Fetch order items
+            query = """
+                SELECT oi.quantity, oi.price_at_purchase, h.common_name, h.scientific_name 
+                FROM order_items oi
+                JOIN herbs h ON oi.herb_id = h.id
+                WHERE oi.order_id = %s
+            """
+            items = db.fetch_all(query, (order_id,))
+            
+            # Format numbers
+            formatted_items = []
+            for item in items:
+                formatted_items.append({
+                    "common_name": item["common_name"],
+                    "scientific_name": item["scientific_name"],
+                    "quantity": item["quantity"],
+                    "price_at_purchase": float(item["price_at_purchase"])
+                })
+
+            return jsonify({
+                "status": "success",
+                "items": formatted_items
+            }), 200
+        except Exception as e:
+            print("API Order Items Error:", e)
+            return jsonify({"status": "error", "message": "Internal server error"}), 500
+        finally:
+            db.close()

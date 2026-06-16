@@ -37,6 +37,9 @@ class ShopRoutes:
         self.bp.route("/api/price_history/<int:herb_id>", methods=["GET"])(
             merchant_required(self.shop_controller.api_price_history)
         )
+        self.bp.route("/api/order_items/<int:order_id>", methods=["GET"])(
+            merchant_required(self.shop_controller.api_order_items)
+        )
 
         # Synchronous Cart View Page
         # FIXED: Bound to shop_controller rather than auth_controller
