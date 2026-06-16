@@ -44,7 +44,7 @@
                         <div style="background: #f8fafc; border-radius: 12px; padding: 16px; display: inline-block; margin-bottom: 20px; border: 1px solid #f1f5f9;">
                             {% if merchant_qr_url %}
                                 <img src="{{ merchant_qr_url }}" alt="Merchant QR Code" style="max-width: 200px; width: 100%; height: auto; border-radius: 8px; border: 1px solid #cbd5e1; padding: 4px; background: white;">
-                                <p style="font-size: 0.8rem; color: #475569; margin-top: 8px; font-weight: 600;">Merchant Payment: <span style="color: var(--primary-color);">{{ merchant_qr_provider }}</span></p>
+                                <p style="font-size: 0.8rem; color: #475569; margin-top: 8px; font-weight: 600;">Merchant Payment: <span style="color: #2e7d32;">{{ merchant_qr_provider }}</span></p>
                             {% else %}
                                 <img src="/static/img/default_qr.png" alt="System QR Code" style="max-width: 200px; width: 100%; height: auto; border-radius: 8px; border: 1px solid #cbd5e1; padding: 4px; background: white;">
                                 <p style="font-size: 0.8rem; color: #ef4444; margin-top: 8px; font-weight: 500;">Using System Fallback QR</p>
@@ -57,7 +57,7 @@
                         </div>
 
                         <div style="display: flex; gap: 12px; justify-content: center;">
-                            <button type="button" onclick="confirmPayment()" style="background-color: var(--primary-color); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;">I Have Paid</button>
+                            <button type="button" onclick="confirmPayment()" style="background-color: #2e7d32; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">I Have Paid</button>
                             <button type="button" onclick="closePaymentModal()" style="background-color: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;">Cancel</button>
                         </div>
                     </div>
