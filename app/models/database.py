@@ -257,6 +257,10 @@ class Database:
             db.execute("ALTER TABLE orders ADD COLUMN transaction_screenshot VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN cancellation_reason TEXT DEFAULT NULL")
+        except Exception:
+            pass
 
         admin = db.fetch_one(
             "SELECT * FROM users WHERE email = %s",

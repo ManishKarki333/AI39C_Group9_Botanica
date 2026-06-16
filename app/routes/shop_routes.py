@@ -74,6 +74,9 @@ class ShopRoutes:
         self.bp.route("/order_status/<int:order_id>", methods=["GET"])(
             self.shop_controller.track_order_status
         )
+        self.bp.route("/cancel_order/<int:order_id>", methods=["POST"])(
+            self.shop_controller.cancel_order
+        )
 
         # NEW: Add Review Endpoint
         self.bp.route("/add_review/<int:herb_id>", methods=["POST"])(

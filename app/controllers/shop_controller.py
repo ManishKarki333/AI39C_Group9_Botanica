@@ -756,7 +756,7 @@ class ShopController(BaseController):
 
         db = Database()
         order_query = """
-            SELECT id, order_status, total_amount, shipping_address, delivery_date, delivery_window, created_at 
+            SELECT id, order_status, total_amount, shipping_address, delivery_date, delivery_window, created_at, cancellation_reason, payment_status, payment_method 
             FROM orders WHERE id = %s AND user_id = %s
         """
         order = db.fetch_one(order_query, (order_id, session['user_id']))
@@ -783,3 +783,46 @@ class ShopController(BaseController):
             items=order_items, 
             status_list=status_steps
         )
+
+    def cancel_order(self, order_id):
+        if 'user_id' not in session:
+            flash("Please log in to perform this action.", "warning")
+            return redirect(url_for('auth.login'))
+
+        cancellation_reason = request.form.get('cancellation_reason', '').strip()
+        if not cancellation_reason:
+            flash("You must provide a cancellation reason.", "danger")
+            return redirect(url_for('shop.track_order_status', order_id=order_id))
+
+        db = Database()
+        try:
+            # Check ownership and state
+            order = db.fetch_one("SELECT id, order_status, user_id FROM orders WHERE id = %s", (order_id,))
+            if not order:
+                flash("Order not found.", "danger")
+                return redirect(url_for('auth.profile'))
+
+            if order['user_id'] != session['user_id']:
+                flash("Access denied.", "danger")
+                return redirect(url_for('auth.profile'))
+
+            if order['order_status'] not in ['Pending', 'Processing']:
+                flash("Only orders in Pending or Processing state can be cancelled.", "danger")
+                return redirect(url_for('shop.track_order_status', order_id=order_id))
+
+            # Update order status to Cancelled and save reason
+            db.execute(
+                "UPDATE orders SET order_status = 'Cancelled', cancellation_reason = %s WHERE id = %s",
+                (cancellation_reason, order_id)
+            )
+            if hasattr(db, 'commit'): 
+                db.commit()
+
+            flash("Your order has been cancelled successfully.", "success")
+        except Exception as e:
+            print("Order Cancellation Error:", e)
+            flash("An error occurred during order cancellation.", "danger")
+        finally:
+            db.close()
+
+        return redirect(url_for('shop.track_order_status', order_id=order_id))

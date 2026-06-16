@@ -146,6 +146,7 @@
                                 <th>Order ID</th>
                                 <th>Date</th>
                                 <th>Total</th>
+                                <th>Payment Status</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -162,6 +163,11 @@
                                     {% endif %}
                                 </td>
                                 <td class="currency-column">Rs. {{ "%.2f" | format(order.total_amount | float) }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ (order.payment_status or 'Unpaid') | lower }}">
+                                        {{ order.payment_status or 'Unpaid' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="status-badge status-{{ order.order_status | lower | replace(' ', '-') }}">
                                         {{ order.order_status }}

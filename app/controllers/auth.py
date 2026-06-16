@@ -175,7 +175,7 @@ class AuthController(BaseController):
                 return redirect(url_for('auth.profile'))
 
             user = db.fetch_one("SELECT id, name, email, role, profile_pic, certification_badge, created_at FROM users WHERE id = %s", (user_id,))
-            orders = db.fetch_all("SELECT id, total_amount, order_status, created_at FROM orders WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
+            orders = db.fetch_all("SELECT id, total_amount, order_status, payment_status, created_at FROM orders WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
             return render_template('profile.html', user=user, orders=orders)
             
         finally:
