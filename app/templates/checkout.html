@@ -34,8 +34,8 @@
                 </div>
 
                 <!-- QR Payment Popup Modal -->
-                <div id="qrPaymentModal" class="checkout-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center;">
-                    <div class="modal-content" style="background: white; padding: 28px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; border: 1px solid #e2e8f0; animation: modalFadeIn 0.3s ease;">
+                <div id="qrPaymentModal" class="checkout-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 20px 10px;">
+                    <div class="modal-content" style="background: white; padding: 28px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; border: 1px solid #e2e8f0; margin: 40px auto;">
                         <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: #1e293b; margin-bottom: 8px;">Scan to Pay</h3>
                         <p style="color: #64748b; font-size: 0.9rem; line-height: 1.4; margin-bottom: 20px;">
                             Please scan the QR code to transfer exactly <strong>Rs. {{ "%.2f" | format(cart_total) }}</strong> to the merchant.
@@ -57,7 +57,7 @@
                         </div>
 
                         <div style="display: flex; gap: 12px; justify-content: center;">
-                            <button type="button" onclick="confirmPayment()" style="background-color: #2e7d32; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">I Have Paid</button>
+                            <button type="button" onclick="confirmPayment()" style="background-color: #2e7d32; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">I Have Paid / Done</button>
                             <button type="button" onclick="closePaymentModal()" style="background-color: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;">Cancel</button>
                         </div>
                     </div>
