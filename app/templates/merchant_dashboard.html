@@ -159,7 +159,16 @@
                         <i class="ri-shopping-bag-3-line"></i>
                     </div>
                     <div class="p-details">
-                        <h3 class="order-card-title" style="cursor: pointer; color: var(--figma-green); text-decoration: underline;" onclick="openCustomerDetailsModal('{{ order.id }}', '{{ order.customer_name | escape }}', '{{ order.customer_email | escape }}', '{{ order.shipping_address | escape }}', '{{ order.delivery_date }}', '{{ order.delivery_window | escape }}', '{{ (order.cancellation_reason or "") | escape }}')" title="Click to view customer details">Order #{{ order.id }}</h3>
+                        <h3 class="order-card-title" style="cursor: pointer; color: var(--figma-green); text-decoration: underline;" 
+                            data-order-id="{{ order.id }}"
+                            data-customer-name="{{ order.customer_name | escape }}"
+                            data-customer-email="{{ order.customer_email | escape }}"
+                            data-shipping-address="{{ order.shipping_address | escape }}"
+                            data-delivery-date="{{ order.delivery_date }}"
+                            data-delivery-window="{{ order.delivery_window | escape }}"
+                            data-cancellation-reason="{{ (order.cancellation_reason or '') | escape }}"
+                            onclick="openCustomerDetailsFromElement(this)" 
+                            title="Click to view customer details">Order #{{ order.id }}</h3>
                         <p class="order-meta-text"><i class="ri-calendar-line"></i> Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</p>
                     </div>
                 </div>
@@ -173,7 +182,8 @@
                     <label class="m-label"><i class="ri-pushed-line"></i> Order Lifecycle:</label>
                     <div class="custom-select-wrapper">
                         <select class="select-premium-control" 
-                                onchange="dispatchStatusUpdate('{{ order.id }}', this.value)">
+                                data-order-id="{{ order.id }}"
+                                onchange="dispatchStatusUpdateFromElement(this)">
                             
                             {% for status in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
                                 <option value="{{ status }}" {% if order.order_status and order.order_status.strip() == status %}selected{% endif %}>
@@ -189,7 +199,8 @@
                     <label class="m-label"><i class="ri-wallet-3-line"></i> Payment Status:</label>
                     <div class="custom-select-wrapper">
                         <select class="select-premium-control" 
-                                onchange="dispatchPaymentStatusUpdate('{{ order.id }}', this.value)">
+                                data-order-id="{{ order.id }}"
+                                onchange="dispatchPaymentStatusUpdateFromElement(this)">
                             <option value="Unpaid" {% if order.payment_status == 'Unpaid' or not order.payment_status %}selected{% endif %}>Unpaid</option>
                             <option value="Paid" {% if order.payment_status == 'Paid' %}selected{% endif %}>Paid</option>
                         </select>
@@ -477,6 +488,30 @@ function closeCustomerDetailsModal() {
         modal.style.display = 'none';
         modal.classList.remove('active');
     }
+}
+
+function openCustomerDetailsFromElement(element) {
+    const orderId = element.getAttribute('data-order-id');
+    const name = element.getAttribute('data-customer-name');
+    const email = element.getAttribute('data-customer-email');
+    const address = element.getAttribute('data-shipping-address');
+    const date = element.getAttribute('data-delivery-date');
+    const window = element.getAttribute('data-delivery-window');
+    const cancellationReason = element.getAttribute('data-cancellation-reason');
+
+    openCustomerDetailsModal(orderId, name, email, address, date, window, cancellationReason);
+}
+
+function dispatchStatusUpdateFromElement(element) {
+    const orderId = element.getAttribute('data-order-id');
+    const chosenStatus = element.value;
+    dispatchStatusUpdate(orderId, chosenStatus);
+}
+
+function dispatchPaymentStatusUpdateFromElement(element) {
+    const orderId = element.getAttribute('data-order-id');
+    const chosenPaymentStatus = element.value;
+    dispatchPaymentStatusUpdate(orderId, chosenPaymentStatus);
 }
 </script>
 {% endblock %}
