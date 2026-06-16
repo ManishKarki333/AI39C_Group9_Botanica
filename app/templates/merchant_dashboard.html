@@ -13,7 +13,7 @@
     <div class="dashboard-header-block">
         <div class="header-user-profile">
             {% if user.profile_pic %}
-                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" class="header-avatar-img">
+                <img src="{{ user.profile_pic | image_or_default('avatar') }}" alt="{{ user.name }}" class="header-avatar-img">
             {% else %}
                 <div class="header-avatar-circle">
                     {{ user.name[:1] | upper }}
@@ -103,10 +103,10 @@
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-scientific-name="{{ herb.scientific_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-whatsapp-number="{{ herb.whatsapp_number or '' }}" data-reference-url="{{ herb.reference_url or '' }}">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-scientific-name="{{ herb.scientific_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-whatsapp-number="{{ herb.whatsapp_number or '' }}" data-reference-url="{{ herb.reference_url or '' }}" data-qr-payment-type="{{ herb.qr_payment_type or '' }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
-                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image-el">
+                        <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" class="product-image-el">
                     </div>
                     <div class="p-details">
                         <h3 class="product-card-title">{{ herb.common_name }}</h3>
@@ -184,6 +184,25 @@
                         <div class="custom-select-arrow"><i class="ri-arrow-down-s-line"></i></div>
                     </div>
                 </div>
+
+                <div class="order-status-action-block" style="margin-top: 8px;">
+                    <label class="m-label"><i class="ri-wallet-3-line"></i> Payment Status:</label>
+                    <div class="custom-select-wrapper">
+                        <select class="select-premium-control" 
+                                onchange="dispatchPaymentStatusUpdate('{{ order.id }}', this.value)">
+                            <option value="Unpaid" {% if order.payment_status == 'Unpaid' or not order.payment_status %}selected{% endif %}>Unpaid</option>
+                            <option value="Paid" {% if order.payment_status == 'Paid' %}selected{% endif %}>Paid</option>
+                        </select>
+                        <div class="custom-select-arrow"><i class="ri-arrow-down-s-line"></i></div>
+                    </div>
+                </div>
+
+                {% if order.transaction_screenshot %}
+                <div class="order-screenshot-block" style="margin-top: 8px;">
+                    <span class="m-label" style="display: block; margin-bottom: 4px;"><i class="ri-image-line"></i> Payment Proof:</span>
+                    <a href="{{ order.transaction_screenshot }}" target="_blank" style="color: var(--figma-green); text-decoration: underline; font-size: 0.9rem; font-weight: 600;">View Receipt Screenshot</a>
+                </div>
+                {% endif %}
             </div>
             {% else %}
             <div class="empty-state-box">
@@ -248,6 +267,20 @@
                 <label for="productImage">Herb Product Image</label>
                 <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
+            <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label for="qrPaymentType">QR Payment Provider</label>
+                    <select id="qrPaymentType" name="qr_payment_type">
+                        <option value="">None</option>
+                        <option value="eSewa">eSewa</option>
+                        <option value="Khalti">Khalti</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="qrCodeImage">Payment QR Code</label>
+                    <input type="file" id="qrCodeImage" name="qr_code_image" accept="image/*">
+                </div>
+            </div>
             <button type="submit" class="btn-modal-submit">Publish to Live Storefront</button>
         </form>
     </div>
@@ -265,7 +298,7 @@
                 <canvas id="priceHistoryChart"></canvas>
             </div>
         </div>
-        <form id="updateProductForm" class="modal-form-inputs" method="POST" action="">
+        <form id="updateProductForm" class="modal-form-inputs" method="POST" action="" enctype="multipart/form-data">
             <div class="m-input-group">
                 <label for="editCommonName" class="edit-form-label">Product Display Name</label>
                 <input type="text" id="editCommonName" name="common_name" required class="edit-form-input">
@@ -291,6 +324,20 @@
             <div class="m-input-group">
                 <label for="editReferenceUrl" class="edit-form-label">Reference Link (e.g. Wikipedia)</label>
                 <input type="url" id="editReferenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/..." class="edit-form-input">
+            </div>
+            <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 15px;">
+                <div>
+                    <label for="editQrPaymentType" class="edit-form-label">QR Payment Provider</label>
+                    <select id="editQrPaymentType" name="qr_payment_type" class="edit-form-input">
+                        <option value="">None</option>
+                        <option value="eSewa">eSewa</option>
+                        <option value="Khalti">Khalti</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editQrCodeImage" class="edit-form-label">Payment QR Code</label>
+                    <input type="file" id="editQrCodeImage" name="qr_code_image" accept="image/*" class="edit-form-input">
+                </div>
             </div>
             <button type="submit" class="edit-form-submit">Save Modifications</button>
         </form>
@@ -364,6 +411,31 @@ function dispatchStatusUpdate(orderId, chosenStatus) {
         } else {
             console.error('Database update failed.');
             alert('Could not update status. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Network error encountered:', error);
+    });
+}
+
+function dispatchPaymentStatusUpdate(orderId, chosenPaymentStatus) {
+    if (!orderId) return;
+
+    fetch(`/update_payment/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'payment_status': chosenPaymentStatus
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log(`Order ${orderId} payment status successfully updated to ${chosenPaymentStatus}`);
+        } else {
+            console.error('Database update failed.');
+            alert('Could not update payment status. Please try again.');
         }
     })
     .catch(error => {

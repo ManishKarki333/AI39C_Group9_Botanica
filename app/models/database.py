@@ -119,7 +119,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS herbs (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 common_name VARCHAR(100) NOT NULL,
-                scientific_name VARCHAR(100) NOT NULL UNIQUE,
+                scientific_name VARCHAR(100) NOT NULL,
                 description TEXT,
                 benefit_category VARCHAR(50) NOT NULL,
                 price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
@@ -230,7 +230,31 @@ class Database:
         except Exception:
             pass
         try:
+            db.execute("ALTER TABLE herbs DROP INDEX scientific_name")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE herbs ADD COLUMN qr_payment_type VARCHAR(50) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE herbs ADD COLUMN qr_code_url VARCHAR(255) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
             db.execute("ALTER TABLE orders MODIFY COLUMN order_status ENUM('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders MODIFY COLUMN payment_status VARCHAR(50) NOT NULL DEFAULT 'Unpaid'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN transaction_screenshot VARCHAR(255) DEFAULT NULL")
         except Exception:
             pass
 

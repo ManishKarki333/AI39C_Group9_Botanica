@@ -1,4 +1,5 @@
-from flask import Flask
+import os
+from flask import Flask, session
 from app.routes.auth_routes import AuthRoutes
 from app.routes.order_routes import OrderRoutes
 from app.routes.shop_routes import ShopRoutes
@@ -11,6 +12,9 @@ from config import (
     SMTP_EMAIL, 
     SMTP_PASSWORD
 )
+
+
+from app.utils import image_or_default
 
 
 def create_app():
@@ -34,6 +38,16 @@ def create_app():
             print("Database tables verified/created successfully.")
         except Exception as e:
             print(f"Database migration failed during startup: {e}")
+
+    # Register Jinja Filter
+    app.jinja_env.filters['image_or_default'] = image_or_default
+
+    # Register Global Context Processor
+    @app.context_processor
+    def inject_cart_count():
+        cart = session.get('cart', [])
+        cart_count = sum(item.get('quantity', 0) for item in cart)
+        return dict(cart_count=cart_count)
 
     # 1. Instantiate the routing blueprint classes
     auth_router = AuthRoutes()

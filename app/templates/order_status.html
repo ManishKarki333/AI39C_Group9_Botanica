@@ -33,7 +33,7 @@
             <ul class="ordered-items-list">
                 {% for item in items %}
                 <li class="item-card">
-                    <img src="{{ item.image_url or '/static/uploads/default_herb.png' }}" alt="{{ item.common_name }}" class="item-thumb">
+                    <img src="{{ item.image_url | image_or_default('herb') }}" alt="{{ item.common_name }}" class="item-thumb">
                     <div class="item-info">
                         <h4>{{ item.common_name }}</h4>
                         <p class="sc-name"><em>{{ item.scientific_name }}</em></p>
@@ -57,6 +57,16 @@
                     {{ order.order_status }}
                 </span>
                 <p class="date-info">Placed on: {{ order.created_at.strftime('%B %d, %Y') }}</p>
+            </div>
+
+            <div class="meta-box">
+                <h3>Payment Details</h3>
+                <p><strong>Method:</strong> {{ order.payment_method | replace('cod', 'Cash On Delivery') | replace('credit_card', 'Credit/Debit Card') | replace('esewa_khalti', 'Esewa/ Khalti') if order.payment_method else 'Cash On Delivery' }}</p>
+                <p><strong>Status:</strong> 
+                    <span class="status-badge status-{{ order.payment_status | lower | replace(' ', '-') if order.payment_status else 'unpaid' }}">
+                        {{ order.payment_status or 'Unpaid' }}
+                    </span>
+                </p>
             </div>
             
             {% if order.delivery_window %}

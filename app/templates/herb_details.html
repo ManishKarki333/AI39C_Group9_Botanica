@@ -12,7 +12,7 @@
 
     <div class="profile-layout">
         <div class="profile-visual">
-            <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:auto; border-radius: 8px;">
+            <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" style="width:100%; height:auto; border-radius: 8px;">
         </div>
 
         <div class="profile-info">
@@ -172,7 +172,7 @@
 
                             {% if review.image_url %}
                                 <div class="review-image-attachment">
-                                    <img src="{{ review.image_url }}" alt="Review attachment from {{ review.user_name }}" class="review-attached-img" onclick="openReviewImageModal(this.src)">
+                                    <img src="{{ review.image_url | image_or_default('herb') }}" alt="Review attachment from {{ review.user_name }}" class="review-attached-img" onclick="openReviewImageModal(this.src)">
                                 </div>
                             {% endif %}
                         </div>

@@ -95,13 +95,7 @@
                                     <span class="vacation-banner" style="background-color:#dd6b20; color:#fff;">Only {{ herb.stock_quantity }} Left</span>
                                 {% endif %}
 
-                                {% if herb.image_url %}
-                                    <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
-                                {% else %}
-                                    <div class="fallback-placeholder">
-                                        <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
-                                    </div>
-                                {% endif %}
+                                <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" class="product-image">
                                 <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
                             </div>
                         </a>
