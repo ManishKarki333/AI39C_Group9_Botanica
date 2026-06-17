@@ -1,43 +1,248 @@
+/* ==========================================================================
+   BOTANICA HERBAL MARKETPLACE - MODERN MERCHANT DASHBOARD ARCHITECTURE
+   ========================================================================== */
+
 :root {
-    --figma-green: #3d7a5a;
-    --figma-green-hover: #2f5f45;
+    --figma-green: #2e7d32;
+    --figma-green-hover: #1b5e20;
+    --figma-green-light: #e8f5e9;
     --figma-border: #e2e8f0;
-    --figma-text-dark: #2d3748;
+    --figma-text-dark: #1a202c;
+    --figma-text-muted: #4a5568;
     --figma-text-gray: #718096;
     --figma-bg-light: #f8fafc;
-    --danger-red: #e53e3e;
+    --danger-red: #d32f2f;
+    --danger-bg: #ffebee;
+    --warning-amber: #b7791f;
+    --warning-bg: #fefcbf;
+    --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
 }
 
 .dashboard-wrapper {
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 24px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--figma-text-dark);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--figma-text-muted);
+    background-color: #fcfdfd;
 }
 
-/* Header Text Blocks */
+/* ---------- Header Core Blocks ---------- */
 .dashboard-header-block {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--figma-border);
 }
 
-.dashboard-header-block h1 {
-    font-size: 32px;
-    font-weight: 600;
-    margin: 0 0 8px 0;
-    color: #1a202c;
+.header-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    min-width: 300px;
 }
 
-.subtitle {
-    font-size: 16px;
+.header-avatar-img {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 2px var(--figma-green), 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.header-avatar-circle {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--figma-green), #43a047);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+}
+
+.header-title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--figma-text-dark);
+    letter-spacing: -0.03em;
+}
+
+.header-subtitle {
+    margin: 4px 0 0 0;
     color: var(--figma-text-gray);
+    font-size: 15px;
+}
+
+.header-status-row {
+    margin-top: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Premium Dynamic Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 4px 12px;
+    font-weight: 600;
+    border-radius: 30px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.status-delivered { background-color: var(--figma-green-light); color: var(--figma-green); }
+.status-pending { background-color: var(--warning-bg); color: var(--warning-amber); }
+.status-cancelled { background-color: var(--danger-bg); color: var(--danger-red); }
+
+.header-certificate-link {
+    font-size: 13px;
+    color: var(--figma-green);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1.5px dashed var(--figma-green);
+    transition: all 0.2s ease;
+}
+
+.header-certificate-link:hover {
+    color: var(--figma-green-hover);
+    border-bottom-style: solid;
+}
+
+.btn-add-product-figma {
+    background-color: var(--figma-green);
+    color: white;
+    padding: 12px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-add-product-figma:hover {
+    background-color: var(--figma-green-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+}
+
+/* ---------- Notification Cards ---------- */
+.low-stock-alert-card {
+    background: #fffaf0;
+    border-left: 4px solid #dd6b20;
+    border-top: 1px solid #feebc8;
+    border-right: 1px solid #feebc8;
+    border-bottom: 1px solid #feebc8;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+}
+
+.low-stock-icon {
+    color: #dd6b20;
+    background: #feebc8;
+    font-weight: bold;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.low-stock-title {
+    color: #dd6b20;
+    font-weight: 700;
+    font-size: 15px;
+    display: block;
+}
+
+.low-stock-description {
+    color: #7b341e;
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.danger-text { color: var(--danger-red); font-weight: 600; }
+
+/* ---------- De-congested Vacation Layout Widget ---------- */
+.custom-vacation-card {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: #ffffff;
+    border: 1px solid var(--figma-border);
+    border-radius: 14px;
+    padding: 24px 32px !important; /* Fixed spacing to remove layout congestion */
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-card);
+}
+
+.vacation-info-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.power-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background-color: var(--figma-green-light);
+    border-radius: 10px;
+    color: var(--figma-green);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.vacation-text-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.vacation-text-group .widget-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--figma-text-dark);
     margin: 0;
 }
 
-/* Vacation Mode Strip (Verbatim matching layout) */
+.vacation-text-group .widget-desc {
+    font-size: 14px;
+    color: var(--figma-text-gray);
+    margin: 4px 0 0 0;
+}
+
+.vacation-toggle-group {
+    display: flex;
+    align-items: center;
+}
+
+/* Legacy backup definitions to safe-guard fallback classes */
 .vacation-card-row {
     background: #ffffff;
     border: 1px solid var(--figma-border);
@@ -46,409 +251,544 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-}
-
-.vacation-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-card);
 }
 
 .power-icon {
-    font-size: 22px;
+    font-size: 20px;
     color: var(--figma-green);
-    background: #f0fdf4;
-    width: 40px;
-    height: 40px;
+    background: var(--figma-green-light);
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: 12px;
 }
 
-.widget-title {
-    font-weight: 600;
-    font-size: 15px;
-    display: block;
-}
-
-.widget-desc {
-    font-size: 13px;
-    color: var(--figma-text-gray);
-    margin: 2px 0 0 0;
-}
-
-/* Custom Figma Toggle Switch Slider */
+/* Custom Checkbox Toggle Slider Styling */
 .figma-switch {
     position: relative;
     display: inline-block;
-    width: 46px;
-    height: 22px;
+    width: 50px;
+    height: 26px;
 }
-
-.figma-switch input { opacity: 0; width: 0; height: 0; }
-
+.figma-switch input { 
+    opacity: 0; 
+    width: 0; 
+    height: 0; 
+}
 .figma-slider {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: #cbd5e1;
-    transition: .2s;
+    transition: .25s ease;
     border-radius: 34px;
 }
-
 .figma-slider:before {
     position: absolute;
     content: "";
-    height: 16px;
-    width: 16px;
+    height: 20px;
+    width: 20px;
     left: 3px;
     bottom: 3px;
     background-color: white;
-    transition: .2s;
+    transition: .25s ease;
     border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+input:checked + .figma-slider { background-color: var(--figma-green); }
+input:checked + .figma-slider:before { transform: translateX(24px); }
 
-input:checked + .figma-slider {
-    background-color: var(--figma-green);
-}
-
-input:checked + .figma-slider:before {
-    transform: translateX(24px);
-}
-
-/* Products Canvas Box */
+/* ---------- Container Cards Structural Stack ---------- */
 .products-section-container {
     background: #ffffff;
     border: 1px solid var(--figma-border);
-    border-radius: 14px;
-    padding: 28px 24px;
+    border-radius: 16px;
+    padding: 32px 28px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-card);
 }
 
 .section-controls-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #f1f5f9;
 }
 
 .section-controls-header h2 {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--figma-text-dark);
     margin: 0;
-}
-
-.btn-add-product-figma {
-    background-color: var(--figma-green);
-    color: white;
-    padding: 10px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
 }
 
-.btn-add-product-figma:hover {
-    background-color: var(--figma-green-hover);
+.section-controls-header h2 i {
+    color: var(--figma-green);
 }
 
-/* Horizontal Card Structure Stack */
 .products-list-stack {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
+/* Catalog Cards Core */
 .figma-product-card {
     border: 1px solid var(--figma-border);
-    border-radius: 12px;
-    padding: 16px 20px;
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 20px 24px;
     display: grid;
     grid-template-columns: 1.2fr 2fr auto;
     align-items: center;
-    gap: 20px;
-    transition: box-shadow 0.2s;
+    gap: 24px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .figma-product-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-premium);
+    border-color: var(--figma-green);
 }
 
 .p-card-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 18px;
 }
 
 .p-img-box {
-    width: 64px;
-    height: 64px;
-    border-radius: 8px;
+    width: 68px;
+    height: 68px;
+    border-radius: 10px;
     overflow: hidden;
     flex-shrink: 0;
-    border: 1px solid #f1f5f9;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.img-placeholder-bg {
+.product-image-el {
     width: 100%;
     height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
 }
+.figma-product-card:hover .product-image-el { transform: scale(1.06); }
 
-.p-details h3 {
+.product-card-title {
     margin: 0 0 4px 0;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--figma-text-dark);
 }
 
 .p-scientific {
     font-style: italic;
-    font-size: 13px;
+    font-size: 13.5px;
     color: var(--figma-text-gray);
 }
 
-/* Responsive Metrics Layout row */
+/* Metrics Dynamic Rows Layout */
 .p-card-metrics {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
 
 .metric-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .m-label {
     font-size: 12px;
     color: var(--figma-text-gray);
-    text-transform: capitalize;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.03em;
 }
 
 .m-value {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--figma-text-dark);
 }
 
-.font-highlight {
-    color: #1a202c;
+.price-text {
+    color: var(--figma-green);
 }
 
-/* Badges & Tags matching image screenshots */
-.badge-category {
-    background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-    font-size: 12px;
-    padding: 2px 10px;
+/* Internal Micro Stock Badges */
+.badge-stock-healthy {
+    color: var(--figma-green);
+    background-color: var(--figma-green-light);
+    padding: 2px 8px;
     border-radius: 6px;
+    font-size: 13px;
     width: fit-content;
-    font-weight: 500;
 }
 
-.rating-val {
-    color: #1a202c;
-}
-
-/* Action Icons Container */
-.p-card-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.p-card-actions button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 6px;
+.badge-stock-low {
+    color: var(--danger-red);
+    background-color: var(--danger-bg);
+    padding: 2px 8px;
     border-radius: 6px;
-    transition: background 0.2s;
+    font-size: 13px;
+    width: fit-content;
+    animation: pulse-border 2s infinite;
 }
 
-.p-card-actions button:hover {
+.metric-whatsapp-text {
+    font-size: 13px;
+    color: #25d366;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.edit-specs-trigger {
+    font-size: 13px;
+    color: var(--figma-green);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background-color: #f0fdf4;
+    transition: all 0.2s ease;
+}
+
+.figma-product-card:hover .edit-specs-trigger {
+    background-color: var(--figma-green);
+    color: #ffffff;
+}
+
+/* ---------- Order Management Overrides ---------- */
+.order-management-card {
+    grid-template-columns: 1.5fr 1fr 1.5fr;
+}
+
+.order-icon-avatar {
+    width: 48px;
+    height: 48px;
     background-color: #f1f5f9;
-}
-
-/* Pop-up sheet for entering dynamic items without altering main viewport profiles */
-.dashboard-modal-overlay {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.4);
-    display: none;
+    border-radius: 10px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+    font-size: 20px;
+    color: #475569;
 }
 
-.dashboard-modal-overlay:target {
-    display: flex;
+.order-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
 }
 
-.modal-body-card {
-    background: white;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 450px;
-    padding: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.modal-header h3 { margin:0; font-size:18px; }
-
-.close-modal-btn {
-    text-decoration: none;
-    font-size: 24px;
+.order-meta-text {
+    font-size: 13px;
     color: var(--figma-text-gray);
+    margin: 4px 0 0 0;
 }
 
-.modal-form-inputs {
+.order-amount-block {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 4px;
 }
 
-.m-input-group, .m-input-grid {
+.order-total-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--figma-text-dark);
+}
+
+/* Modernized Premium Dynamic Dropdown Custom Select Box */
+.status-dropdown-form {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.m-input-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 220px;
 }
 
-.modal-form-inputs input {
-    padding: 10px;
+.select-premium-control {
+    width: 100%;
+    padding: 10px 36px 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--figma-text-dark);
+    background-color: #ffffff;
+    border: 2px solid var(--figma-border);
+    border-radius: 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.select-premium-control:focus {
+    outline: none;
+    border-color: var(--figma-green);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.custom-select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--figma-text-gray);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+/* ---------- Analytics Insights Component Layout ---------- */
+.insights-section-container { margin-bottom: 32px; }
+.insights-section-header { border-bottom: 1px solid var(--figma-border); }
+
+.insights-content-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 14px;
+}
+
+.pie-chart-wrapper {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.insights-list-column { 
+    flex: 1; 
+    min-width: 280px; 
+}
+.insights-list-title { 
+    margin: 0 0 6px 0; 
+    font-size: 18px; 
+    font-weight: 700; 
+    color: var(--figma-text-dark); 
+}
+.insights-list-items { 
+    padding-left: 0; 
+    list-style: none; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+}
+
+.insights-list-item {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--figma-text-muted);
+}
+.insights-list-item i { 
+    color: var(--figma-green); 
+    font-size: 16px; 
+}
+
+/* ---------- Empty Template Configurations ---------- */
+.empty-state-box {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--figma-bg-light);
+    border: 2px dashed var(--figma-border);
+    border-radius: 12px;
+}
+.empty-state-box i { 
+    font-size: 40px; 
+    color: var(--figma-text-gray); 
+    display: block; 
+    margin-bottom: 12px; 
+}
+.empty-state-box p { 
+    margin: 0; 
+    font-size: 14.5px; 
+    color: var(--figma-text-muted); 
+    font-weight: 500; 
+}
+
+/* ---------- Modals Functional Canvas Layout Sheet ---------- */
+.dashboard-modal-overlay, .update-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 34, 25, 0.45);
+    backdrop-filter: blur(5px);
+    display: none;
+    z-index: 2000;
+    overflow-y: auto;
+    padding: 40px 20px;
+}
+
+.dashboard-modal-overlay:target, .update-modal-overlay.active { display: flex; }
+
+.modal-body-card {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    padding: 32px;
+    margin: auto;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+.modal-header, .update-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--figma-border);
+}
+
+.modal-header h3, .update-modal-title { 
+    margin: 0; 
+    font-size: 18px; 
+    font-weight: 800; 
+    color: var(--figma-text-dark); 
+}
+.close-modal-btn, .update-modal-close-btn { 
+    background: none; 
+    border: none; 
+    font-size: 22px; 
+    color: var(--figma-text-gray); 
+    cursor: pointer; 
+    text-decoration: none; 
+    transition: color 0.2s ease; 
+}
+.close-modal-btn:hover, .update-modal-close-btn:hover { color: var(--danger-red); }
+
+.modal-form-inputs { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 18px; 
+}
+.m-input-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+}
+.m-input-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 16px; 
+}
+
+.modal-form-inputs label, .edit-form-label { 
+    font-size: 13px; 
+    font-weight: 700; 
+    color: var(--figma-text-muted); 
+    text-transform: uppercase; 
+    letter-spacing: 0.02em; 
+}
+.modal-form-inputs input, .modal-form-inputs select, .modal-form-inputs textarea, .edit-form-input {
+    width: 100%;
+    padding: 11px 14px;
     border: 1px solid var(--figma-border);
-    border-radius: 6px;
-    background-color: #fafafa;
+    border-radius: 8px;
+    background-color: var(--figma-bg-light);
+    font-family: inherit;
+    font-size: 14.5px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
-.btn-modal-submit {
+.modal-form-inputs input:focus, .modal-form-inputs select:focus, .modal-form-inputs textarea:focus, .edit-form-input:focus {
+    outline: none;
+    border-color: var(--figma-green);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.08);
+}
+
+.btn-modal-submit, .edit-form-submit {
     background-color: var(--figma-green);
     color: white;
     border: none;
-    padding: 12px;
-    border-radius: 6px;
-    font-weight: 500;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
     cursor: pointer;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+    transition: all 0.2s ease;
     margin-top: 10px;
 }
+.btn-modal-submit:hover, .edit-form-submit:hover { 
+    background-color: var(--figma-green-hover); 
+    transform: translateY(-1px); 
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.25); 
+}
 
-/* File Input Form Extensions */
-.modal-form-inputs input[type="file"] {
-    background-color: #f8faf9;
-    border: 1px dashed #b3c7c0;
-    padding: 10px;
-    border-radius: 6px;
+/* ---------- Responsive Optimization Breakpoints ---------- */
+@media (max-width: 992px) {
+    .figma-product-card { grid-template-columns: 1fr; gap: 20px; }
+    .order-management-card { grid-template-columns: 1fr; }
+    .product-edit-action-col { margin-left: 0; width: 100%; }
+    .edit-specs-trigger { width: 100%; justify-content: center; box-sizing: border-box; }
+    .custom-select-wrapper { max-width: 100%; }
+}
+
+@media (max-width: 576px) {
+    .p-card-metrics { grid-template-columns: 1fr; }
+    .m-input-grid { grid-template-columns: 1fr; }
+    .dashboard-header-block { flex-direction: column; align-items: flex-start; }
+    .btn-add-product-figma { width: 100%; justify-content: center; box-sizing: border-box; }
+    .custom-vacation-card { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px !important;}
+}
+
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.2); }
+    70% { box-shadow: 0 0 0 6px rgba(211, 47, 47, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+}
+
+.delete-product-trigger {
+    font-size: 13px;
+    color: var(--danger-red);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background-color: var(--danger-bg);
+    border: none;
+    transition: all 0.2s ease;
     width: 100%;
     box-sizing: border-box;
 }
 
-.modal-form-inputs input[type="file"]:hover {
-    background-color: #f1f5f3;
-    border-color: #1b4d3e;
-}
-
-.input-helper-text {
-    display: block;
-    font-size: 0.75rem;
-    color: #667085;
-    margin-top: 4px;
-}
-
-/* Ensure Select and Textarea match your input styling */
-.modal-form-inputs select, 
-.modal-form-inputs textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--figma-border);
-    border-radius: 6px;
-    background-color: #fafafa;
-    font-family: inherit;
-    font-size: 14px;
-    box-sizing: border-box; /* Important for padding consistency */
-}
-
-/* Style the textarea specifically */
-.modal-form-inputs textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-/* Visual focus state for all inputs */
-.modal-form-inputs input:focus,
-.modal-form-inputs select:focus,
-.modal-form-inputs textarea:focus {
-    outline: none;
-    border-color: var(--figma-green);
-    background-color: #ffffff;
-}
-
-/* Ensure the overlay covers everything and lets the modal scroll internally */
-.dashboard-modal-overlay {
-    position: fixed;
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: none; /* Changed from flex for initial state */
-    z-index: 1000; /* Higher z-index to stay on top */
-    overflow-y: auto; /* Enables scrolling for the overlay itself */
-    padding: 40px 20px; /* Provides space at the top and bottom */
-}
-
-.dashboard-modal-overlay:target {
-    display: flex; /* Centers modal when active */
-}
-
-/* Ensure the card has a max height and allows its own scrollbar */
-.modal-body-card {
-    background: white;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 450px;
-    padding: 24px;
-    margin: auto; /* Centers the card horizontally and vertically */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    
-    /* These prevent the form from getting cut off */
-    max-height: 85vh; 
-    overflow-y: auto; 
-}
-
-/* Optional: Custom scrollbar for a cleaner look */
-.modal-body-card::-webkit-scrollbar {
-    width: 6px;
-}
-.modal-body-card::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 3px;
-}
-
-/* Small Layout Fix for lower screen widths */
-@media (max-width: 768px) {
-    .figma-product-card {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    .p-card-metrics {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.delete-product-trigger:hover {
+    background-color: var(--danger-red);
+    color: #ffffff !important;
 }

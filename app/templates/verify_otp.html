@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify OTP - Botanica{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <h2>Enter OTP Code</h2>
+            <p>We've sent a 6-digit code to <strong>{{ email }}</strong>. Please check your email inbox (and spam folder) for the code.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="auth-flash-container">
+                    {% for category, message in messages %}
+                        <div class="auth-alert auth-alert-{{ category }}">
+                            <i class="ri-error-warning-line"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('auth.verify_otp') }}" method="POST">
+            <div class="auth-input-group">
+                <label for="otp" class="auth-field-label">6-Digit Verification Code</label>
+                <div class="auth-interactive-field">
+                    <input type="text" id="otp" name="otp" class="auth-input-element" placeholder="123456" minlength="6" maxlength="6" pattern="[0-9]{6}" required autocomplete="one-time-code" style="letter-spacing: 0.25rem; font-size: 1.1rem; text-align: center; padding-left: 1rem;">
+                    <i class="ri-key-2-line auth-field-icon" style="display: none;"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-action-btn" style="margin-top: 1rem;">
+                <span>Verify & Continue</span>
+                <i class="ri-arrow-right-line"></i>
+            </button>
+        </form>
+
+        <div class="auth-card-footer">
+            <p>Did not get code? <a href="{{ url_for('auth.forgot_password') }}" class="auth-redirect-anchor">Resend request</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

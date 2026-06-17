@@ -33,16 +33,15 @@
         {% for herb in herbs %}
         <article class="herb-card">
             <div class="card-image-wrapper">
-                <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:100%; object-fit:cover;">
+                <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" style="width:100%; height:100%; object-fit:cover;">
             </div>
             <div class="card-content">
                 <span class="scientific-name">{{ herb.scientific_name }}</span>
                 <h3>{{ herb.common_name }}</h3>
                 <p class="excerpt">{{ herb.description|truncate(100) }}</p>
                 
-                <div class="card-actions">
-                    <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="btn btn-secondary">Learn More</a>
-                    <a href="{{ url_for('shop.shop') }}" class="btn btn-primary">Buy Now</a>
+                <div class="card-actions" style="margin-top: 15px;">
+                    <a href="{{ url_for('shop.herb_detail_library', id=herb.id) }}" class="btn btn-secondary" style="width: 100%; text-align: center;">Learn More</a>
                 </div>
             </div>
         </article>

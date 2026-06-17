@@ -4,126 +4,242 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/merchant.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-wrapper">
     
-    <!-- Title Section -->
     <div class="dashboard-header-block">
-        <div>
-            <h1>Merchant Dashboard</h1>
-            <p class="subtitle">Manage your products and inventory</p>
-        </div>
-    </div>
-
-    <!-- Vacation Mode Component Box -->
-    <div class="vacation-card-row">
-        <div class="vacation-left">
-            <span class="power-icon">⏻</span>
+        <div class="header-user-profile">
+            {% if user.profile_pic %}
+                <img src="{{ user.profile_pic | image_or_default('avatar') }}" alt="{{ user.name }}" class="header-avatar-img">
+            {% else %}
+                <div class="header-avatar-circle">
+                    {{ user.name[:1] | upper }}
+                </div>
+            {% endif %}
             <div>
-                <span class="widget-title">Vacation Mode</span>
-                <p class="widget-desc">Temporarily hide all your products</p>
+                <h1 class="header-title">Merchant Dashboard</h1>
+                <p class="subtitle header-subtitle">Welcome back, <strong>{{ user.name }}</strong> ({{ user.email }})</p>
+                <div class="header-status-row">
+                    {% if user.certification_badge %}
+                        <span class="status-badge status-delivered header-badge"><i class="ri-checkbox-circle-fill"></i> Verified Seller</span>
+                    {% else %}
+                        <span class="status-badge status-pending header-badge-pending"><i class="ri-error-warning-fill"></i> Unverified Seller</span>
+                        <a href="{{ url_for('auth.profile', tab='settings') }}" class="header-certificate-link">Upload Certificate</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        <div class="vacation-right">
-            <label class="figma-switch">
-                <input type="checkbox" id="vacationToggle">
-                <span class="figma-slider"></span>
-            </label>
+        <div>
+            <a href="#addProductModal" class="btn-add-product-figma"><i class="ri-add-line"></i> Add New Herb</a>
         </div>
     </div>
 
-    <!-- Products Core Container -->
+    {% if low_stock_herbs %}
+    <div class="low-stock-alert-card">
+        <div class="vacation-left">
+            <span class="low-stock-icon"><i class="ri-alert-line"></i></span>
+            <div>
+                <span class="low-stock-title">Low Stock Warning!</span>
+                <p class="low-stock-description">
+                    Some of your items have critically low stock (5 or fewer units left):
+                    {% for low_herb in low_stock_herbs %}
+                        <strong>{{ low_herb.common_name }}</strong> (<span class="danger-text">{{ low_herb.stock_quantity }} units left</span>){% if not loop.last %}, {% endif %}
+                    {% endfor %}. Please update specs to restock.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="dashboard-top-grid">
+        <div class="vacation-card-row custom-vacation-card">
+            <div class="vacation-info-group">
+                <span class="power-icon-wrapper"><i class="ri-shut-down-line"></i></span>
+                <div class="vacation-text-group">
+                    <span class="widget-title">Vacation Mode</span>
+                    <p class="widget-desc">Temporarily hide all your products</p>
+                </div>
+            </div>
+            <div class="vacation-toggle-group">
+                <label class="figma-switch">
+                    <input type="checkbox" id="vacationToggle">
+                    <span class="figma-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="products-section-container insights-section-container">
+        <div class="section-controls-header insights-section-header">
+            <h2><i class="ri-pie-chart-2-line"></i> Top Selling Herbs Insights</h2>
+        </div>
+        <div class="insights-content-row">
+            <div class="pie-chart-wrapper">
+                <canvas id="salesPieChart"></canvas>
+            </div>
+            <div class="insights-list-column">
+                <h3 class="insights-list-title">Most Selling Herbs</h3>
+                <p class="widget-desc insights-list-description">This chart highlights the quantity share of your top products purchased by clients.</p>
+                {% if top_selling %}
+                    <ul class="insights-list-items">
+                    {% for sales in top_selling %}
+                        <li class="insights-list-item"><i class="ri-seedling-line"></i> <strong>{{ sales.common_name }}</strong>: {{ sales.total_sold }} units sold</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="insights-empty-text"><i class="ri-inbox-line"></i> No order transactions recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <div class="products-section-container">
         <div class="section-controls-header">
-            <h2>My Products</h2>
-            <!-- Modal trigger anchor style for adding a product -->
-            <a href="#addProductModal" class="btn-add-product-figma"><span>+</span> Add Product</a>
+            <h2><i class="ri-store-2-line"></i> My Catalog Products</h2>
         </div>
 
         <div class="products-list-stack">
             {% for herb in herbs %}
-            <div class="figma-product-card">
+            <div class="figma-product-card product-spec-card" data-id="{{ herb.id }}" data-name="{{ herb.common_name | escape }}" data-scientific-name="{{ herb.scientific_name | escape }}" data-price="{{ herb.price }}" data-stock="{{ herb.stock_quantity }}" data-whatsapp-number="{{ herb.whatsapp_number or '' }}" data-reference-url="{{ herb.reference_url or '' }}" data-qr-payment-type="{{ herb.qr_payment_type or '' }}">
                 <div class="p-card-left">
                     <div class="p-img-box">
-                        <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" class="product-image-el">
                     </div>
                     <div class="p-details">
-                        <h3>{{ herb.common_name }}</h3>
+                        <h3 class="product-card-title">{{ herb.common_name }}</h3>
                         <span class="p-scientific">{{ herb.scientific_name }}</span>
                     </div>
                 </div>
-                <div class="p-card-metrics">
+                <div class="p-card-metrics product-card-metrics-cols">
                     <div class="metric-group">
                         <span class="m-label">Price</span>
-                        <span class="m-value">NPR {{ herb.price }}</span>
+                        <span class="m-value price-text">Rs. {{ herb.price }}</span>
                     </div>
                     <div class="metric-group">
-                        <span class="m-label">Stock</span>
-                        <span class="m-value font-highlight">{{ herb.stock_quantity }}</span>
+                        <span class="m-label">Stock Status</span>
+                        <span class="m-value {% if herb.stock_quantity <= 5 %}badge-stock-low{% else %}badge-stock-healthy{% endif %}">
+                            {{ herb.stock_quantity }} units
+                            {% if herb.stock_quantity <= 5 %} (Low){% endif %}
+                        </span>
                     </div>
+                    <div class="metric-group">
+                        <span class="m-label">WhatsApp Contact</span>
+                        <span class="m-value metric-whatsapp-text"><i class="ri-whatsapp-line"></i> {{ herb.whatsapp_number or 'Not Configured' }}</span>
                     </div>
                 </div>
-            {% else %}
-            <p>You haven't added any products yet.</p>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="products-section-container" style="margin-top: 40px;">
-        <div class="section-controls-header">
-            <h2>Order Management</h2>
-        </div>
-
-        <div class="products-list-stack">
-            {% for order in orders %}
-            <div class="figma-product-card">
-                <div class="p-details">
-                    <h3>Order #{{ order.id }}</h3>
-                    <p>Total: NPR {{ order.total_amount }}</p>
-                    <p><small>Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</small></p>
-                </div>
-                
-                <div class="p-card-metrics">
-                    <form action="{{ url_for('order.update_status', order_id=order.id) }}" method="POST">
-                        <label>Status:</label>
-                        <select name="status" onchange="this.form.submit()">
-                            {% for status in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
-                                <option value="{{ status }}" {% if order.order_status == status %}selected{% endif %}>
-                                    {{ status }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                <div class="product-edit-action-col" style="display: flex; flex-direction: column; gap: 8px;">
+                    <span class="edit-specs-trigger">Edit Specs <i class="ri-edit-box-line"></i></span>
+                    <form action="{{ url_for('shop.delete_product', id=herb.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete &quot;{{ herb.common_name | escape }}&quot; from the catalog?');" style="width: 100%;">
+                        <button type="submit" class="delete-product-trigger">Delete <i class="ri-delete-bin-line"></i></button>
                     </form>
                 </div>
             </div>
             {% else %}
-            <p>No new orders to process.</p>
+            <div class="empty-state-box">
+                <i class="ri-archive-line"></i>
+                <p>You haven't listed any premium botanical items yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="products-section-container order-section-margin">
+        <div class="section-controls-header">
+            <h2><i class="ri-file-list-3-line"></i> Fulfillment & Order Management</h2>
+        </div>
+
+        <div class="products-list-stack">
+            {% for order in orders %}
+            <div class="figma-product-card order-management-card">
+                <div class="p-card-left">
+                    <div class="order-icon-avatar">
+                        <i class="ri-shopping-bag-3-line"></i>
+                    </div>
+                    <div class="p-details">
+                        <h3 class="order-card-title" style="cursor: pointer; color: var(--figma-green); text-decoration: underline;" 
+                            data-order-id="{{ order.id }}"
+                            data-customer-name="{{ order.customer_name | escape }}"
+                            data-customer-email="{{ order.customer_email | escape }}"
+                            data-shipping-address="{{ order.shipping_address | escape }}"
+                            data-delivery-date="{{ order.delivery_date }}"
+                            data-delivery-window="{{ order.delivery_window | escape }}"
+                            data-cancellation-reason="{{ (order.cancellation_reason or '') | escape }}"
+                            onclick="openCustomerDetailsFromElement(this)" 
+                            title="Click to view customer details">Order #{{ order.id }}</h3>
+                        <p class="order-meta-text"><i class="ri-calendar-line"></i> Placed on: {{ order.created_at.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </div>
+                
+                <div class="order-amount-block">
+                    <span class="m-label">Revenue Amount</span>
+                    <span class="order-total-value">NPR {{ order.total_amount }}</span>
+                </div>
+                
+                <div class="order-status-action-block">
+                    <label class="m-label"><i class="ri-pushed-line"></i> Order Lifecycle:</label>
+                    <div class="custom-select-wrapper">
+                        <select class="select-premium-control" 
+                                data-order-id="{{ order.id }}"
+                                onchange="dispatchStatusUpdateFromElement(this)">
+                            
+                            {% for status in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
+                                <option value="{{ status }}" {% if order.order_status and order.order_status.strip() == status %}selected{% endif %}>
+                                    {{ status }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="custom-select-arrow"><i class="ri-arrow-down-s-line"></i></div>
+                    </div>
+                </div>
+
+                <div class="order-status-action-block" style="margin-top: 8px;">
+                    <label class="m-label"><i class="ri-wallet-3-line"></i> Payment Status:</label>
+                    <div class="custom-select-wrapper">
+                        <select class="select-premium-control" 
+                                data-order-id="{{ order.id }}"
+                                onchange="dispatchPaymentStatusUpdateFromElement(this)">
+                            <option value="Unpaid" {% if order.payment_status == 'Unpaid' or not order.payment_status %}selected{% endif %}>Unpaid</option>
+                            <option value="Paid" {% if order.payment_status == 'Paid' %}selected{% endif %}>Paid</option>
+                        </select>
+                        <div class="custom-select-arrow"><i class="ri-arrow-down-s-line"></i></div>
+                    </div>
+                </div>
+
+                {% if order.transaction_screenshot %}
+                <div class="order-screenshot-block" style="margin-top: 8px;">
+                    <span class="m-label" style="display: block; margin-bottom: 4px;"><i class="ri-image-line"></i> Payment Proof:</span>
+                    <a href="{{ order.transaction_screenshot }}" target="_blank" style="color: var(--figma-green); text-decoration: underline; font-size: 0.9rem; font-weight: 600;">View Receipt Screenshot</a>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty-state-box">
+                <i class="ri-check-double-line"></i>
+                <p>All clean! No customer orders awaiting sorting or distribution.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Modal anchor block updated with dynamic Image Upload controls -->
 <div id="addProductModal" class="dashboard-modal-overlay">
     <div class="modal-body-card">
         <div class="modal-header">
             <h3>Add New Product Spec Sheet</h3>
-            <a href="#" class="close-modal-btn">&times;</a>
+            <a href="#" class="close-modal-btn"><i class="ri-close-line"></i></a>
         </div>
-        <!-- Enctype attribute added for secure file stream transfers -->
         <form class="modal-form-inputs" method="POST" action="{{ url_for('shop.add_product') }}" enctype="multipart/form-data">
-    
             <div class="m-input-group">
                 <label for="productName">Product Display Name</label>
                 <input type="text" id="productName" name="common_name" placeholder="e.g., Brahmi Leaf Powder" required>
             </div>
-
             <div class="m-input-group">
                 <label for="scientificName">Scientific Name</label>
                 <input type="text" id="scientificName" name="scientific_name" placeholder="e.g., Bacopa monnieri" required>
             </div>
-
             <div class="m-input-group">
                 <label for="category">Benefit Category</label>
                 <select id="category" name="benefit_category" required>
@@ -134,12 +250,10 @@
                     <option value="Immunity">Immunity</option>
                 </select>
             </div>
-
             <div class="m-input-group">
                 <label for="description">Product Description</label>
                 <textarea id="description" name="description" rows="3" placeholder="Describe the herb's benefits..."></textarea>
             </div>
-
             <div class="m-input-grid">
                 <div>
                     <label for="productPrice">Price (NPR)/100g</label>
@@ -150,14 +264,300 @@
                     <input type="number" id="productStock" name="stock_quantity" value="0" min="0" required>
                 </div>
             </div>
-
+            <div class="m-input-group">
+                <label for="whatsappNumber">WhatsApp Inquiry Number</label>
+                <input type="text" id="whatsappNumber" name="whatsapp_number" placeholder="e.g., +97798XXXXXXXX" required>
+                <small class="input-helper-text">Add your genuine contact number so customers can place direct inquiries.</small>
+            </div>
+            <div class="m-input-group">
+                <label for="referenceUrl">Reference Link (e.g. Wikipedia)</label>
+                <input type="url" id="referenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/...">
+                <small class="input-helper-text">Add a Wikipedia or academic reference link for the reference Herb Library.</small>
+            </div>
             <div class="m-input-group">
                 <label for="productImage">Herb Product Image</label>
                 <input type="file" id="productImage" name="product_image" accept="image/*">
             </div>
-            
+            <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label for="qrPaymentType">QR Payment Provider</label>
+                    <select id="qrPaymentType" name="qr_payment_type">
+                        <option value="">None</option>
+                        <option value="eSewa">eSewa</option>
+                        <option value="Khalti">Khalti</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="qrCodeImage">Payment QR Code</label>
+                    <input type="file" id="qrCodeImage" name="qr_code_image" accept="image/*">
+                </div>
+            </div>
             <button type="submit" class="btn-modal-submit">Publish to Live Storefront</button>
         </form>
     </div>
 </div>
+
+<div id="updateProductModal" class="update-modal-overlay">
+    <div class="modal-body-card update-modal-body">
+        <div class="update-modal-header">
+            <h3 id="updateModalTitle" class="update-modal-title">Edit Product Specifications</h3>
+            <button onclick="closeProductEditModal()" class="update-modal-close-btn"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="price-history-section">
+            <h4 class="price-history-title">Price Fluctuation History</h4>
+            <div class="price-history-canvas-wrapper">
+                <canvas id="priceHistoryChart"></canvas>
+            </div>
+        </div>
+        <form id="updateProductForm" class="modal-form-inputs" method="POST" action="" enctype="multipart/form-data">
+            <div class="m-input-group">
+                <label for="editCommonName" class="edit-form-label">Product Display Name</label>
+                <input type="text" id="editCommonName" name="common_name" required class="edit-form-input">
+            </div>
+            <div class="m-input-group">
+                <label for="editScientificName" class="edit-form-label">Scientific Name</label>
+                <input type="text" id="editScientificName" name="scientific_name" required class="edit-form-input">
+            </div>
+            <div class="m-input-grid">
+                <div>
+                    <label for="editPrice" class="edit-form-label">Price (NPR)/100g</label>
+                    <input type="number" id="editPrice" name="price" step="0.01" placeholder="0.00" required class="edit-form-input">
+                </div>
+                <div>
+                    <label for="editStock" class="edit-form-label">Update Stock Count</label>
+                    <input type="number" id="editStock" name="stock_quantity" min="0" required class="edit-form-input">
+                </div>
+            </div>
+            <div class="m-input-group">
+                <label for="editWhatsappNumber" class="edit-form-label">WhatsApp Inquiry Number</label>
+                <input type="text" id="editWhatsappNumber" name="whatsapp_number" required class="edit-form-input">
+            </div>
+            <div class="m-input-group">
+                <label for="editReferenceUrl" class="edit-form-label">Reference Link (e.g. Wikipedia)</label>
+                <input type="url" id="editReferenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/..." class="edit-form-input">
+            </div>
+            <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 15px;">
+                <div>
+                    <label for="editQrPaymentType" class="edit-form-label">QR Payment Provider</label>
+                    <select id="editQrPaymentType" name="qr_payment_type" class="edit-form-input">
+                        <option value="">None</option>
+                        <option value="eSewa">eSewa</option>
+                        <option value="Khalti">Khalti</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editQrCodeImage" class="edit-form-label">Payment QR Code</label>
+                    <input type="file" id="editQrCodeImage" name="qr_code_image" accept="image/*" class="edit-form-input">
+                </div>
+            </div>
+            <button type="submit" class="edit-form-submit">Save Modifications</button>
+        </form>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<div id="customerDetailsModal" class="dashboard-modal-overlay">
+    <div class="modal-body-card">
+        <div class="modal-header">
+            <h3 id="customerModalTitle">Customer Details</h3>
+            <button onclick="closeCustomerDetailsModal()" class="close-modal-btn" style="background: none; border: none; font-size: 22px; cursor: pointer;"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="customer-info-content" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="info-group">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Customer Name</label>
+                <span id="customerName" style="font-size: 15px; font-weight: 600; color: var(--figma-text-dark);">John Doe</span>
+            </div>
+            <div class="info-group">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Customer Email</label>
+                <a id="customerEmailLink" href="mailto:" style="font-size: 15px; font-weight: 600; color: var(--figma-green); text-decoration: none;"><span id="customerEmail">john@example.com</span></a>
+            </div>
+            <div class="info-group">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Shipping Address</label>
+                <span id="shippingAddress" style="font-size: 14px; color: var(--figma-text-muted); line-height: 1.5; display: block;">123 Street Address, Kathmandu</span>
+            </div>
+            <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="info-group">
+                    <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Delivery Date</label>
+                    <span id="deliveryDate" style="font-size: 14px; color: var(--figma-text-muted);">2026-06-15</span>
+                </div>
+                <div class="info-group">
+                    <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 4px;">Delivery Window</label>
+                    <span id="deliveryWindow" style="font-size: 14px; color: var(--figma-text-muted); text-transform: capitalize;">Morning</span>
+                </div>
+            </div>
+            <div id="cancellationReasonGroup" class="info-group" style="display: none;">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #dc2626; display: block; margin-bottom: 4px;">Cancellation Reason</label>
+                <span id="cancellationReason" style="font-size: 14px; color: #b71c1c; font-weight: 500; display: block; word-break: break-all;">No reason provided</span>
+            </div>
+            
+            <div class="info-group" style="border-top: 1px solid var(--figma-border); padding-top: 15px;">
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--figma-text-gray); display: block; margin-bottom: 8px;">Items Ordered</label>
+                <div id="orderItemsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                    <p style="font-size: 13px; color: var(--figma-text-muted); font-style: italic; margin: 0;">Loading items...</p>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 24px; text-align: right;">
+            <button onclick="closeCustomerDetailsModal()" class="btn-modal-submit" style="margin-top: 0; padding: 10px 20px; font-size: 14px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<script id="top-selling-data" type="application/json">
+    [
+        {% for sales in top_selling %}
+            {"common_name": "{{ sales.common_name | escape }}", "total_sold": {{ sales.total_sold }}}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+</script>
+
+<script>
+function dispatchStatusUpdate(orderId, chosenStatus) {
+    if (!orderId) return;
+
+    // Use modern Fetch API instead of form.submit() to update silently in the background
+    fetch(`/update/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'order_status': chosenStatus
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log(`Order ${orderId} successfully updated to ${chosenStatus}`);
+            // Optional: You can trigger a small toast notification here!
+            
+        } else {
+            console.error('Database update failed.');
+            alert('Could not update status. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Network error encountered:', error);
+    });
+}
+
+function dispatchPaymentStatusUpdate(orderId, chosenPaymentStatus) {
+    if (!orderId) return;
+
+    fetch(`/update_payment/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'payment_status': chosenPaymentStatus
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log(`Order ${orderId} payment status successfully updated to ${chosenPaymentStatus}`);
+        } else {
+            console.error('Database update failed.');
+            alert('Could not update payment status. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Network error encountered:', error);
+    });
+}
+
+function openCustomerDetailsModal(orderId, name, email, address, date, window, cancellationReason) {
+    const modal = document.getElementById('customerDetailsModal');
+    if (!modal) return;
+
+    document.getElementById('customerModalTitle').innerText = `Customer Details: Order #${orderId}`;
+    document.getElementById('customerName').innerText = name;
+    document.getElementById('customerEmail').innerText = email;
+    document.getElementById('customerEmailLink').href = `mailto:${email}`;
+    document.getElementById('shippingAddress').innerText = address;
+    document.getElementById('deliveryDate').innerText = date;
+    document.getElementById('deliveryWindow').innerText = window;
+
+    const cancelGroup = document.getElementById('cancellationReasonGroup');
+    if (cancellationReason && cancellationReason.trim() !== '') {
+        document.getElementById('cancellationReason').innerText = cancellationReason;
+        cancelGroup.style.display = 'block';
+    } else {
+        cancelGroup.style.display = 'none';
+    }
+
+    const container = document.getElementById('orderItemsContainer');
+    if (container) {
+        container.innerHTML = `<p style="font-size: 13px; color: var(--figma-text-muted); font-style: italic; margin: 0;">Loading items...</p>`;
+        
+        fetch(`/shop/api/order_items/${orderId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.items && data.items.length > 0) {
+                    container.innerHTML = '';
+                    data.items.forEach(item => {
+                        const scientificHTML = item.scientific_name ? `<span style="font-size: 12px; color: var(--figma-text-gray); display: block; font-style: italic;">${item.scientific_name}</span>` : '';
+                        container.innerHTML += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--figma-bg-light); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--figma-border);">
+                                <div>
+                                    <span style="font-weight: 600; font-size: 14px; color: var(--figma-text-dark);">${item.common_name}</span>
+                                    ${scientificHTML}
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 700; color: var(--figma-green); font-size: 13px; display: block;">Rs. ${item.price_at_purchase.toFixed(2)}</span>
+                                    <span style="font-size: 12px; color: var(--figma-text-muted);">Qty: ${item.quantity}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = `<p style="font-size: 13px; color: #dc2626; font-weight: 500; margin: 0;">Failed to load order items.</p>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = `<p style="font-size: 13px; color: #dc2626; font-weight: 500; margin: 0;">Error fetching items.</p>`;
+            });
+    }
+
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+}
+
+function closeCustomerDetailsModal() {
+    const modal = document.getElementById('customerDetailsModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+    }
+}
+
+function openCustomerDetailsFromElement(element) {
+    const orderId = element.getAttribute('data-order-id');
+    const name = element.getAttribute('data-customer-name');
+    const email = element.getAttribute('data-customer-email');
+    const address = element.getAttribute('data-shipping-address');
+    const date = element.getAttribute('data-delivery-date');
+    const window = element.getAttribute('data-delivery-window');
+    const cancellationReason = element.getAttribute('data-cancellation-reason');
+
+    openCustomerDetailsModal(orderId, name, email, address, date, window, cancellationReason);
+}
+
+function dispatchStatusUpdateFromElement(element) {
+    const orderId = element.getAttribute('data-order-id');
+    const chosenStatus = element.value;
+    dispatchStatusUpdate(orderId, chosenStatus);
+}
+
+function dispatchPaymentStatusUpdateFromElement(element) {
+    const orderId = element.getAttribute('data-order-id');
+    const chosenPaymentStatus = element.value;
+    dispatchPaymentStatusUpdate(orderId, chosenPaymentStatus);
+}
+</script>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/merchant_dashboard.js') }}"></script>
 {% endblock %}

@@ -69,12 +69,6 @@
                             <span class="category-label">Energy & Focus</span>
                         </button>
                     </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Respiratory' %}active{% endif %}" data-benefit="Respiratory">
-                            <span class="category-icon"><i class="ri-windy-line"></i></span>
-                            <span class="category-label">Respiratory Health</span>
-                        </button>
-                    </li>
                 </ul>
             </div>
         </aside>
@@ -95,15 +89,13 @@
                             <div class="card-image-wrapper">
                                 {% if herb.on_vacation %}
                                     <span class="vacation-banner">On Vacation</span>
+                                {% elif herb.stock_quantity == 0 %}
+                                    <span class="vacation-banner" style="background-color:#e53e3e; color:#fff;">Out of Stock</span>
+                                {% elif herb.stock_quantity <= 5 %}
+                                    <span class="vacation-banner" style="background-color:#dd6b20; color:#fff;">Only {{ herb.stock_quantity }} Left</span>
                                 {% endif %}
 
-                                {% if herb.image_url %}
-                                    <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
-                                {% else %}
-                                    <div class="fallback-placeholder">
-                                        <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
-                                    </div>
-                                {% endif %}
+                                <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" class="product-image">
                                 <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
                             </div>
                         </a>
@@ -118,16 +110,27 @@
 
                             <p class="herb-excerpt">{{ herb.description|truncate(85) }}</p>
                             
-                            <div class="card-footer">
+                            <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                                 <div class="price-block">
                                     <span class="currency">Rs.</span>
                                     <span class="price-value">{{ herb.price }}</span>
                                     <span class="unit">/{{ herb.unit_weight or '100g' }}</span>
                                 </div>
                                 
-                                <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart" {% if herb.on_vacation %}disabled{% endif %}>
-                                    <i class="ri-shopping-cart-2-line"></i>
-                                </button>
+                                <div style="display:flex; gap:6px;">
+                                    {% if herb.whatsapp_number %}
+                                        <a href="https://wa.me/{{ herb.whatsapp_number.replace('+', '').replace(' ', '') }}?text=Hello!%20I%20have%20an%20inquiry%20about%20{{ herb.common_name | urlencode }}%20on%20Botanica." target="_blank" class="action-whatsapp" title="WhatsApp Inquiry" style="display:inline-flex; align-items:center; justify-content:center; background:#25d366; color:#fff; border:none; padding:8px 10px; border-radius:8px; font-size:1.1rem; text-decoration:none;">
+                                            <i class="ri-whatsapp-line"></i>
+                                        </a>
+                                    {% endif %}
+                                    <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart" {% if herb.on_vacation or herb.stock_quantity == 0 %}disabled{% endif %}>
+                                        {% if herb.stock_quantity == 0 %}
+                                            <span style="font-size:11px; font-weight:600; padding:0 4px;">Out</span>
+                                        {% else %}
+                                            <i class="ri-shopping-cart-2-line"></i>
+                                        {% endif %}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </article>

@@ -10,6 +10,7 @@
     <nav class="botanica-navbar">
         <div class="nav-container">
             <a href="{{ url_for('auth.home') }}" class="nav-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Botanica Logo" class="logo-image">
                 <span class="logo-text">Botanica</span>
             </a>
 
@@ -18,7 +19,7 @@
                 <li><a href="{{ url_for('shop.shop') }}" class="nav-link">Shop Herbs</a></li>
                 <li><a href="{{ url_for('auth.contact') }}" class="nav-link">Contact</a></li>
                 <li><a href="{{ url_for('shop.herb_library') }}" class="nav-link">Library</a></li>
-
+                <li><a href="{{ url_for('auth.faq') }}" class="nav-link">FAQ</a></li>
                 {% if session.get('user_id') and session.get('role') == 'merchant' %}
                     <li><a href="{{ url_for('auth.merchant_dashboard') }}" class="nav-link">Merchant Portal</a></li>
                 {% endif %}
