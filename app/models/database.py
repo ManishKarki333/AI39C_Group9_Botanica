@@ -200,6 +200,36 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS categories (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS reports (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                target_type ENUM('product', 'merchant') NOT NULL,
+                target_id INT NOT NULL,
+                reason VARCHAR(255) NOT NULL,
+                description TEXT,
+                status ENUM('pending', 'resolved') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        try:
+            cats = db.fetch_all("SELECT * FROM categories")
+            if not cats:
+                for cat_name in ["Sleep", "Digestion", "Energy", "Immunity"]:
+                    db.execute("INSERT INTO categories (name) VALUES (%s)", (cat_name,))
+        except Exception as e:
+            print("Failed to seed categories:", e)
+
         # Structural sanity checks for secondary columns
         try:
             db.execute("ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")

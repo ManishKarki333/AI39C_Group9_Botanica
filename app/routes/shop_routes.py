@@ -90,5 +90,9 @@ class ShopRoutes:
             self.shop_controller.delete_review
         )
 
+        self.bp.route("/report_product/<int:herb_id>", methods=["POST"])(
+            self.shop_controller.report_product
+        )
+
 
         return self.bp
