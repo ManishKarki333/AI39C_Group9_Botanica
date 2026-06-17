@@ -11,91 +11,132 @@
     <aside class="dashboard-sidebar">
         <div class="user-profile-card">
             {% if user.profile_pic %}
-                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" class="avatar-circle" style="object-fit: cover; border: 2px solid #27ae60;">
+                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" class="avatar-img">
             {% else %}
                 <div class="avatar-circle">{{ user.name[:1] | upper }}</div>
             {% endif %}
             <div class="user-meta">
                 <h2>{{ user.name }}</h2>
                 <p>{{ user.email }}</p>
-                {% if user.role == 'merchant' %}
-                    <span class="status-badge status-delivered" style="display:inline-block; margin-top:4px; font-size:10px; padding:2px 6px;">Merchant</span>
-                    {% if user.certification_badge %}
-                        <span class="status-badge status-shipped" style="display:inline-block; margin-top:4px; font-size:10px; padding:2px 6px;">Verified Seller</span>
-                    {% else %}
-                        <span class="status-badge status-pending" style="display:inline-block; margin-top:4px; font-size:10px; padding:2px 6px;">Needs Certificate</span>
+                <div class="badge-group">
+                    {% if user.role == 'merchant' %}
+                        <span class="role-badge"><i class="ri-store-2-line"></i> Merchant</span>
+                        {% if user.certification_badge %}
+                            <span class="status-badge status-delivered"><i class="ri-checkbox-circle-line"></i> Verified</span>
+                        {% else %}
+                            <span class="status-badge status-pending"><i class="ri-error-warning-line"></i> Unverified</span>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
+                </div>
             </div>
         </div>
         <nav class="account-nav">
-            <a href="{{ url_for('auth.profile', tab='orders') }}" class="nav-item {% if request.args.get('tab') != 'settings' %}active{% endif %}">Order History</a>
-            <a href="{{ url_for('auth.profile', tab='settings') }}" class="nav-item {% if request.args.get('tab') == 'settings' %}active{% endif %}">Profile Settings</a>
-            <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">Sign Out</a>
+            <a href="{{ url_for('auth.profile', tab='orders') }}" class="nav-item {% if request.args.get('tab') != 'settings' %}active{% endif %}">
+                <i class="ri-history-line"></i> Order History
+            </a>
+            <a href="{{ url_for('auth.profile', tab='settings') }}" class="nav-item {% if request.args.get('tab') == 'settings' %}active{% endif %}">
+                <i class="ri-user-settings-line"></i> Profile Settings
+            </a>
+            <div class="nav-divider"></div>
+            <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">
+                <i class="ri-logout-box-r-line"></i> Sign Out
+            </a>
         </nav>
     </aside>
 
     <section class="dashboard-content">
         {% if request.args.get('tab') == 'settings' %}
-            <h1>Profile Settings</h1>
+            <div class="content-header">
+                <h1>Profile Settings</h1>
+                <p>Manage your account settings, presentation credentials, and structural verification documentation blocks.</p>
+            </div>
             
-            <div class="settings-form-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:2rem; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 2rem;">
-                <form action="{{ url_for('auth.profile') }}" method="POST" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:1.5rem;">
-                    <div class="form-group" style="display:flex; flex-direction:column; gap:0.5rem;">
-                        <label style="font-weight:600; color:#1e293b;">Full Name</label>
-                        <input type="text" name="name" value="{{ user.name }}" required style="padding:0.75rem; border:1px solid #cbd5e1; border-radius:8px; font-size:1rem;">
+            <div class="settings-form-card">
+                <form action="{{ url_for('auth.profile') }}" method="POST" enctype="multipart/form-data" class="modern-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="ri-user-line"></i> Full Name</label>
+                            <input type="text" name="name" value="{{ user.name }}" required placeholder="Enter your full name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="ri-mail-line"></i> Email Address</label>
+                            <input type="email" name="email" value="{{ user.email }}" required placeholder="name@example.com">
+                        </div>
                     </div>
                     
-                    <div class="form-group" style="display:flex; flex-direction:column; gap:0.5rem;">
-                        <label style="font-weight:600; color:#1e293b;">Email Address</label>
-                        <input type="email" name="email" value="{{ user.email }}" required style="padding:0.75rem; border:1px solid #cbd5e1; border-radius:8px; font-size:1rem;">
-                    </div>
-                    
-                    <div class="form-group" style="display:flex; flex-direction:column; gap:0.5rem;">
-                        <label style="font-weight:600; color:#1e293b;">Profile Picture</label>
-                        <input type="file" name="profile_pic" accept="image/*" style="padding:0.5rem 0;">
-                        {% if user.profile_pic %}
-                            <div style="margin-top:0.5rem; display:flex; align-items:center; gap:10px;">
-                                <span style="font-size:0.875rem; color:#64748b;">Current Picture:</span>
-                                <img src="{{ user.profile_pic }}" alt="Profile Pic" style="width:60px; height:60px; object-fit:cover; border-radius:50%; border:1px solid #e2e8f0;">
+                    <div class="form-group">
+                        <label><i class="ri-image-edit-line"></i> Profile Picture</label>
+                        <div class="upload-component">
+                            {% if user.profile_pic %}
+                                <div class="upload-preview-box">
+                                    <img src="{{ user.profile_pic }}" alt="Profile Pic">
+                                </div>
+                            {% endif %}
+                            <div class="custom-file-upload">
+                                <input type="file" name="profile_pic" id="profile_pic" accept="image/*">
+                                <label for="profile_pic" class="file-drop-zone">
+                                    <i class="ri-upload-cloud-2-line"></i>
+                                    <span><strong>Click to upload</strong> or drag and drop</span>
+                                    <small>PNG, JPG or WEBP (max. 2MB)</small>
+                                </label>
                             </div>
-                        {% endif %}
+                        </div>
                     </div>
                     
                     {% if user.role == 'merchant' %}
-                        <div class="form-group" style="display:flex; flex-direction:column; gap:0.5rem; border-top:1px solid #e2e8f0; padding-top:1.5rem;">
-                            <label style="font-weight:600; color:#1e293b;">Merchant Certification Badge / Document Image</label>
-                            <p style="font-size:0.875rem; color:#64748b; margin:0;">Upload a certification badge, license, or registration document image to verify your seller status.</p>
-                            <input type="file" name="certification_badge" accept="image/*" style="padding:0.5rem 0;">
-                            {% if user.certification_badge %}
-                                <div style="margin-top:0.5rem; display:flex; align-items:center; gap:10px;">
-                                    <span style="font-size:0.875rem; color:#64748b;">Current Badge:</span>
-                                    <img src="{{ user.certification_badge }}" alt="Certification Badge" style="max-width:150px; border-radius:8px; border:1px solid #e2e8f0; max-height: 100px; object-fit: contain;">
+                        <div class="form-group merchant-verification-block">
+                            <label><i class="ri-file-shield-2-line"></i> Merchant Certification Badge / Document Image</label>
+                            <p class="field-instruction">Upload a valid registration credential image to unlock multi-variant weight matrices.</p>
+                            
+                            <div class="upload-component">
+                                {% if user.certification_badge %}
+                                    <div class="upload-preview-box credential-preview">
+                                        <img src="{{ user.certification_badge }}" alt="Certification Badge">
+                                    </div>
+                                {% endif %}
+                                <div class="custom-file-upload">
+                                    <input type="file" name="certification_badge" id="certification_badge" accept="image/*">
+                                    <label for="certification_badge" class="file-drop-zone">
+                                        <i class="ri-shield-user-line"></i>
+                                        <span><strong>Upload validation document</strong></span>
+                                        <small>Official business certificate formats or government identification</small>
+                                    </label>
                                 </div>
-                            {% endif %}
+                            </div>
                         </div>
                     {% endif %}
                     
-                    <button type="submit" class="btn" style="background-color:#27ae60; color:#ffffff; padding:0.75rem 1.5rem; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:1rem; transition:background 0.2s; align-self: flex-start;">Update Profile</button>
+                    <button type="submit" class="btn btn-save-profile">
+                        <i class="ri-save-line"></i> Update Profile Changes
+                    </button>
                 </form>
             </div>
             
-            <div class="danger-zone-card" style="background:#fff5f5; border:1px solid #feb2b2; border-radius:12px; padding:2rem; margin-top:2rem;">
-                <h3 style="color:#c53030; margin:0 0 0.5rem 0; font-size:1.25rem;">Danger Zone</h3>
-                <p style="color:#742a2a; font-size:0.95rem; margin-bottom:1.5rem; margin-top:0;">These actions are permanent and cannot be undone. Please proceed with caution.</p>
+            <div class="danger-zone-card">
+                <div class="danger-header">
+                    <i class="ri-error-warning-fill"></i>
+                    <div>
+                        <h3>Account Termination Matrix</h3>
+                        <p>These actions are destructive and cannot be undone. System cache configurations will overwrite securely.</p>
+                    </div>
+                </div>
                 
-                <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
-                    <form action="{{ url_for('auth.deactivate_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to deactivate your account? You will be logged out and won\'t be able to log back in without contacting support.');">
-                        <button type="submit" style="background-color:#ecc94b; color:#744210; border:1px solid #ecc94b; padding:0.75rem 1.5rem; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.2s;">Deactivate Account</button>
+                <div class="danger-actions">
+                    <form action="{{ url_for('auth.deactivate_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to deactivate your account?');">
+                        <button type="submit" class="btn-danger-outline">Deactivate Account</button>
                     </form>
                     
-                    <form action="{{ url_for('auth.delete_account') }}" method="POST" onsubmit="return confirm('CRITICAL WARNING: Are you sure you want to PERMANENTLY DELETE your account? All your personal details, order history, and product listings will be deleted forever. This cannot be undone.');">
-                        <button type="submit" style="background-color:#e53e3e; color:#ffffff; border:none; padding:0.75rem 1.5rem; border-radius:8px; font-weight:600; cursor:pointer; transition:background 0.2s;">Delete Account Permanently</button>
+                    <form action="{{ url_for('auth.delete_account') }}" method="POST" onsubmit="return confirm('CRITICAL WARNING: Permanently delete account?');">
+                        <button type="submit" class="btn-danger-solid">Delete Account Permanently</button>
                     </form>
                 </div>
             </div>
         {% else %}
-            <h1>Order History</h1>
+            <div class="content-header">
+                <h1>Order History</h1>
+                <p>Track your localized architectural orders, pricing validations, and shipment routing tracks.</p>
+            </div>
             
             {% if orders %}
                 <div class="table-responsive">
@@ -112,22 +153,24 @@
                         <tbody>
                             {% for order in orders %}
                             <tr>
-                                <td><strong>#{{ order.id }}</strong></td>
-                                <td>
+                                <td><span class="order-id-tag">#{{ order.id }}</span></td>
+                                <td class="date-column">
                                     {% if order.created_at %}
                                         {{ order.created_at.strftime('%b %d, %Y') }}
                                     {% else %}
                                         N/A
                                     {% endif %}
                                 </td>
-                                <td>Rs. {{ "%.2f" | format(order.total_amount | float) }}</td>
+                                <td class="currency-column">Rs. {{ "%.2f" | format(order.total_amount | float) }}</td>
                                 <td>
                                     <span class="status-badge status-{{ order.order_status | lower | replace(' ', '-') }}">
                                         {{ order.order_status }}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('shop.track_order_status', order_id=order.id) }}" class="btn btn-sm btn-outline">Track Order</a>
+                                    <a href="{{ url_for('shop.track_order_status', order_id=order.id) }}" class="btn-track">
+                                        Track Details <i class="ri-arrow-right-s-line"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -136,8 +179,12 @@
                 </div>
             {% else %}
                 <div class="empty-state">
-                    <p>You haven't placed any orders yet.</p>
-                    <a href="{{ url_for('shop.shop') }}" class="btn">Explore Marketplace</a>
+                    <div class="empty-icon-wrapper">
+                        <i class="ri-shopping-bag-3-line"></i>
+                    </div>
+                    <h3>No Purchase Logs Found</h3>
+                    <p>You haven't initiated any marketplace transactions on the platform architecture yet.</p>
+                    <a href="{{ url_for('shop.shop') }}" class="btn btn-save-profile">Explore Marketplace</a>
                 </div>
             {% endif %}
         {% endif %}

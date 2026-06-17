@@ -3,7 +3,7 @@
 {% block title %}Botanica - Order Status #{{ order.id }}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/order.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/order_status.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -14,12 +14,12 @@
     </header>
 
     <div class="tracking-progress-wrapper">
-        {% set status_list = ['Pending', 'Shipped', 'Delivered', 'Cancelled'] %}
+        {% set status_list = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
         {% set current_status = order.order_status | capitalize %}
         
         <ul class="progress-bar">
             {% for status in status_list %}
-                <li class="{% if status_list.index(status) <= status_list.index(current_status) %}active{% endif %}">
+                <li class="{% if status in status_list and current_status in status_list and status_list.index(status) <= status_list.index(current_status) %}active{% endif %}">
                     <i class="ri-check-line"></i>
                     <span>{{ status }}</span>
                 </li>

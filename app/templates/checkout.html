@@ -9,7 +9,9 @@
 {% block content %}
 <main class="checkout-container">
     <h1>Finalize Checkout</h1>
-    <p>Selected Delivery Window: <strong>{{ delivery_window }}</strong></p>
+    <div class="delivery-window-alert">
+        <i class="ri-time-line"></i> Selected Delivery Window: <strong>{{ delivery_window }}</strong>
+    </div>
     
     <div class="checkout-grid">
         <div class="checkout-form-section">
@@ -49,12 +51,11 @@
                     <span class="item-total">Rs. {{ "%.2f" | format(item.price * item.quantity) }}</span>
                 </li>
                 {% else %}
-                <p>No items in session.</p>
+                <li style="padding: 16px 0; color: #718096;">No items in your cart session.</li>
                 {% endfor %}
             </ul>
 
             <div class="summary-totals">
-                <hr>
                 <div class="total-row">
                     <strong>Total Amount:</strong>
                     <span class="final-price">Rs. {{ "%.2f" | format(cart_total) }}</span>

@@ -352,9 +352,15 @@
 
 .google-btn-container {
     width: 100%;
+    display: block;
+    margin-bottom: 1rem;
+    min-height: 44px;    
+}
+
+.google-btn-container > div {
+    width: 100% !important;
     display: flex;
     justify-content: center;
-    margin-bottom: 1rem;
 }
 
 .google-mock-form {

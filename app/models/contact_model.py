@@ -12,8 +12,8 @@
 """
 
 from datetime import datetime
-from app.models.base_model import BaseModel   # ✅ absolute import
-from app.models.database import Database      # ✅ absolute import
+from app.models.base_model import BaseModel
+from app.models.database import Database
 
 
 class ContactMessage(BaseModel):
@@ -29,7 +29,7 @@ class ContactMessage(BaseModel):
     """
 
     @property
-    def table(self) -> str:                   # ✅ return type added
+    def table(self) -> str:                 
         """Tell BaseModel which database table to use."""
         return "contact_messages"
 

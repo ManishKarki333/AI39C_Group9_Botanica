@@ -16,8 +16,8 @@
 from __future__ import annotations
 from typing import Any
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models.base_model import BaseModel     # ✅ FIX: absolute import
-from app.models.database import Database        # ✅ FIX: absolute import
+from app.models.base_model import BaseModel     
+from app.models.database import Database       
 
 
 class User(BaseModel):
@@ -154,7 +154,7 @@ class User(BaseModel):
         user.profile_pic = data.get("profile_pic")
         user.certification_badge = data.get("certification_badge")
         user.is_active = data.get("is_active", 1)
-        user.set_hashed_password(data["password"])  # ✅ clean, no mangling
+        user.set_hashed_password(data["password"]) 
         return user
 
     def __str__(self) -> str:

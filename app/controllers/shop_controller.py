@@ -34,12 +34,10 @@ class ShopController(BaseController):
         query_param = request.args.get('q', '').strip()
         benefit_param = request.args.get('benefit', '').strip()
 
-        print(
-            f"DEBUG: query_param='{query_param}', benefit_param='{benefit_param}'")
+        print(f"DEBUG: query_param='{query_param}', benefit_param='{benefit_param}'")
 
         try:
             db = Database()
-            # Flattened SQL query to prevent formatting/placeholder issues
             sql = "SELECT id, common_name, scientific_name, description, benefit_category, price, image_url, stock_quantity, whatsapp_number FROM herbs WHERE 1=1"
             query_args = []
 
@@ -52,14 +50,12 @@ class ShopController(BaseController):
                 sql += " AND LOWER(benefit_category) = LOWER(%s)"
                 query_args.append(benefit_param)
 
-            # Ensure query_args is passed as a tuple
             raw_results = db.fetch_all(sql, tuple(query_args))
             db.close()
 
             formatted_herbs = []
             if raw_results:
                 for row in raw_results:
-                    # Adjust index mapping if your Database class returns dictionaries instead of tuples
                     formatted_herbs.append({
                         "id": row.get('id'),
                         "common_name": row.get('common_name'),
@@ -93,17 +89,14 @@ class ShopController(BaseController):
         search_query = request.args.get('search', '').strip()
         filter_benefit = request.args.get('filter', '').strip()
 
-        # Base SQL query
         query = "SELECT * FROM herbs WHERE 1=1"
         params = []
 
-        # Append search condition if present
         if search_query:
             query += " AND (common_name LIKE %s OR scientific_name LIKE %s)"
             search_term = f"%{search_query}%"
             params.extend([search_term, search_term])
 
-        # Append filter condition if present
         if filter_benefit:
             query += " AND benefit_category LIKE %s"
             filter_term = f"%{filter_benefit}%"
@@ -128,7 +121,6 @@ class ShopController(BaseController):
             flash("Herb record not found.", "danger")
             return redirect(url_for("shop.shop"))
 
-        # Fetch reviews for this herb
         reviews_query = """
             SELECT r.*, u.name as user_name 
             FROM reviews r 
@@ -139,7 +131,6 @@ class ShopController(BaseController):
         reviews = db.fetch_all(reviews_query, (id,))
         db.close()
 
-        # Calculate review statistics
         total_reviews = len(reviews)
         average_rating = 0.0
         if total_reviews > 0:
@@ -174,7 +165,6 @@ class ShopController(BaseController):
             flash("Invalid rating selected.", "danger")
             return redirect(url_for("shop.herb_details", id=herb_id))
 
-        # Handle optional review image upload
         image_url = None
         review_image = request.files.get("review_image")
         if review_image and review_image.filename:
@@ -182,21 +172,21 @@ class ShopController(BaseController):
             if not os.path.exists(upload_dir):
                 os.makedirs(upload_dir)
 
-            ext = os.path.splitext(review_image.filename)[1]
-            unique_filename = f"review_{uuid.uuid4().hex}{ext}"
-            save_path = os.path.join(upload_dir, unique_filename)
-            review_image.save(save_path)
-            image_url = f'/static/uploads/{unique_filename}'
+            ext = os.path.splitext(review_image.filename)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.webp']:
+                unique_filename = f"review_{uuid.uuid4().hex}{ext}"
+                save_path = os.path.join(upload_dir, unique_filename)
+                review_image.save(save_path)
+                image_url = f'/static/uploads/{unique_filename}'
 
-        # Save to database
         db = Database()
         query = """
             INSERT INTO reviews (herb_id, user_id, rating, comment, image_url, created_at)
             VALUES (%s, %s, %s, %s, %s, NOW())
         """
         try:
-            db.execute(query, (herb_id, session.get(
-                "user_id"), rating, comment, image_url))
+            db.execute(query, (herb_id, session.get("user_id"), rating, comment, image_url))
+            if hasattr(db, 'commit'): db.commit()
             flash("Your review has been submitted successfully!", "success")
         except Exception as e:
             print(f"Error saving review: {e}")
@@ -205,6 +195,48 @@ class ShopController(BaseController):
             db.close()
 
         return redirect(url_for("shop.herb_details", id=herb_id))
+
+    def delete_review(self, review_id):
+        """Secure portal endpoint allowing authors or admins to drop reviews."""
+        if 'user_id' not in session:
+            flash("Please log in to manage your content.", "danger")
+            return redirect(url_for("auth.login"))
+
+        user_id = session.get("user_id")
+        user_role = session.get("role")
+
+        db = Database()
+        try:
+            review = db.fetch_one("SELECT id, user_id, herb_id, image_url FROM reviews WHERE id = %s", (review_id,))
+            
+            if not review:
+                flash("Review record untraceable.", "danger")
+                return redirect(url_for("shop.shop"))
+                
+            herb_id = review.get('herb_id')
+
+            if review.get('user_id') != user_id and user_role != "admin":
+                flash("Unauthorized deletion context requested.", "danger")
+                return redirect(url_for("shop.herb_details", id=herb_id))
+
+            if review.get('image_url'):
+                relative_path = review['image_url'].lstrip('/')
+                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+                absolute_image_path = os.path.join(base_dir, relative_path)
+                if os.path.exists(absolute_image_path):
+                    os.remove(absolute_image_path)
+
+            db.execute("DELETE FROM reviews WHERE id = %s", (review_id,))
+            if hasattr(db, 'commit'): db.commit()
+            flash("Your review has been removed successfully.", "success")
+            return redirect(url_for("shop.herb_details", id=herb_id))
+
+        except Exception as e:
+            print(f"Error executing review drop process: {e}")
+            flash("System failed to complete review deletion.", "danger")
+            return redirect(url_for("shop.shop"))
+        finally:
+            db.close()
 
     def add_product(self):
         """Secure multi-part form portal for inventory deployment."""
@@ -220,6 +252,7 @@ class ShopController(BaseController):
             benefit_category = request.form.get("benefit_category", "")
             stock_quantity = request.form.get("stock_quantity", 0)
             whatsapp_number = request.form.get("whatsapp_number", "").strip()
+            reference_url = request.form.get("reference_url", "").strip()
 
             product_image = request.files.get('product_image')
             image_url = '/static/uploads/default_herb.png'
@@ -229,32 +262,32 @@ class ShopController(BaseController):
                 if not os.path.exists(upload_dir):
                     os.makedirs(upload_dir)
 
-                ext = os.path.splitext(product_image.filename)[1]
-                unique_filename = f"{uuid.uuid4().hex}{ext}"
-                save_path = os.path.join(upload_dir, unique_filename)
-                product_image.save(save_path)
-                image_url = f'/static/uploads/{unique_filename}'
+                ext = os.path.splitext(product_image.filename)[1].lower()
+                if ext in ['.jpg', '.jpeg', '.png', '.webp']:
+                    unique_filename = f"{uuid.uuid4().hex}{ext}"
+                    save_path = os.path.join(upload_dir, unique_filename)
+                    product_image.save(save_path)
+                    image_url = f'/static/uploads/{unique_filename}'
 
             try:
                 db = Database()
                 query = """INSERT INTO herbs 
-                        (common_name, scientific_name, description, price, benefit_category, stock_quantity, image_url, merchant_id, whatsapp_number) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                        (common_name, scientific_name, description, price, benefit_category, stock_quantity, image_url, merchant_id, whatsapp_number, reference_url) 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
                 db.execute(query, (
                     common_name, scientific_name, description, price,
-                    benefit_category, stock_quantity, image_url, session.get(
-                        "user_id"), whatsapp_number
+                    benefit_category, stock_quantity, image_url, session.get("user_id"), whatsapp_number, reference_url
                 ))
+                if hasattr(db, 'commit'): db.commit()
 
-                # Fetch the ID of the new herb to seed the price history
-                new_herb = db.fetch_one(
-                    "SELECT id FROM herbs WHERE scientific_name = %s", (scientific_name,))
+                new_herb = db.fetch_one("SELECT id FROM herbs WHERE scientific_name = %s", (scientific_name,))
                 if new_herb:
                     db.execute(
                         "INSERT INTO price_history (herb_id, price) VALUES (%s, %s)",
                         (new_herb["id"], price)
                     )
+                    if hasattr(db, 'commit'): db.commit()
 
                 db.close()
                 flash("Product published successfully!", "success")
@@ -265,17 +298,21 @@ class ShopController(BaseController):
             return redirect(url_for("auth.merchant_dashboard"))
 
     def update_product(self, id):
-        """Secure multi-part form portal for updating a product's price and stock."""
+        """Secure multi-part form portal for updating a product's details and price/stock."""
         if session.get("role") != "merchant":
             flash("Unauthorized entry context.", "danger")
             return redirect(url_for("auth.login"))
 
         if request.method == "POST":
+            common_name = request.form.get("common_name", "").strip()
+            scientific_name = request.form.get("scientific_name", "").strip()
             price = request.form.get("price")
             stock_quantity = request.form.get("stock_quantity")
+            whatsapp_number = request.form.get("whatsapp_number", "").strip()
+            reference_url = request.form.get("reference_url", "").strip()
 
-            if not price or stock_quantity is None:
-                flash("Price and Stock Quantity are required.", "danger")
+            if not common_name or not scientific_name or not price or stock_quantity is None:
+                flash("Name, Scientific Name, Price, and Stock Quantity are required.", "danger")
                 return redirect(url_for("auth.merchant_dashboard"))
 
             try:
@@ -283,62 +320,128 @@ class ShopController(BaseController):
                 stock_quantity = int(stock_quantity)
 
                 db = Database()
-                # Fetch current herb details to see if price changed
-                herb = db.fetch_one(
-                    "SELECT price, merchant_id FROM herbs WHERE id = %s", (id,))
+                herb = db.fetch_one("SELECT price, merchant_id FROM herbs WHERE id = %s", (id,))
                 if not herb or herb["merchant_id"] != session.get("user_id"):
                     flash("Unauthorized or product not found.", "danger")
                     db.close()
                     return redirect(url_for("auth.merchant_dashboard"))
 
-                # Update stock and price
                 db.execute(
-                    "UPDATE herbs SET price = %s, stock_quantity = %s WHERE id = %s",
-                    (price, stock_quantity, id)
+                    "UPDATE herbs SET common_name = %s, scientific_name = %s, price = %s, stock_quantity = %s, whatsapp_number = %s, reference_url = %s WHERE id = %s",
+                    (common_name, scientific_name, price, stock_quantity, whatsapp_number, reference_url, id)
                 )
+                if hasattr(db, 'commit'): db.commit()
 
-                # If price changed, log in history
                 if float(herb["price"]) != price:
                     db.execute(
                         "INSERT INTO price_history (herb_id, price) VALUES (%s, %s)",
                         (id, price)
                     )
+                    if hasattr(db, 'commit'): db.commit()
 
                 db.close()
                 flash("Product updated successfully!", "success")
             except Exception as e:
                 print(f"Error updating product: {e}")
-                flash("Failed to update product.", "danger")
+                if "Duplicate entry" in str(e) or "1062" in str(e):
+                    flash("Failed to update product: The scientific name is already in use by another herb.", "danger")
+                else:
+                    flash("Failed to update product.", "danger")
 
             return redirect(url_for("auth.merchant_dashboard"))
 
+    def delete_product(self, id):
+        """Secure endpoint for deleting a product from inventory."""
+        if session.get("role") != "merchant":
+            flash("Unauthorized entry context.", "danger")
+            return redirect(url_for("auth.login"))
+
+        db = Database()
+        try:
+            # Check if product belongs to merchant
+            herb = db.fetch_one("SELECT merchant_id, image_url, common_name FROM herbs WHERE id = %s", (id,))
+            if not herb or herb["merchant_id"] != session.get("user_id"):
+                flash("Product not found or unauthorized.", "danger")
+                db.close()
+                return redirect(url_for("auth.merchant_dashboard"))
+
+            # Delete the product image if it's not the default image
+            if herb.get("image_url") and herb["image_url"] != '/static/uploads/default_herb.png':
+                relative_path = herb["image_url"].lstrip('/')
+                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+                absolute_image_path = os.path.join(base_dir, relative_path)
+                if os.path.exists(absolute_image_path):
+                    try:
+                        os.remove(absolute_image_path)
+                    except Exception as img_err:
+                        print(f"Error removing product image file: {img_err}")
+
+            # Delete from database
+            db.execute("DELETE FROM herbs WHERE id = %s", (id,))
+            if hasattr(db, 'commit'): db.commit()
+            
+            flash(f"Product '{herb['common_name']}' deleted successfully.", "success")
+        except Exception as e:
+            print(f"Error deleting product: {e}")
+            flash("Failed to delete product.", "danger")
+        finally:
+            db.close()
+
+        return redirect(url_for("auth.merchant_dashboard"))
+
+    def herb_detail_library(self, id):
+        """Fetch details of a herb specifically for the academic reference library view."""
+        db = Database()
+        herb = db.fetch_one("SELECT * FROM herbs WHERE id = %s", (id,))
+
+        if not herb:
+            db.close()
+            flash("Herb record not found.", "danger")
+            return redirect(url_for("shop.herb_library"))
+
+        reviews_query = """
+            SELECT r.*, u.name as user_name 
+            FROM reviews r 
+            JOIN users u ON r.user_id = u.id 
+            WHERE r.herb_id = %s 
+            ORDER BY r.created_at DESC
+        """
+        reviews = db.fetch_all(reviews_query, (id,))
+        db.close()
+
+        total_reviews = len(reviews)
+        average_rating = 0.0
+        if total_reviews > 0:
+            average_rating = sum(r['rating'] for r in reviews) / total_reviews
+            average_rating = round(average_rating, 1)
+
+        return render_template(
+            "herb_detail_library.html",
+            herb=herb,
+            reviews=reviews,
+            average_rating=average_rating,
+            total_reviews=total_reviews
+        )
+
     def api_price_history(self, herb_id):
-        """Fetch the price history of a product for the chart."""
         if session.get("role") != "merchant":
             return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
         db = Database()
-        # Check if product belongs to merchant
-        herb = db.fetch_one(
-            "SELECT merchant_id, price FROM herbs WHERE id = %s", (herb_id,))
+        herb = db.fetch_one("SELECT merchant_id, price FROM herbs WHERE id = %s", (herb_id,))
         if not herb or herb["merchant_id"] != session.get("user_id"):
             db.close()
             return jsonify({"status": "error", "message": "Unauthorized"}), 403
 
-        # Fetch history
-        history = db.fetch_all(
-            "SELECT price, created_at FROM price_history WHERE herb_id = %s ORDER BY created_at ASC", (herb_id,))
+        history = db.fetch_all("SELECT price, created_at FROM price_history WHERE herb_id = %s ORDER BY created_at ASC", (herb_id,))
 
-        # If history is empty, seed it with the current price of the herb
         if not history:
-            db.execute(
-                "INSERT INTO price_history (herb_id, price) VALUES (%s, %s)", (herb_id, herb["price"]))
-            history = db.fetch_all(
-                "SELECT price, created_at FROM price_history WHERE herb_id = %s ORDER BY created_at ASC", (herb_id,))
+            db.execute("INSERT INTO price_history (herb_id, price) VALUES (%s, %s)", (herb_id, herb["price"]))
+            if hasattr(db, 'commit'): db.commit()
+            history = db.fetch_all("SELECT price, created_at FROM price_history WHERE herb_id = %s ORDER BY created_at ASC", (herb_id,))
 
         db.close()
 
-        # Format history for JSON response
         formatted_history = []
         for record in history:
             date_str = record["created_at"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(
@@ -353,17 +456,11 @@ class ShopController(BaseController):
             "history": formatted_history
         })
 
-    # ────────────────────────────────────────────────────────────────
-    #  SHOPPING CART TRANSACTION MODULES (RESILIENT TYPE-MATCHING)
-    # ────────────────────────────────────────────────────────────────
-
     def view_cart(self):
-        """Renders the transactional checkout cart template page."""
         cart_items = session.get('cart', [])
         return render_template('cart.html', items=cart_items)
 
     def add_to_cart(self):
-        """Asynchronously appends an organic item to the session array."""
         if request.method != "POST":
             return jsonify({"status": "error", "message": "POST method expected"}), 405
 
@@ -374,15 +471,12 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Missing product identifier"}), 400
 
         db = Database()
-        # Added merchant_id to the SELECT query
-        herb = db.fetch_one(
-            "SELECT id, common_name, scientific_name, price, image_url, merchant_id FROM herbs WHERE id = %s", (herb_id,))
+        herb = db.fetch_one("SELECT id, common_name, scientific_name, price, image_url, merchant_id FROM herbs WHERE id = %s", (herb_id,))
         db.close()
 
         if not herb:
             return jsonify({"status": "error", "message": "Product record untraceable"}), 442
 
-        # Map merchant_id along with other fields
         herb_mapped = {
             "id": herb['id'],
             "common_name": herb['common_name'],
@@ -396,15 +490,11 @@ class ShopController(BaseController):
             session['cart'] = []
 
         cart = session['cart']
-
-        # Compare IDs safely as plain strings
-        existing_item = next((item for item in cart if str(
-            item['id']) == str(herb_mapped['id'])), None)
+        existing_item = next((item for item in cart if str(item['id']) == str(herb_mapped['id'])), None)
 
         if existing_item:
             existing_item['quantity'] += 1
         else:
-            # Append merchant_id to the cart item dictionary
             cart.append({
                 'id': herb_mapped['id'],
                 'common_name': herb_mapped['common_name'],
@@ -425,7 +515,6 @@ class ShopController(BaseController):
         }), 200
 
     def update_cart_quantity(self):
-        """Adjusts values for + / - increment updates seamlessly."""
         data = request.get_json() or {}
         herb_id = data.get('herb_id')
         action = data.get('action')
@@ -434,7 +523,6 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Session target missing"}), 400
 
         cart = session['cart']
-        # Standardized tracking keys to safe string types
         item = next((i for i in cart if str(i['id']) == str(herb_id)), None)
 
         if item:
@@ -458,7 +546,6 @@ class ShopController(BaseController):
         return jsonify({"status": "error", "message": "Item missing from basket context"}), 442
 
     def remove_from_cart(self):
-        """Completely purges target item index cleanly from session."""
         data = request.get_json() or {}
         herb_id = data.get('herb_id')
 
@@ -466,9 +553,7 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Target context missing"}), 400
 
         cart = session['cart']
-        # Standardized matching comparison logic safely
-        updated_cart = [item for item in cart if str(
-            item['id']) != str(herb_id)]
+        updated_cart = [item for item in cart if str(item['id']) != str(herb_id)]
 
         session['cart'] = updated_cart
         session.modified = True
@@ -481,20 +566,16 @@ class ShopController(BaseController):
         }), 200
 
     def checkout_page(self):
-        """Step 1: Render the checkout payment page via GET."""
         if 'cart' not in session or not session['cart']:
             flash("Your basket is empty.", "warning")
             return redirect(url_for('shop.shop'))
 
-        # Grab the delivery window from URL query string and save to session
         delivery_window = request.args.get('window', '')
         session['selected_delivery_window'] = delivery_window
 
-        # Calculate subtotal/total securely from the list session
         cart_total = 0.0
         for item in session.get('cart', []):
-            cart_total += float(item.get('price', 0)) * \
-                int(item.get('quantity', 1))
+            cart_total += float(item.get('price', 0)) * int(item.get('quantity', 1))
 
         return render_template('checkout.html', delivery_window=delivery_window, cart_total=cart_total)
 
@@ -503,11 +584,9 @@ class ShopController(BaseController):
             flash("Your session expired or your basket is empty.", "warning")
             return redirect(url_for('shop.shop'))
 
-        # Securely recalculate the total from the list session
         cart_total = 0.0
         for item in session.get('cart', []):
-            cart_total += float(item.get('price', 0)) * \
-                int(item.get('quantity', 1))
+            cart_total += float(item.get('price', 0)) * int(item.get('quantity', 1))
 
         delivery_window = session.get('selected_delivery_window', '')
         user_id = session.get('user_id')
@@ -526,16 +605,15 @@ class ShopController(BaseController):
 
         db = Database()
         try:
-            # Added delivery_date and CURDATE() to the insert query
             order_query = """
                 INSERT INTO orders (user_id, merchant_id, total_amount, shipping_address, delivery_date, delivery_window, order_status, created_at)
                 VALUES (%s, %s, %s, %s, CURDATE(), %s, 'Pending', NOW())
             """
-            db.execute(order_query, (user_id, merchant_id,
-                       cart_total, shipping_address, delivery_window))
+            db.execute(order_query, (user_id, merchant_id, cart_total, shipping_address, delivery_window))
+            if hasattr(db, 'commit'): db.commit()
 
             order_id_cursor = db.fetch_one("SELECT LAST_INSERT_ID()")
-            order_id = order_id_cursor[0] if order_id_cursor else None
+            order_id = order_id_cursor.get('LAST_INSERT_ID()') if order_id_cursor else None
 
             if order_id:
                 item_query = """
@@ -543,12 +621,8 @@ class ShopController(BaseController):
                     VALUES (%s, %s, %s, %s)
                 """
                 for item in cart_items:
-                    db.execute(item_query, (
-                        order_id,
-                        item['id'],
-                        item['quantity'],
-                        item['price']
-                    ))
+                    db.execute(item_query, (order_id, item['id'], item['quantity'], item['price']))
+                if hasattr(db, 'commit'): db.commit()
 
             session.pop('cart', None)
             session.pop('selected_delivery_window', None)
@@ -558,22 +632,17 @@ class ShopController(BaseController):
 
         except Exception as e:
             print("Database Insert Error:", e)
-            flash(
-                "An error occurred while processing your order. Please try again.", "danger")
+            flash("An error occurred while processing your order. Please try again.", "danger")
             return redirect(url_for('shop.view_cart'))
-
         finally:
             db.close()
 
     def track_order_status(self, order_id):
-        """Fetch order status and details for a customer using actual db schema."""
         if 'user_id' not in session:
             flash("Please log in to view your order status.", "warning")
             return redirect(url_for('auth.login'))
 
         db = Database()
-
-        # Match schema column names: user_id, order_status
         order_query = """
             SELECT id, order_status, total_amount, shipping_address, delivery_date, delivery_window, created_at 
             FROM orders WHERE id = %s AND user_id = %s
@@ -585,7 +654,6 @@ class ShopController(BaseController):
             flash("Order not found or access denied.", "danger")
             return redirect(url_for('shop.shop'))
 
-        # Join order_items with herbs to get item details and images using schema keys
         items_query = """
             SELECT oi.id, oi.quantity, oi.price_at_purchase, h.common_name, h.scientific_name, h.image_url
             FROM order_items oi
@@ -595,4 +663,11 @@ class ShopController(BaseController):
         order_items = db.fetch_all(items_query, (order_id,))
         db.close()
 
-        return render_template('order_status.html', order=order, items=order_items)
+        status_steps = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+
+        return render_template(
+            'order_status.html', 
+            order=order, 
+            items=order_items, 
+            status_list=status_steps
+        )
