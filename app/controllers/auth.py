@@ -123,6 +123,9 @@ class AuthController(BaseController):
             flash("Please log in to access your account.", "warning")
             return redirect(url_for('auth.login'))
 
+        if session.get('role') == 'admin':
+            return redirect(url_for('admin.dashboard'))
+
         user_id = session['user_id']
         db = Database()
 
