@@ -74,16 +74,4 @@ def image_or_default(image_path, default_type='herb'):
     elif clean_path.startswith('static/'):
         clean_path = clean_path[7:]
         
-    full_path = os.path.join(static_folder, clean_path)
-    if os.path.exists(full_path):
-        return image_path
-    else:
-        return get_default_image(default_type)
-
-
-def get_default_image(default_type):
-    if default_type == 'avatar' or default_type == 'profile':
-        return '/static/img/default_avatar.png'
-    elif default_type == 'document' or default_type == 'cert':
-        return '/static/img/logo.png'
-    return '/static/img/default_herb.png'
+   
