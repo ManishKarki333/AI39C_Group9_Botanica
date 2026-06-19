@@ -138,4 +138,27 @@ class User(BaseModel):
         db.close()
         return result is not None
 
-    
+    @classmethod
+    def from_db(cls, data: dict[str, Any] | None) -> User | None:
+        """
+        Create a User object from a database row dictionary.
+        Uses set_hashed_password() to avoid name-mangling issues.
+        """
+        if data is None:
+            return None
+
+        user = cls()
+        user.name = data["name"]
+        user.email = data["email"]
+        user.role = data["role"]
+        user.profile_pic = data.get("profile_pic")
+        user.certification_badge = data.get("certification_badge")
+        user.is_active = data.get("is_active", 1)
+        user.set_hashed_password(data["password"]) 
+        return user
+
+    def __str__(self) -> str:
+        return f"User(name={self.name}, email={self.email}, role={self.role})"
+
+    def __repr__(self) -> str:
+        return f"<User email={self.email}>"
