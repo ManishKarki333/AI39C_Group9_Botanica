@@ -30,6 +30,7 @@ class AuthController(BaseController):
         self.user_model = User()
         self.order_model = Order()
 
+     # ── Helpers ──────────────────────────────────────────────
     def is_logged_in(self) -> bool:
         return "user_id" in session
 
