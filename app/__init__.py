@@ -50,4 +50,13 @@ def create_app():
         return dict(cart_count=cart_count)
 
     # 1. Instantiate the routing blueprint classes
-   
+    auth_router = AuthRoutes()
+    shop_router = ShopRoutes()
+    order_router = OrderRoutes()
+
+    # 2. Register the returned blueprints natively into the app instance context
+    app.register_blueprint(auth_router.register())
+    app.register_blueprint(shop_router.register(), url_prefix='/shop')
+    app.register_blueprint(order_router.register())
+    
+    return app
