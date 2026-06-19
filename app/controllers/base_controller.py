@@ -45,7 +45,4 @@ class BaseController:
         """Get the logged-in user's role from session."""
         return session.get("role")
 
-    def flash_and_redirect(self, message, category, endpoint):
-        """Show a flash message and redirect to a page."""
-        flash(message, category)
-        return redirect(url_for(endpoint))
+    
