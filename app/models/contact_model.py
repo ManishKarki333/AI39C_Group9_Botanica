@@ -75,4 +75,13 @@ class ContactMessage(BaseModel):
         )
         db.close()
 
-   
+    @property
+    def full_name(self):
+        """Return the full name of the sender."""
+        return f"{self.first_name} {self.last_name}"
+
+    def __str__(self):
+        return f"ContactMessage(from={self.full_name}, subject={self.subject})"
+
+    def __repr__(self):
+        return f"<ContactMessage email={self.email}>"
