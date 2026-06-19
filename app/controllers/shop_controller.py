@@ -858,4 +858,12 @@ class ShopController(BaseController):
                     "price_at_purchase": float(item["price_at_purchase"])
                 })
 
-            
+            return jsonify({
+                "status": "success",
+                "items": formatted_items
+            }), 200
+        except Exception as e:
+            print("API Order Items Error:", e)
+            return jsonify({"status": "error", "message": "Internal server error"}), 500
+        finally:
+            db.close()
