@@ -18,7 +18,3 @@ MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 # SMTP Email Configuration (For sending OTP registration verification codes via Gmail)
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_EMAIL = os.getenv("SMTP_EMAIL")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
