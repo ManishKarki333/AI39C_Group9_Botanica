@@ -19,5 +19,25 @@ class Order:
 
     def update_status(self, order_id, new_status, merchant_id):
         """
-        
+        Update order status, but only if the order belongs to this merchant.
+        This ensures a merchant can only update their own orders.
+        """
+        db = Database()
+        try:
+            query = """
+                UPDATE orders 
+                SET order_status = %s 
+                WHERE id = %s AND merchant_id = %s
+            """
+            rows_affected = db.execute(
+                query, (new_status, order_id, merchant_id))
+            print(f"--- DEBUG UPDATE ---")
+            print(f"Order ID: {order_id} (Type: {type(order_id)})")
+            print(f"New Status: {new_status}")
+            print(f"Merchant ID: {merchant_id} (Type: {type(merchant_id)})")
+            print(f"Rows Impacted: {rows_affected}")
+            print(f"--------------------")
+            return rows_affected > 0  # Returns True only if an order was actually updated
+        finally:
+            db.close()
 
