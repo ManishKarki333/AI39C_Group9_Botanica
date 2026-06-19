@@ -19,13 +19,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from app.utils import send_otp_email
 
-<<<<<<< HEAD
-# Security: whitelist of self-registerable roles
 ALLOWED_ROLES = {"user", "merchant"}
-# Basic email format validator
-=======
-ALLOWED_ROLES = {"user", "merchant"}
->>>>>>> 92c7bafab65d30cf265b62c3300b9d90e7e35eb1
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
