@@ -16,50 +16,67 @@
         <div class="search-container">
             <div class="search-wrapper">
                 <i class="ri-search-line search-icon"></i>
-                <input type="text" id="global-search" placeholder="Search by common or scientific name..." autocomplete="off">
+                <input type="text" id="global-search" placeholder="Search by common or scientific name..." autocomplete="off" value="{{ search }}">
             </div>
         </div>
     </header>
+
+    {% if search or current_category %}
+    <section class="search-feedback-banner">
+        <div class="container">
+            <h3>Marketplace Results</h3>
+            <p>
+                Showing marketplace items for: 
+                {% if search %}<strong>"{{ search }}"</strong>{% endif %}
+                {% if search and current_category %} and {% endif %}
+                {% if current_category %}category: <strong>"{{ current_category }}"</strong>{% endif %}
+            </p>
+            <a href="{{ url_for('shop.shop') }}" class="btn-clear-search">Clear Filters / View All</a>
+        </div>
+    </section>
+    {% endif %}
 
     <div class="shop-layout">
         <aside class="filter-sidebar">
             <div class="sidebar-sticky">
                 <div class="sidebar-header">
                     <h3><i class="ri-filter-3-line"></i> Filter Benefits</h3>
-                    <button id="clear-all-filters" class="clear-btn hidden">Clear All</button>
+                    <button id="clear-all-filters" class="clear-btn {% if not current_category %}hidden{% endif %}">Clear</button>
                 </div>
                 
                 <ul class="benefit-list">
+                    {% for cat in categories %}
                     <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Sleep">
-                            <span class="category-icon"><i class="ri-moon-clear-line"></i></span>
-                            <span class="category-label">Sleep & Relaxation</span>
+                        <button class="benefit-card-toggle filter-btn {% if current_category == cat.name %}active{% endif %}" data-benefit="{{ cat.name }}">
+                            <span class="category-icon">
+                                {% if cat.name == 'Sleep' %}
+                                    <i class="ri-moon-clear-line"></i>
+                                {% elif cat.name == 'Digestion' %}
+                                    <i class="ri-restaurant-line"></i>
+                                {% elif cat.name == 'Immunity' %}
+                                    <i class="ri-shield-flash-line"></i>
+                                {% elif cat.name == 'Energy' %}
+                                    <i class="ri-thunderstorms-line"></i>
+                                {% else %}
+                                    <i class="ri-leaf-line"></i>
+                                {% endif %}
+                            </span>
+                            <span class="category-label">
+                                {% if cat.name == 'Sleep' %}
+                                    Sleep & Relaxation
+                                {% elif cat.name == 'Digestion' %}
+                                    Digestive Health
+                                {% elif cat.name == 'Immunity' %}
+                                    Immune Support
+                                {% elif cat.name == 'Energy' %}
+                                    Energy & Focus
+                                {% else %}
+                                    {{ cat.name }}
+                                {% endif %}
+                            </span>
                         </button>
                     </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Digestion">
-                            <span class="category-icon"><i class="ri-restaurant-line"></i></span>
-                            <span class="category-label">Digestive Health</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Immunity">
-                            <span class="category-icon"><i class="ri-shield-flash-line"></i></span>
-                            <span class="category-label">Immune Support</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Energy">
-                            <span class="category-icon"><i class="ri-thunderstorms-line"></i></span>
-                            <span class="category-label">Energy & Focus</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn" data-benefit="Respiratory">
-                            <span class="category-icon"><i class="ri-windy-line"></i></span>
-                            <span class="category-label">Respiratory Health</span>
-                        </button>
-                    </li>
+                    {% endfor %}
                 </ul>
             </div>
         </aside>
@@ -74,43 +91,19 @@
             <div class="products-grid" id="product-results-grid">
                 {% if herbs %}
                     {% for herb in herbs %}
-<<<<<<< HEAD
-                    <article class="product-card" data-benefits="{{ herb.benefit_category }}">
-                        <div class="card-image-wrapper">
-                            {% if herb.image_url %}
-                                <img src="{{ url_for('static', filename='uploads/' + herb.image_url) }}" alt="{{ herb.common_name }}" class="product-image">
-                            {% else %}
-                                <div class="fallback-placeholder">
-                                    <i class="ri-image-line"></i>
-                                </div>
-                            {% endif %}
-                            <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
-                        </div>
-
-                        <div class="card-body">
-                            <div class="meta-names">
-                                <h2 class="common-name">{{ herb.common_name }}</h2>
-                                <p class="scientific-name"><em>{{ herb.scientific_name }}</em></p>
-                            </div>
-
-                            <p class="herb-excerpt">{{ herb.description|truncate(85) }}</p>
-
-=======
                     <article class="product-card {% if herb.on_vacation %}on-vacation{% endif %}" data-benefits="{{ herb.benefit_category }}">
                         
                         <a href="{{ url_for('shop.herb_details', id=herb.id) }}" class="product-card-media-link" aria-label="View details for {{ herb.common_name }}">
                             <div class="card-image-wrapper">
                                 {% if herb.on_vacation %}
                                     <span class="vacation-banner">On Vacation</span>
+                                {% elif herb.stock_quantity == 0 %}
+                                    <span class="vacation-banner" style="background-color:#e53e3e; color:#fff;">Out of Stock</span>
+                                {% elif herb.stock_quantity <= 5 %}
+                                    <span class="vacation-banner" style="background-color:#dd6b20; color:#fff;">Only {{ herb.stock_quantity }} Left</span>
                                 {% endif %}
 
-                                {% if herb.image_url %}
-                                    <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
-                                {% else %}
-                                    <div class="fallback-placeholder">
-                                        <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
-                                    </div>
-                                {% endif %}
+                                <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" class="product-image">
                                 <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
                             </div>
                         </a>
@@ -125,27 +118,27 @@
 
                             <p class="herb-excerpt">{{ herb.description|truncate(85) }}</p>
                             
->>>>>>> fc2896550ec8bc13a3dd7735dbbd65a7fd2c7a68
-                            <div class="card-footer">
+                            <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                                 <div class="price-block">
                                     <span class="currency">Rs.</span>
                                     <span class="price-value">{{ herb.price }}</span>
                                     <span class="unit">/{{ herb.unit_weight or '100g' }}</span>
                                 </div>
-<<<<<<< HEAD
-
-                                <form action="{{ url_for('auth.add_to_cart', herb_id=herb.id) }}" method="POST">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit" class="action-add-cart" title="Add to Cart">
-                                        <i class="ri-shopping-bag-4-line"></i>
-                                    </button>
-                                </form>
-=======
                                 
-                                <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart" {% if herb.on_vacation %}disabled{% endif %}>
-                                    <i class="ri-shopping-cart-2-line"></i>
-                                </button>
->>>>>>> fc2896550ec8bc13a3dd7735dbbd65a7fd2c7a68
+                                <div style="display:flex; gap:6px;">
+                                    {% if herb.whatsapp_number %}
+                                        <a href="https://wa.me/{{ herb.whatsapp_number.replace('+', '').replace(' ', '') }}?text=Hello!%20I%20have%20an%20inquiry%20about%20{{ herb.common_name | urlencode }}%20on%20Botanica." target="_blank" class="action-whatsapp" title="WhatsApp Inquiry" style="display:inline-flex; align-items:center; justify-content:center; background:#25d366; color:#fff; border:none; padding:8px 10px; border-radius:8px; font-size:1.1rem; text-decoration:none;">
+                                            <i class="ri-whatsapp-line"></i>
+                                        </a>
+                                    {% endif %}
+                                    <button class="action-add-cart" data-id="{{ herb.id }}" title="Add to Cart" {% if herb.on_vacation or herb.stock_quantity == 0 %}disabled{% endif %}>
+                                        {% if herb.stock_quantity == 0 %}
+                                            <span style="font-size:11px; font-weight:600; padding:0 4px;">Out</span>
+                                        {% else %}
+                                            <i class="ri-shopping-cart-2-line"></i>
+                                        {% endif %}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </article>
@@ -158,16 +151,16 @@
                     </div>
                     <h4>No Botanicals Found</h4>
                     <p>We couldn't find any items matching your exact query. Try refining your spelling or expanding your health criteria filters.</p>
+                    <a href="{{ url_for('shop.shop') }}" class="btn btn-primary" style="margin-top: 1rem;">Reset Store</a>
                 </div>
             </div>
         </section>
     </div>
 </main>
 {% endblock %}
-<<<<<<< HEAD
-=======
 
 {% block js %}
 <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 {% endblock %}
->>>>>>> fc2896550ec8bc13a3dd7735dbbd65a7fd2c7a68
+

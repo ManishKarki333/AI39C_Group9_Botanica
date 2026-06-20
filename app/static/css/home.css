@@ -1,15 +1,15 @@
 /* --- Core Variables & Design Variables --- */
 :root {
-    --primary-forest: #1e3f35;
-    --primary-forest-hover: #152c25;
-    --accent-mint: #e2ece9;
-    --accent-gold: #dfb15b;
-    --text-dark: #2d3748;
-    --text-light: #718096;
-    --background-soft: #f7fafc;
-    --white: #ffffff;
+    --primary-forest: var(--text-brand, #0f3423);
+    --primary-forest-hover: #0a2519;
+    --accent-mint: var(--bg-surface-hover, #f3f5f0);
+    --accent-gold: var(--text-amber, #b45309);
+    --text-dark: var(--text-primary, #1e293b);
+    --text-light: var(--text-muted, #64748b);
+    --background-soft: var(--bg-primary, #fbfbf8);
+    --white: var(--bg-surface, #ffffff);
     --border-radius: 12px;
-    --box-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --box-shadow-soft: var(--shadow-premium, 0 10px 30px rgba(0, 0, 0, 0.02));
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -22,6 +22,26 @@
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
+.hero-logo-container {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.hero-logo-img {
+    max-width: 160px;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    background-color: #fbfbf8;
+    transition: transform 0.3s ease;
+}
+
+.hero-logo-img:hover {
+    transform: scale(1.05);
+}
+
 .hero-container {
     max-width: 900px;
     margin: 0 auto;
@@ -29,7 +49,7 @@
 
 .hero-badge {
     background-color: rgba(255, 255, 255, 0.15);
-    color: var(--accent-gold);
+    color: #cb9f4b; /* Hardcoded to clear background contrast conflicts */
     padding: 6px 16px;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -77,12 +97,12 @@
 }
 
 .btn-primary-home {
-    background-color: var(--accent-gold);
-    color: var(--primary-forest);
+    background-color: #16a34a; /* Swapped to the matching corporate template green */
+    color: var(--white);
 }
 
 .btn-primary-home:hover {
-    background-color: #cb9f4b;
+    background-color: #15803d;
     transform: translateY(-2px);
 }
 
@@ -202,7 +222,7 @@
 
 .portals-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1100px));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Fixed structural breaking flaw here */
     gap: 30px;
 }
 

@@ -25,3 +25,9 @@ instance/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# User / Merchant uploaded assets and images
+app/static/uploads/**
+!app/static/uploads/
+!app/static/uploads/*/
+!app/static/uploads/**/.gitkeep

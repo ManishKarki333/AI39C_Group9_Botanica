@@ -1,0 +1,6 @@
+Flask
+python-dotenv
+PyMySQL
+Flask-MySQLdb
+google-auth
+requests

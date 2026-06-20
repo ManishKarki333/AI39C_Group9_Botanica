@@ -59,11 +59,7 @@
             {% if items and items|length > 0 %}
                 {% for item in items %}
                 <div class="cart-item-card" data-herb-id="{{ item.id }}">
-                    {% if item.image_url %}
-                        <img src="{{ item.image_url }}" alt="{{ item.common_name }}" class="item-img">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Image" class="item-img">
-                    {% endif %}
+                    <img src="{{ item.image_url | image_or_default('herb') }}" alt="{{ item.common_name }}" class="item-img">
                     
                     <div class="item-details">
                         <h3>{{ item.common_name }}</h3>

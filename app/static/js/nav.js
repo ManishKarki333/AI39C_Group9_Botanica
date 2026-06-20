@@ -1,68 +1,51 @@
 document.addEventListener("DOMContentLoaded", () => {
-    
-    // --- 1. Element Hooks Registration ---
+    // 1. Element Hooks
     const themeToggleBtn = document.getElementById("theme-toggle-btn");
     const menuToggle = document.getElementById("menu-toggle-btn");
-    const navMenu = document.getElementById("main-nav-menu");
-    const currentTheme = localStorage.getItem("theme");
+    const navMenu = document.getElementById("main-nav-menu"); 
 
-    // --- 2. Dark Mode Module (US 2.3 / Local Storage Persistence) ---
+    if (!themeToggleBtn) {
+        console.warn("Nav Warning: Element with ID 'theme-toggle-btn' was not found in the DOM.");
+    }
 
-    /**
-     * Smoothly updates the visual aesthetic states of the interface theme toggle button icon
-     * @param {boolean} isDark 
-     */
+    // 2. Dark Mode Logic
     function updateThemeIcon(isDark) {
         if (!themeToggleBtn) return;
         const icon = themeToggleBtn.querySelector("i");
         if (icon) {
-            if (isDark) {
-                // Remix Icon filled sun when dark mode is enabled
-                icon.className = "ri-sun-fill util-icon"; 
-            } else {
-                // Remix Icon outline moon when light mode is enabled
-                icon.className = "ri-moon-line util-icon"; 
-            }
+            icon.className = isDark ? "ri-sun-fill util-icon" : "ri-moon-line util-icon";
         }
     }
 
-    // Initialize saved configuration parameters from local browser storage cache
-    if (currentTheme === "dark") {
-        document.documentElement.classList.add("dark-theme");
-        updateThemeIcon(true);
-    } else {
-        // Fallback default state setup
-        updateThemeIcon(false);
-    }
+    // Initialize icon based on the <html> class set by base.html inline script
+    const isCurrentlyDark = document.documentElement.classList.contains("dark-theme");
+    updateThemeIcon(isCurrentlyDark);
 
-    // Interactive Theme Toggle Listener Click Action
+    // Theme Toggle Click
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener("click", () => {
             document.documentElement.classList.toggle("dark-theme");
-            
-            const isDarkActive = document.documentElement.classList.contains("dark-theme");
-            localStorage.setItem("theme", isDarkActive ? "dark" : "light");
-            
-            updateThemeIcon(isDarkActive);
+            const isDark = document.documentElement.classList.contains("dark-theme");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            updateThemeIcon(isDark);
         });
     }
 
-    // --- 3. Responsive Mobile Drawer Fallback Safe Guards ---
-    // Defensively verifies elements to prevent runtime errors if responsive tokens are modified
+    // 3. Mobile Navigation Logic
     if (menuToggle && navMenu) {
         menuToggle.addEventListener("click", () => {
             const isExpanded = menuToggle.getAttribute("aria-expanded") === "true";
             
+            // Toggle States
             menuToggle.setAttribute("aria-expanded", !isExpanded);
             navMenu.classList.toggle("nav-menu--active");
             
+            // Update Toggle Icon
             const toggleIcon = menuToggle.querySelector("i");
             if (toggleIcon) {
-                if (navMenu.classList.contains("nav-menu--active")) {
-                    toggleIcon.className = "ri-close-line"; 
-                } else {
-                    toggleIcon.className = "ri-menu-line";  
-                }
+                toggleIcon.className = navMenu.classList.contains("nav-menu--active") 
+                    ? "ri-close-line" 
+                    : "ri-menu-line";
             }
         });
     }

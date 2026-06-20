@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Botanica</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
-    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </head>
 <body>
     <nav class="botanica-navbar">
         <div class="nav-container">
             <a href="{{ url_for('auth.home') }}" class="nav-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Botanica Logo" class="logo-image">
                 <span class="logo-text">Botanica</span>
             </a>
 
@@ -19,7 +19,7 @@
                 <li><a href="{{ url_for('shop.shop') }}" class="nav-link">Shop Herbs</a></li>
                 <li><a href="{{ url_for('auth.contact') }}" class="nav-link">Contact</a></li>
                 <li><a href="{{ url_for('shop.herb_library') }}" class="nav-link">Library</a></li>
-
+                <li><a href="{{ url_for('auth.faq') }}" class="nav-link">FAQ</a></li>
                 {% if session.get('user_id') and session.get('role') == 'merchant' %}
                     <li><a href="{{ url_for('auth.merchant_dashboard') }}" class="nav-link">Merchant Portal</a></li>
                 {% endif %}
@@ -28,13 +28,19 @@
             <div class="nav-utilities">
                 <a href="{{ url_for('shop.view_cart') }}" class="util-btn cart-anchor" aria-label="View Shopping Cart">
                     <i class="ri-shopping-cart-line util-icon"></i>
-                    <span class="cart-badge">0</span>
+                    <span class="cart-badge" id="navbar-cart-count">{{ cart_count }}</span>
                 </a>
 
                 {% if session.get('user_id') %}
-                    <a href="/account" class="util-btn" aria-label="User Account Settings">
-                        <i class="ri-user-line util-icon"></i>
-                    </a>
+                    {% if session.get('role') == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="util-btn" aria-label="Master Admin Dashboard" title="Master Admin Dashboard">
+                            <i class="ri-shield-user-line util-icon"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.profile') }}" class="util-btn" aria-label="User Account Settings" title="Account Settings">
+                            <i class="ri-user-line util-icon"></i>
+                        </a>
+                    {% endif %}
                     
                     <a href="{{ url_for('auth.logout') }}" class="auth-nav-btn logout-btn" aria-label="Log out of application">
                         <i class="ri-logout-box-r-line btn-icon"></i> Logout

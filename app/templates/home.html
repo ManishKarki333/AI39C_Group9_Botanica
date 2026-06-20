@@ -8,10 +8,12 @@
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-container">
         <div class="hero-content">
+            <div class="hero-logo-container">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Botanica Brand Logo" class="hero-logo-img">
+            </div>
             <span class="hero-badge">Discover Ayurvedic Wisdom</span>
             <h1>Your Trusted Marketplace for Authentic Herbs</h1>
             <p>Connect with verified regional merchants, explore our interactive botanical library, and source natural remedies tailored to your well-being.</p>
@@ -27,7 +29,6 @@
     </div>
 </section>
 
-<!-- Quick Search & Filter Widget (Sprint 2 UI Foundation Hook) -->
 <section class="search-widget-section">
     <div class="widget-container">
         <div class="search-bar-wrapper">
@@ -37,18 +38,15 @@
         </div>
         <div class="quick-tags-wrapper">
             <span class="tag-label">Popular Categories:</span>
-            <button type="button" class="quick-filter-tag" data-benefit="Immunity">Immunity Boost</button>
-            <button type="button" class="quick-filter-tag" data-benefit="Stress">Stress Relief</button>
-            <button type="button" class="quick-filter-tag" data-benefit="Inflammation">Anti-inflammatory</button>
-            <button type="button" class="quick-filter-tag" data-benefit="Digestion">Digestion Support</button>
+            {% for cat in categories %}
+                <button type="button" class="quick-filter-tag" data-benefit="{{ cat.name }}">{{ cat.name }}</button>
+            {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Dual Access Portal Cards -->
 <section class="portals-section">
     <div class="portals-grid">
-        <!-- Portal Card 1: The Library -->
         <div class="portal-card">
             <div class="portal-icon-box">
                 <i class="ri-microscope-line"></i>
@@ -60,7 +58,6 @@
             </a>
         </div>
 
-        <!-- Portal Card 2: The Merchant Dashboard -->
         <div class="portal-card">
             <div class="portal-icon-box">
                 <i class="ri-dashboard-3-line"></i>
@@ -74,7 +71,6 @@
     </div>
 </section>
 
-<!-- Informational Highlight Banner -->
 <section class="highlight-banner">
     <div class="banner-container">
         <div class="banner-badge">Project Scope Metrics</div>
