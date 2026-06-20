@@ -272,6 +272,26 @@ class Database:
         except Exception:
             pass
         try:
+            db.execute("ALTER TABLE orders ADD COLUMN merchant_id INT DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN shipping_address TEXT DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) NOT NULL DEFAULT 'Unpaid'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE order_items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        except Exception:
+            pass
+        try:
             db.execute("ALTER TABLE orders MODIFY COLUMN order_status ENUM('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending'")
         except Exception:
             pass

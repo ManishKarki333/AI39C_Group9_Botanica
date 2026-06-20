@@ -252,7 +252,6 @@ class AuthController(BaseController):
         if session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
-
         merchant_id = session.get("user_id")
         db = Database()
 
