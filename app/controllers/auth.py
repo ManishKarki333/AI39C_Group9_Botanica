@@ -30,7 +30,7 @@ class AuthController(BaseController):
         self.user_model = User()
         self.order_model = Order()
 
-    # ── Helpers ──────────────────────────────────────────────
+     # ── Helpers ──────────────────────────────────────────────
     def is_logged_in(self) -> bool:
         return "user_id" in session
 
@@ -252,6 +252,8 @@ class AuthController(BaseController):
         if session.get("role") != "merchant":
             flash("Unauthorized access.", "danger")
             return redirect(url_for("auth.home"))
+
+      main
         merchant_id = session.get("user_id")
         db = Database()
 
