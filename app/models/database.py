@@ -53,7 +53,11 @@ class Database:
             cursor.close()
 
     def execute(self, query, params=None):
+<<<<<<< HEAD
+        """Run a data-modifying query. Returns the last row ID if an INSERT occurs."""
+=======
         """Run a data-modifying query. Returns lastrowid for INSERTs, or rowcount for updates/deletes."""
+>>>>>>> 92c7bafab65d30cf265b62c3300b9d90e7e35eb1
         cursor = self.__connection.cursor()
         try:
             cursor.execute(query, params)
@@ -121,10 +125,17 @@ class Database:
                 common_name VARCHAR(100) NOT NULL,
                 scientific_name VARCHAR(100) NOT NULL,
                 description TEXT,
+<<<<<<< HEAD
+                benefit_category VARCHAR(50) NOT NULL, -- Maps to US 3 (Sleep, Digestion, etc.)
+                price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                stock_quantity INT NOT NULL DEFAULT 0,
+                image_url VARCHAR(255) DEFAULT 'default_herb.png', -- Keeps UI card grading-ready
+=======
                 benefit_category VARCHAR(50) NOT NULL,
                 price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
                 stock_quantity INT NOT NULL DEFAULT 0,
                 image_url VARCHAR(255) DEFAULT 'default_herb.png',
+>>>>>>> 92c7bafab65d30cf265b62c3300b9d90e7e35eb1
                 merchant_id INT DEFAULT NULL,
                 whatsapp_number VARCHAR(20) DEFAULT NULL,
                 reference_url VARCHAR(255) DEFAULT NULL,
@@ -269,6 +280,26 @@ class Database:
             pass
         try:
             db.execute("ALTER TABLE herbs ADD COLUMN qr_code_url VARCHAR(255) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN merchant_id INT DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN shipping_address TEXT DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) NOT NULL DEFAULT 'Unpaid'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES users(id) ON DELETE CASCADE")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE order_items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
         except Exception:
             pass
         try:
