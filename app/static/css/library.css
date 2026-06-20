@@ -12,6 +12,18 @@
     --shadow-md: 0 4px 12px rgba(46, 111, 64, 0.08);
 }
 
+html.dark-theme {
+    --primary-color: #34d399;
+    --primary-dark: #064e3b;
+    --secondary-color: #121c17;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --warning-bg: #4b3b0d;
+    --warning-border: #fbbf24;
+    --border-color: #24352b;
+    --white: #121c17;
+}
+
 /* Base Formats & Document Layouts */
 * {
     box-sizing: border-box;
@@ -21,7 +33,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fafdfb;
+    background-color: var(--bg-primary, #fafdfb);
     color: var(--text-main);
     line-height: 1.6;
 }
@@ -278,8 +290,8 @@ body {
 }
 
 .review-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: var(--white, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);

@@ -1,0 +1,166 @@
+/* ==========================================================================
+   BOTANICA MASTER ADMIN PORTAL - PREMIUM STYLESHEET
+   ========================================================================== */
+
+/* Tab Buttons */
+.tab-trigger {
+    background: none;
+    border: none;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-trigger:hover {
+    color: var(--text-brand, #2f855a);
+    background-color: var(--bg-surface-hover, #f1f5f9);
+}
+
+.tab-trigger.active {
+    color: white;
+    background-color: var(--text-brand, #2f855a);
+    box-shadow: 0 4px 12px rgba(47, 133, 90, 0.2);
+}
+
+/* Tab Panels */
+.tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* System Details Row */
+.system-time-stamp {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    background-color: var(--bg-surface-hover, #f1f5f9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Data Tables */
+.admin-data-table {
+    margin-top: 16px;
+}
+
+.admin-data-table th {
+    border-bottom: 2px solid var(--border-muted, #cbd5e1);
+    padding: 12px 10px;
+    font-size: 0.85rem;
+    color: var(--text-muted, #475569);
+    text-transform: uppercase;
+}
+
+.admin-data-table tr {
+    transition: background-color 0.15s ease;
+}
+
+.admin-data-table tbody tr:hover {
+    background-color: var(--bg-surface-hover, #f8fafc);
+}
+
+/* Action Buttons */
+.admin-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.admin-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Suspended Row Dimming */
+tr.user-suspended {
+    opacity: 0.7;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark Mode Overrides */
+html.dark-theme .tab-trigger.active {
+    background-color: var(--text-brand, #34d399);
+    color: #090e0b;
+    box-shadow: 0 4px 12px rgba(52, 211, 153, 0.2);
+}
+
+html.dark-theme .tab-trigger:hover {
+    color: var(--text-brand, #34d399);
+}
+
+html.dark-theme .admin-data-table tbody tr:hover {
+    background-color: var(--bg-surface-hover, #1b2a22);
+}
+
+html.dark-theme .system-time-stamp {
+    background-color: var(--bg-surface-hover, #1b2a22);
+}
+
+/* Custom Badges and Highlights to Resolve IDE Diagnostics */
+.metric-value-reports {
+    color: var(--text-primary, #1e293b);
+}
+.metric-value-reports.has-reports {
+    color: #dc2626;
+}
+
+.role-badge-merchant {
+    background-color: #fdf2f8;
+    color: #db2777;
+}
+html.dark-theme .role-badge-merchant {
+    background-color: #2e1224;
+    color: #f472b6;
+}
+
+.role-badge-user {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+html.dark-theme .role-badge-user {
+    background-color: #062e1a;
+    color: #4ade80;
+}
+
+.stock-badge.stock-low {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+html.dark-theme .stock-badge.stock-low {
+    background-color: #3b1414;
+    color: #fca5a5;
+}
+
+.stock-badge.stock-normal {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+html.dark-theme .stock-badge.stock-normal {
+    background-color: #062e1a;
+    color: #4ade80;
+}

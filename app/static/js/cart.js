@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Cart Error:", error);
                 cartButton.innerHTML = '<i class="ri-error-warning-line"></i>';
                 cartButton.style.backgroundColor = '#e53e3e';
+                alert(error.message);
             } finally {
                 setTimeout(() => {
                     cartButton.innerHTML = originalIcon;

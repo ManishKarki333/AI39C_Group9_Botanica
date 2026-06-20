@@ -45,30 +45,38 @@
                 </div>
                 
                 <ul class="benefit-list">
+                    {% for cat in categories %}
                     <li>
-                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Sleep' %}active{% endif %}" data-benefit="Sleep">
-                            <span class="category-icon"><i class="ri-moon-clear-line"></i></span>
-                            <span class="category-label">Sleep & Relaxation</span>
+                        <button class="benefit-card-toggle filter-btn {% if current_category == cat.name %}active{% endif %}" data-benefit="{{ cat.name }}">
+                            <span class="category-icon">
+                                {% if cat.name == 'Sleep' %}
+                                    <i class="ri-moon-clear-line"></i>
+                                {% elif cat.name == 'Digestion' %}
+                                    <i class="ri-restaurant-line"></i>
+                                {% elif cat.name == 'Immunity' %}
+                                    <i class="ri-shield-flash-line"></i>
+                                {% elif cat.name == 'Energy' %}
+                                    <i class="ri-thunderstorms-line"></i>
+                                {% else %}
+                                    <i class="ri-leaf-line"></i>
+                                {% endif %}
+                            </span>
+                            <span class="category-label">
+                                {% if cat.name == 'Sleep' %}
+                                    Sleep & Relaxation
+                                {% elif cat.name == 'Digestion' %}
+                                    Digestive Health
+                                {% elif cat.name == 'Immunity' %}
+                                    Immune Support
+                                {% elif cat.name == 'Energy' %}
+                                    Energy & Focus
+                                {% else %}
+                                    {{ cat.name }}
+                                {% endif %}
+                            </span>
                         </button>
                     </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Digestion' %}active{% endif %}" data-benefit="Digestion">
-                            <span class="category-icon"><i class="ri-restaurant-line"></i></span>
-                            <span class="category-label">Digestive Health</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Immunity' %}active{% endif %}" data-benefit="Immunity">
-                            <span class="category-icon"><i class="ri-shield-flash-line"></i></span>
-                            <span class="category-label">Immune Support</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="benefit-card-toggle filter-btn {% if current_category == 'Energy' %}active{% endif %}" data-benefit="Energy">
-                            <span class="category-icon"><i class="ri-thunderstorms-line"></i></span>
-                            <span class="category-label">Energy & Focus</span>
-                        </button>
-                    </li>
+                    {% endfor %}
                 </ul>
             </div>
         </aside>
@@ -95,13 +103,7 @@
                                     <span class="vacation-banner" style="background-color:#dd6b20; color:#fff;">Only {{ herb.stock_quantity }} Left</span>
                                 {% endif %}
 
-                                {% if herb.image_url %}
-                                    <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" class="product-image">
-                                {% else %}
-                                    <div class="fallback-placeholder">
-                                        <img src="{{ url_for('static', filename='uploads/default_herb.png') }}" alt="Default Herb Placeholder" class="product-image">
-                                    </div>
-                                {% endif %}
+                                <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" class="product-image">
                                 <div class="card-badge">{{ herb.form_factor or 'Raw Herb' }}</div>
                             </div>
                         </a>

@@ -46,7 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const stock = parseInt(card.getAttribute('data-stock'), 10) || 0;
             const whatsappNumber = card.getAttribute('data-whatsapp-number') || '';
             const refUrl = card.getAttribute('data-reference-url') || '';
-            openProductEditModal(id, name, scientificName, price, stock, whatsappNumber, refUrl);
+            const qrPaymentType = card.getAttribute('data-qr-payment-type') || '';
+            openProductEditModal(id, name, scientificName, price, stock, whatsappNumber, refUrl, qrPaymentType);
         });
     });
 
@@ -161,7 +162,7 @@ function initSalesChart() {
  * and fetches the pricing data points to render the line chart.
  * Exposed globally for the inline product card onclick attributes.
  */
-function openProductEditModal(id, commonName, scientificName, currentPrice, currentStock, whatsappNumber, referenceUrl) {
+function openProductEditModal(id, commonName, scientificName, currentPrice, currentStock, whatsappNumber, referenceUrl, qrPaymentType) {
     const modal = document.getElementById('updateProductModal');
     if (!modal) return;
 
@@ -186,6 +187,9 @@ function openProductEditModal(id, commonName, scientificName, currentPrice, curr
 
     const editRefUrlInput = document.getElementById('editReferenceUrl');
     if (editRefUrlInput) editRefUrlInput.value = referenceUrl;
+
+    const editQrPaymentTypeSelect = document.getElementById('editQrPaymentType');
+    if (editQrPaymentTypeSelect) editQrPaymentTypeSelect.value = qrPaymentType;
 
     const updateForm = document.getElementById('updateProductForm');
     if (updateForm) updateForm.action = `/shop/update_product/${id}`;

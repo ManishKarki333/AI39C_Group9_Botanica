@@ -119,7 +119,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS herbs (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 common_name VARCHAR(100) NOT NULL,
-                scientific_name VARCHAR(100) NOT NULL UNIQUE,
+                scientific_name VARCHAR(100) NOT NULL,
                 description TEXT,
                 benefit_category VARCHAR(50) NOT NULL,
                 price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
@@ -200,6 +200,36 @@ class Database:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """)
 
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS categories (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS reports (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                target_type ENUM('product', 'merchant') NOT NULL,
+                target_id INT NOT NULL,
+                reason VARCHAR(255) NOT NULL,
+                description TEXT,
+                status ENUM('pending', 'resolved') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+
+        try:
+            cats = db.fetch_all("SELECT * FROM categories")
+            if not cats:
+                for cat_name in ["Sleep", "Digestion", "Energy", "Immunity"]:
+                    db.execute("INSERT INTO categories (name) VALUES (%s)", (cat_name,))
+        except Exception as e:
+            print("Failed to seed categories:", e)
+
         # Structural sanity checks for secondary columns
         try:
             db.execute("ALTER TABLE users ADD COLUMN otp_code VARCHAR(6) DEFAULT NULL")
@@ -230,7 +260,35 @@ class Database:
         except Exception:
             pass
         try:
+            db.execute("ALTER TABLE herbs DROP INDEX scientific_name")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE herbs ADD COLUMN qr_payment_type VARCHAR(50) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE herbs ADD COLUMN qr_code_url VARCHAR(255) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
             db.execute("ALTER TABLE orders MODIFY COLUMN order_status ENUM('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled') NOT NULL DEFAULT 'Pending'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders MODIFY COLUMN payment_status VARCHAR(50) NOT NULL DEFAULT 'Unpaid'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN transaction_screenshot VARCHAR(255) DEFAULT NULL")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE orders ADD COLUMN cancellation_reason TEXT DEFAULT NULL")
         except Exception:
             pass
 
