@@ -7,10 +7,6 @@ from app.controllers.auth import AuthController
 
 #  FLASK ENVIRONMENT MOCK HELPER
 def make_test_app():
-    """
-    Builds an isolated headless Flask application instance.
-    Defines endpoints required for url_for() redirections inside AuthController.
-    """
     app = Flask(__name__)
     app.secret_key = "test-secret-key"
     app.config['GOOGLE_CLIENT_ID'] = "mock-google-id.apps.googleusercontent.com"
@@ -21,6 +17,10 @@ def make_test_app():
     bp.route("/register", endpoint="register")(lambda: "register")
     bp.route("/profile", endpoint="profile")(lambda: "profile")
     bp.route("/merchant/dashboard", endpoint="merchant_dashboard")(lambda: "merchant_dashboard")
+    
+    # ADD THIS LINE HERE:
+    bp.route("/forgot-password", endpoint="forgot_password")(lambda: "forgot_password")
+    
     bp.route("/verify-otp", endpoint="verify_otp")(lambda: "verify_otp")
     bp.route("/reset-password", endpoint="reset_password")(lambda: "reset_password")
     app.register_blueprint(bp)
@@ -108,16 +108,18 @@ class TestLogin(unittest.TestCase):
             flashes = get_flashed_messages(with_categories=True)
             self.assertIn(("danger", "Email and password are required."), flashes)
 
+    @patch("app.controllers.auth.render_template")  # ADD THIS LINE
     @patch("app.controllers.auth.User.from_db")
-    def test_login_deactivated_user_is_rejected(self, mock_from_db):
+    def test_login_deactivated_user_is_rejected(self, mock_from_db, mock_render):  # ADD mock_render ARGUMENT
         """Accounts flagged with is_active = 0 remain blocked on login."""
+        mock_render.return_value = "login_page"  # ADD THIS LINE
         self.controller.user_model.find_by.return_value = {
             "id": 8, "name": "Arbin", "email": "arbin@example.com", "role": "merchant", "is_active": 0
         }
         fake_user = MagicMock()
         fake_user.check_password.return_value = True
         mock_from_db.return_value = fake_user
-
+        
         with self.app.test_request_context(
             method="POST", data={"email": "arbin@example.com", "password": "password123"}
         ):
