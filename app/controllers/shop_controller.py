@@ -28,8 +28,9 @@ class ShopController(BaseController):
             params.append(category_filter)
 
         herbs_list = db.fetch_all(query, tuple(params))
+        categories = db.fetch_all("SELECT * FROM categories ORDER BY name ASC")
         db.close()
-        return render_template('shop.html', herbs=herbs_list, search=search_query, current_category=category_filter)
+        return render_template('shop.html', herbs=herbs_list, search=search_query, current_category=category_filter, categories=categories)
 
     def api_search_and_filter(self):
         query_param = request.args.get('q', '').strip()
@@ -105,6 +106,7 @@ class ShopController(BaseController):
 
         query += " ORDER BY created_at ASC"
         herbs = db.fetch_all(query, tuple(params))
+        categories = db.fetch_all("SELECT * FROM categories ORDER BY name ASC")
         db.close()
 
         unique_herbs = []
@@ -119,7 +121,8 @@ class ShopController(BaseController):
             "herb_library.html",
             herbs=unique_herbs,
             search_query=search_query,
-            filter_benefit=filter_benefit
+            filter_benefit=filter_benefit,
+            categories=categories
         )
 
     def herb_details(self, id):
@@ -178,7 +181,7 @@ class ShopController(BaseController):
         image_url = None
         review_image = request.files.get("review_image")
         if review_image and review_image.filename:
-            upload_dir = 'app/static/uploads'
+            upload_dir = 'app/static/uploads/Herbs Picture'
             if not os.path.exists(upload_dir):
                 os.makedirs(upload_dir)
 
@@ -187,7 +190,7 @@ class ShopController(BaseController):
                 unique_filename = f"review_{uuid.uuid4().hex}{ext}"
                 save_path = os.path.join(upload_dir, unique_filename)
                 review_image.save(save_path)
-                image_url = f'/static/uploads/{unique_filename}'
+                image_url = f'/static/uploads/Herbs Picture/{unique_filename}'
 
         db = Database()
         query = """
@@ -269,7 +272,7 @@ class ShopController(BaseController):
             image_url = '/static/uploads/default_herb.png'
 
             if product_image and product_image.filename:
-                upload_dir = 'app/static/uploads'
+                upload_dir = 'app/static/uploads/Herbs Picture'
                 if not os.path.exists(upload_dir):
                     os.makedirs(upload_dir)
 
@@ -278,12 +281,12 @@ class ShopController(BaseController):
                     unique_filename = f"{uuid.uuid4().hex}{ext}"
                     save_path = os.path.join(upload_dir, unique_filename)
                     product_image.save(save_path)
-                    image_url = f'/static/uploads/{unique_filename}'
+                    image_url = f'/static/uploads/Herbs Picture/{unique_filename}'
 
             qr_code_image = request.files.get("qr_code_image")
             qr_code_url = None
             if qr_code_image and qr_code_image.filename:
-                upload_dir = 'app/static/uploads'
+                upload_dir = 'app/static/uploads/QR Picture'
                 if not os.path.exists(upload_dir):
                     os.makedirs(upload_dir)
 
@@ -292,7 +295,7 @@ class ShopController(BaseController):
                     unique_filename = f"qr_{uuid.uuid4().hex}{ext}"
                     save_path = os.path.join(upload_dir, unique_filename)
                     qr_code_image.save(save_path)
-                    qr_code_url = f'/static/uploads/{unique_filename}'
+                    qr_code_url = f'/static/uploads/QR Picture/{unique_filename}'
 
             try:
                 db = Database()
@@ -338,6 +341,7 @@ class ShopController(BaseController):
             reference_url = request.form.get("reference_url", "").strip()
             qr_payment_type = request.form.get("qr_payment_type", "").strip()
             qr_code_image = request.files.get("qr_code_image")
+            product_image = request.files.get("product_image")
 
             if not common_name or not scientific_name or not price or stock_quantity is None:
                 flash("Name, Scientific Name, Price, and Stock Quantity are required.", "danger")
@@ -348,15 +352,36 @@ class ShopController(BaseController):
                 stock_quantity = int(stock_quantity)
 
                 db = Database()
-                herb = db.fetch_one("SELECT price, merchant_id, qr_code_url FROM herbs WHERE id = %s", (id,))
+                herb = db.fetch_one("SELECT price, merchant_id, qr_code_url, image_url FROM herbs WHERE id = %s", (id,))
                 if not herb or herb["merchant_id"] != session.get("user_id"):
                     flash("Unauthorized or product not found.", "danger")
                     db.close()
                     return redirect(url_for("auth.merchant_dashboard"))
 
+                image_url = herb.get("image_url")
+                if product_image and product_image.filename:
+                    upload_dir = 'app/static/uploads/Herbs Picture'
+                    if not os.path.exists(upload_dir):
+                        os.makedirs(upload_dir)
+
+                    ext = os.path.splitext(product_image.filename)[1].lower()
+                    if ext in ['.jpg', '.jpeg', '.png', '.webp']:
+                        if image_url and 'default_herb.png' not in image_url:
+                            try:
+                                old_img_path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), image_url.lstrip('/'))
+                                if os.path.exists(old_img_path):
+                                    os.remove(old_img_path)
+                            except Exception as img_err:
+                                print(f"Error removing old product image: {img_err}")
+
+                        unique_filename = f"{uuid.uuid4().hex}{ext}"
+                        save_path = os.path.join(upload_dir, unique_filename)
+                        product_image.save(save_path)
+                        image_url = f'/static/uploads/Herbs Picture/{unique_filename}'
+
                 qr_code_url = herb.get("qr_code_url")
                 if qr_code_image and qr_code_image.filename:
-                    upload_dir = 'app/static/uploads'
+                    upload_dir = 'app/static/uploads/QR Picture'
                     if not os.path.exists(upload_dir):
                         os.makedirs(upload_dir)
 
@@ -373,11 +398,11 @@ class ShopController(BaseController):
                         unique_filename = f"qr_{uuid.uuid4().hex}{ext}"
                         save_path = os.path.join(upload_dir, unique_filename)
                         qr_code_image.save(save_path)
-                        qr_code_url = f'/static/uploads/{unique_filename}'
+                        qr_code_url = f'/static/uploads/QR Picture/{unique_filename}'
 
                 db.execute(
-                    "UPDATE herbs SET common_name = %s, scientific_name = %s, price = %s, stock_quantity = %s, whatsapp_number = %s, reference_url = %s, qr_payment_type = %s, qr_code_url = %s WHERE id = %s",
-                    (common_name, scientific_name, price, stock_quantity, whatsapp_number, reference_url, qr_payment_type or None, qr_code_url, id)
+                    "UPDATE herbs SET common_name = %s, scientific_name = %s, price = %s, stock_quantity = %s, whatsapp_number = %s, reference_url = %s, qr_payment_type = %s, qr_code_url = %s, image_url = %s WHERE id = %s",
+                    (common_name, scientific_name, price, stock_quantity, whatsapp_number, reference_url, qr_payment_type or None, qr_code_url, image_url, id)
                 )
                 if hasattr(db, 'commit'): db.commit()
 
@@ -702,7 +727,7 @@ class ShopController(BaseController):
 
         if payment_method == 'esewa_khalti':
             if transaction_screenshot and transaction_screenshot.filename:
-                upload_dir = 'app/static/uploads'
+                upload_dir = 'app/static/uploads/Transaction Picture'
                 if not os.path.exists(upload_dir):
                     os.makedirs(upload_dir)
                 ext = os.path.splitext(transaction_screenshot.filename)[1].lower()
@@ -710,7 +735,7 @@ class ShopController(BaseController):
                     unique_filename = f"receipt_{uuid.uuid4().hex}{ext}"
                     save_path = os.path.join(upload_dir, unique_filename)
                     transaction_screenshot.save(save_path)
-                    screenshot_url = f'/static/uploads/{unique_filename}'
+                    screenshot_url = f'/static/uploads/Transaction Picture/{unique_filename}'
             else:
                 flash("Transaction screenshot is required for Esewa/ Khalti payment.", "danger")
                 return redirect(url_for('shop.checkout_page'))
@@ -867,3 +892,32 @@ class ShopController(BaseController):
             return jsonify({"status": "error", "message": "Internal server error"}), 500
         finally:
             db.close()
+
+    def report_product(self, herb_id):
+        if 'user_id' not in session:
+            flash("Please log in to report a product.", "danger")
+            return redirect(url_for("auth.login"))
+
+        reason = request.form.get("reason", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not reason:
+            flash("Please specify a reason for the report.", "danger")
+            return redirect(url_for("shop.herb_details", id=herb_id))
+
+        db = Database()
+        try:
+            db.execute(
+                "INSERT INTO reports (user_id, target_type, target_id, reason, description, status) VALUES (%s, %s, %s, %s, %s, 'pending')",
+                (session.get("user_id"), 'product', herb_id, reason, description)
+            )
+            if hasattr(db, 'commit'):
+                db.commit()
+            flash("Thank you. The product has been reported to the administration for review.", "success")
+        except Exception as e:
+            print("Error creating report:", e)
+            flash("Failed to submit report. Please try again.", "danger")
+        finally:
+            db.close()
+
+        return redirect(url_for("shop.herb_details", id=herb_id))

@@ -244,10 +244,9 @@
                 <label for="category">Benefit Category</label>
                 <select id="category" name="benefit_category" required>
                     <option value="">Select a Category</option>
-                    <option value="Sleep">Sleep</option>
-                    <option value="Digestion">Digestion</option>
-                    <option value="Energy">Energy</option>
-                    <option value="Immunity">Immunity</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.name }}">{{ cat.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="m-input-group">
@@ -335,6 +334,10 @@
             <div class="m-input-group">
                 <label for="editReferenceUrl" class="edit-form-label">Reference Link (e.g. Wikipedia)</label>
                 <input type="url" id="editReferenceUrl" name="reference_url" placeholder="https://en.wikipedia.org/wiki/..." class="edit-form-input">
+            </div>
+            <div class="m-input-group">
+                <label for="editProductImage" class="edit-form-label">Change Product Image</label>
+                <input type="file" id="editProductImage" name="product_image" accept="image/*" class="edit-form-input">
             </div>
             <div class="m-input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 15px;">
                 <div>

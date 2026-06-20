@@ -32,9 +32,15 @@
                 </a>
 
                 {% if session.get('user_id') %}
-                    <a href="{{ url_for('auth.profile') }}" class="util-btn" aria-label="User Account Settings">
-                        <i class="ri-user-line util-icon"></i>
-                    </a>
+                    {% if session.get('role') == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="util-btn" aria-label="Master Admin Dashboard" title="Master Admin Dashboard">
+                            <i class="ri-shield-user-line util-icon"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.profile') }}" class="util-btn" aria-label="User Account Settings" title="Account Settings">
+                            <i class="ri-user-line util-icon"></i>
+                        </a>
+                    {% endif %}
                     
                     <a href="{{ url_for('auth.logout') }}" class="auth-nav-btn logout-btn" aria-label="Log out of application">
                         <i class="ri-logout-box-r-line btn-icon"></i> Logout

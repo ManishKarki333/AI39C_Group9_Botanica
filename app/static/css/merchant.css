@@ -19,13 +19,28 @@
     --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
 }
 
+html.dark-theme {
+    --figma-green: #34d399;
+    --figma-green-hover: #059669;
+    --figma-green-light: #064e3b;
+    --figma-border: #24352b;
+    --figma-text-dark: #e2e8f0;
+    --figma-text-muted: #94a3b8;
+    --figma-text-gray: #64748b;
+    --figma-bg-light: #121c17;
+    --danger-red: #f87171;
+    --danger-bg: #451a1a;
+    --warning-amber: #fbbf24;
+    --warning-bg: #4b3b0d;
+}
+
 .dashboard-wrapper {
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 24px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--figma-text-muted);
-    background-color: #fcfdfd;
+    background-color: var(--bg-primary, #fcfdfd);
 }
 
 /* ---------- Header Core Blocks ---------- */
@@ -146,11 +161,11 @@
 
 /* ---------- Notification Cards ---------- */
 .low-stock-alert-card {
-    background: #fffaf0;
+    background: var(--warning-bg, #fffaf0);
     border-left: 4px solid #dd6b20;
-    border-top: 1px solid #feebc8;
-    border-right: 1px solid #feebc8;
-    border-bottom: 1px solid #feebc8;
+    border-top: 1px solid var(--figma-border, #feebc8);
+    border-right: 1px solid var(--figma-border, #feebc8);
+    border-bottom: 1px solid var(--figma-border, #feebc8);
     margin-bottom: 24px;
     padding: 16px 20px;
     border-radius: 12px;
@@ -192,7 +207,7 @@
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    background: #ffffff;
+    background: var(--bg-surface, #ffffff);
     border: 1px solid var(--figma-border);
     border-radius: 14px;
     padding: 24px 32px !important; /* Fixed spacing to remove layout congestion */
@@ -244,7 +259,7 @@
 
 /* Legacy backup definitions to safe-guard fallback classes */
 .vacation-card-row {
-    background: #ffffff;
+    background: var(--bg-surface, #ffffff);
     border: 1px solid var(--figma-border);
     border-radius: 14px;
     padding: 20px 24px;
@@ -304,7 +319,7 @@ input:checked + .figma-slider:before { transform: translateX(24px); }
 
 /* ---------- Container Cards Structural Stack ---------- */
 .products-section-container {
-    background: #ffffff;
+    background: var(--bg-surface, #ffffff);
     border: 1px solid var(--figma-border);
     border-radius: 16px;
     padding: 32px 28px;
@@ -341,7 +356,7 @@ input:checked + .figma-slider:before { transform: translateX(24px); }
 /* Catalog Cards Core */
 .figma-product-card {
     border: 1px solid var(--figma-border);
-    background-color: #ffffff;
+    background-color: var(--bg-surface, #ffffff);
     border-radius: 14px;
     padding: 20px 24px;
     display: grid;
@@ -532,7 +547,7 @@ input:checked + .figma-slider:before { transform: translateX(24px); }
     font-size: 14px;
     font-weight: 600;
     color: var(--figma-text-dark);
-    background-color: #ffffff;
+    background-color: var(--bg-surface, #ffffff);
     border: 2px solid var(--figma-border);
     border-radius: 10px;
     appearance: none;
@@ -570,7 +585,7 @@ input:checked + .figma-slider:before { transform: translateX(24px); }
     justify-content: center;
     gap: 48px;
     padding: 24px;
-    background: #ffffff;
+    background: var(--bg-surface, #ffffff);
     border-radius: 14px;
 }
 
@@ -648,7 +663,7 @@ input:checked + .figma-slider:before { transform: translateX(24px); }
 .dashboard-modal-overlay:target, .update-modal-overlay.active { display: flex; }
 
 .modal-body-card {
-    background: #ffffff;
+    background: var(--bg-surface, #ffffff);
     border-radius: 16px;
     width: 100%;
     max-width: 480px;
