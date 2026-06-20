@@ -12,4 +12,7 @@ class OrderRoutes:
         self.bp.route('/update/<int:order_id>', methods=['POST'])(
             merchant_required(self.controller.update_status)
         )
+        self.bp.route('/update_payment/<int:order_id>', methods=['POST'])(
+            merchant_required(self.controller.update_payment_status)
+        )
         return self.bp

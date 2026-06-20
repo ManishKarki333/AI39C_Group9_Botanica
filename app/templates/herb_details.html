@@ -12,7 +12,7 @@
 
     <div class="profile-layout">
         <div class="profile-visual">
-            <img src="{{ herb.image_url }}" alt="{{ herb.common_name }}" style="width:100%; height:auto; border-radius: 8px;">
+            <img src="{{ herb.image_url | image_or_default('herb') }}" alt="{{ herb.common_name }}" style="width:100%; height:auto; border-radius: 8px;">
         </div>
 
         <div class="profile-info">
@@ -53,6 +53,12 @@
                     <a href="https://wa.me/{{ herb.whatsapp_number.replace('+', '').replace(' ', '') }}?text=Hello!%20I%20have%20an%20inquiry%20about%20{{ herb.common_name | urlencode }}%20on%20Botanica." target="_blank" class="btn btn-secondary btn-large" style="background-color:#25d366; color:#fff; border:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; flex:1; text-decoration:none; font-weight:600; text-align:center; padding:12px 24px; border-radius:8px; transition:background 0.2s;">
                         <i class="ri-whatsapp-line" style="font-size:1.3rem;"></i> More Inquiry
                     </a>
+                {% endif %}
+
+                {% if session.get('user_id') %}
+                    <button type="button" class="btn btn-secondary btn-large" onclick="openReportModal()" style="background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; text-decoration: none; font-weight: 600; text-align: center; padding: 12px 24px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                        <i class="ri-flag-line" style="font-size:1.3rem;"></i> Report Product
+                    </button>
                 {% endif %}
             </div>
         </div>
@@ -172,7 +178,7 @@
 
                             {% if review.image_url %}
                                 <div class="review-image-attachment">
-                                    <img src="{{ review.image_url }}" alt="Review attachment from {{ review.user_name }}" class="review-attached-img" onclick="openReviewImageModal(this.src)">
+                                    <img src="{{ review.image_url | image_or_default('herb') }}" alt="Review attachment from {{ review.user_name }}" class="review-attached-img" onclick="openReviewImageModal(this.src)">
                                 </div>
                             {% endif %}
                         </div>
@@ -192,6 +198,39 @@
         <img class="modal-image-content" id="img-modal-target">
     </div>
 
+    <!-- Report Product Modal -->
+    <div id="reportProductModal" class="image-modal-portal" onclick="closeReportModal()" style="display: none; align-items: center; justify-content: center; z-index: 10001;">
+        <div style="background: var(--bg-surface, #ffffff); border-radius: 12px; max-width: 450px; width: 90%; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid var(--border-muted, #e2e8f0); position: relative; color: var(--text-primary, #1e293b);" onclick="event.stopPropagation()">
+            <span onclick="closeReportModal()" style="position: absolute; top: 12px; right: 16px; font-size: 24px; cursor: pointer; color: var(--text-muted, #64748b);">&times;</span>
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #dc2626;">
+                <i class="ri-flag-line"></i> Report Inappropriate Content
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted, #64748b); margin-bottom: 20px;">
+                Please help us maintain a safe and authentic marketplace by reporting products that violate our community standards.
+            </p>
+            <form action="{{ url_for('shop.report_product', herb_id=herb.id) }}" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="reportReason" style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted, #64748b); display: block; text-align: left;">Reason for Report</label>
+                    <select id="reportReason" name="reason" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-muted, #e2e8f0); background: var(--bg-primary, #fbfbf8); color: var(--text-primary, #1e293b); outline: none;">
+                        <option value="">Select a reason</option>
+                        <option value="Inappropriate description">Inappropriate description/content</option>
+                        <option value="Incorrect scientific name">Incorrect scientific/botanical info</option>
+                        <option value="Suspicious WhatsApp number">Suspicious contact details / Spam</option>
+                        <option value="Pricing violation">Pricing violation or scam</option>
+                        <option value="Other">Other reason</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="reportDesc" style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted, #64748b); display: block; text-align: left;">Additional Details</label>
+                    <textarea id="reportDesc" name="description" rows="4" placeholder="Please provide specific details to help our administrators review this listing..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-muted, #e2e8f0); background: var(--bg-primary, #fbfbf8); color: var(--text-primary, #1e293b); resize: none; outline: none;"></textarea>
+                </div>
+                <button type="submit" style="background-color: #dc2626; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; text-align: center; margin-top: 10px;">
+                    Submit Report
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openReviewImageModal(src) {
             document.getElementById('img-modal-target').src = src;
@@ -200,6 +239,18 @@
 
         function closeReviewImageModal() {
             document.getElementById('image-modal-portal').classList.remove('active');
+        }
+
+        function openReportModal() {
+            const rModal = document.getElementById('reportProductModal');
+            rModal.style.display = 'flex';
+            rModal.classList.add('active');
+        }
+
+        function closeReportModal() {
+            const rModal = document.getElementById('reportProductModal');
+            rModal.style.display = 'none';
+            rModal.classList.remove('active');
         }
     </script>
 </main>

@@ -37,6 +37,9 @@ class ShopRoutes:
         self.bp.route("/api/price_history/<int:herb_id>", methods=["GET"])(
             merchant_required(self.shop_controller.api_price_history)
         )
+        self.bp.route("/api/order_items/<int:order_id>", methods=["GET"])(
+            merchant_required(self.shop_controller.api_order_items)
+        )
 
         # Synchronous Cart View Page
         # FIXED: Bound to shop_controller rather than auth_controller
@@ -74,6 +77,9 @@ class ShopRoutes:
         self.bp.route("/order_status/<int:order_id>", methods=["GET"])(
             self.shop_controller.track_order_status
         )
+        self.bp.route("/cancel_order/<int:order_id>", methods=["POST"])(
+            self.shop_controller.cancel_order
+        )
 
         # NEW: Add Review Endpoint
         self.bp.route("/add_review/<int:herb_id>", methods=["POST"])(
@@ -82,6 +88,10 @@ class ShopRoutes:
 
         self.bp.route("/delete_review/<int:review_id>", methods=["POST"])(
             self.shop_controller.delete_review
+        )
+
+        self.bp.route("/report_product/<int:herb_id>", methods=["POST"])(
+            self.shop_controller.report_product
         )
 
 

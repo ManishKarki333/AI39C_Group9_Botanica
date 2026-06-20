@@ -42,7 +42,10 @@ class AuthController(BaseController):
         return "auth.home"
 
     def home(self):
-        return render_template("home.html")
+        db = Database()
+        categories = db.fetch_all("SELECT * FROM categories ORDER BY name ASC")
+        db.close()
+        return render_template("home.html", categories=categories)
 
     # ── Login ────────────────────────────────────────────────
     def login(self):
@@ -120,6 +123,9 @@ class AuthController(BaseController):
             flash("Please log in to access your account.", "warning")
             return redirect(url_for('auth.login'))
 
+        if session.get('role') == 'admin':
+            return redirect(url_for('admin.dashboard'))
+
         user_id = session['user_id']
         db = Database()
 
@@ -144,24 +150,24 @@ class AuthController(BaseController):
 
                 profile_pic_file = request.files.get("profile_pic")
                 if profile_pic_file and profile_pic_file.filename:
-                    upload_dir = 'app/static/uploads'
+                    upload_dir = 'app/static/uploads/Profile Picture'
                     if not os.path.exists(upload_dir):
                         os.makedirs(upload_dir)
                     ext = os.path.splitext(profile_pic_file.filename)[1]
                     filename = f"profile_{user_id}_{uuid.uuid4().hex}{ext}"
                     profile_pic_file.save(os.path.join(upload_dir, filename))
-                    profile_pic = f"/static/uploads/{filename}"
+                    profile_pic = f"/static/uploads/Profile Picture/{filename}"
 
                 if role == "merchant":
                     cert_file = request.files.get("certification_badge")
                     if cert_file and cert_file.filename:
-                        upload_dir = 'app/static/uploads'
+                        upload_dir = 'app/static/uploads/Profile Picture'
                         if not os.path.exists(upload_dir):
                             os.makedirs(upload_dir)
                         ext = os.path.splitext(cert_file.filename)[1]
                         filename = f"cert_{user_id}_{uuid.uuid4().hex}{ext}"
                         cert_file.save(os.path.join(upload_dir, filename))
-                        certification_badge = f"/static/uploads/{filename}"
+                        certification_badge = f"/static/uploads/Profile Picture/{filename}"
 
                 db.execute(
                     "UPDATE users SET name = %s, email = %s, profile_pic = %s, certification_badge = %s WHERE id = %s",
@@ -175,7 +181,7 @@ class AuthController(BaseController):
                 return redirect(url_for('auth.profile'))
 
             user = db.fetch_one("SELECT id, name, email, role, profile_pic, certification_badge, created_at FROM users WHERE id = %s", (user_id,))
-            orders = db.fetch_all("SELECT id, total_amount, order_status, created_at FROM orders WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
+            orders = db.fetch_all("SELECT id, total_amount, order_status, payment_status, created_at FROM orders WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
             return render_template('profile.html', user=user, orders=orders)
             
         finally:
@@ -269,6 +275,8 @@ class AuthController(BaseController):
         # 4. Fetch the orders using your model wrapper
         orders = self.order_model.get_merchant_orders(merchant_id)
         
+        categories = db.fetch_all("SELECT * FROM categories ORDER BY name ASC")
+        
         # Close the raw DB connection tracking safely after ALL queries are executed
         db.close()
 
@@ -281,7 +289,8 @@ class AuthController(BaseController):
             orders=orders, 
             user=user, 
             top_selling=top_selling, 
-            low_stock_herbs=low_stock_herbs
+            low_stock_herbs=low_stock_herbs,
+            categories=categories
         )
     
     # ── Google OAuth Login ─────────────────────────────────────

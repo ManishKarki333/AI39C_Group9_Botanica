@@ -232,13 +232,13 @@
 .auth-nav-link {
     font-size: 14px;
     font-weight: 500;
-    color: #4A5568;
+    color: var(--text-muted, #4A5568);
     text-decoration: none;
     transition: color 0.2s ease-in-out;
 }
 
 .auth-nav-link:hover {
-    color: #1A202C;
+    color: var(--text-primary, #1A202C);
 }
 
 /* Base properties for the prominent action buttons */

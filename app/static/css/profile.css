@@ -489,6 +489,8 @@
 .status-shipped { background-color: #e0f2fe; color: #0284c7; }
 .status-delivered { background-color: #dcfce7; color: var(--primary-emerald); }
 .status-cancelled { background-color: #fee2e2; color: #dc2626; }
+.status-paid { background-color: #dcfce7; color: var(--primary-emerald); }
+.status-unpaid { background-color: #fee2e2; color: #dc2626; }
 
 .btn-track {
     color: var(--primary-emerald);

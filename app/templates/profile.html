@@ -11,7 +11,7 @@
     <aside class="dashboard-sidebar">
         <div class="user-profile-card">
             {% if user.profile_pic %}
-                <img src="{{ user.profile_pic }}" alt="{{ user.name }}" class="avatar-img">
+                <img src="{{ user.profile_pic | image_or_default('avatar') }}" alt="{{ user.name }}" class="avatar-img">
             {% else %}
                 <div class="avatar-circle">{{ user.name[:1] | upper }}</div>
             {% endif %}
@@ -70,7 +70,7 @@
                         <div class="upload-component">
                             {% if user.profile_pic %}
                                 <div class="upload-preview-box">
-                                    <img src="{{ user.profile_pic }}" alt="Profile Pic">
+                                    <img src="{{ user.profile_pic | image_or_default('avatar') }}" alt="Profile Pic">
                                 </div>
                             {% endif %}
                             <div class="custom-file-upload">
@@ -92,7 +92,7 @@
                             <div class="upload-component">
                                 {% if user.certification_badge %}
                                     <div class="upload-preview-box credential-preview">
-                                        <img src="{{ user.certification_badge }}" alt="Certification Badge">
+                                        <img src="{{ user.certification_badge | image_or_default('document') }}" alt="Certification Badge">
                                     </div>
                                 {% endif %}
                                 <div class="custom-file-upload">
@@ -146,6 +146,7 @@
                                 <th>Order ID</th>
                                 <th>Date</th>
                                 <th>Total</th>
+                                <th>Payment Status</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -162,6 +163,11 @@
                                     {% endif %}
                                 </td>
                                 <td class="currency-column">Rs. {{ "%.2f" | format(order.total_amount | float) }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ (order.payment_status or 'Unpaid') | lower }}">
+                                        {{ order.payment_status or 'Unpaid' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="status-badge status-{{ order.order_status | lower | replace(' ', '-') }}">
                                         {{ order.order_status }}
